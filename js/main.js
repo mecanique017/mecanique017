@@ -1,3 +1,163 @@
+// ========== SPLASH SCREEN ==========
+const splashScreen = document.getElementById('splashScreen');
+
+function enterAsClient() {
+    splashScreen.classList.add('hidden');
+    document.body.style.overflow = '';
+    // Charger le contenu dynamique depuis content.json
+    loadDynamicContent();
+}
+
+function showAdminLogin() {
+    document.querySelector('.splash-buttons').style.display = 'none';
+    document.querySelector('.splash-text').style.display = 'none';
+    document.getElementById('splashAdminLogin').classList.add('show');
+    document.getElementById('splashEmail').focus();
+}
+
+function hideAdminLogin() {
+    document.querySelector('.splash-buttons').style.display = 'flex';
+    document.querySelector('.splash-text').style.display = 'block';
+    document.getElementById('splashAdminLogin').classList.remove('show');
+    document.getElementById('splashLoginError').classList.remove('show');
+}
+
+async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function adminLogin() {
+    const email = document.getElementById('splashEmail').value.trim();
+    const password = document.getElementById('splashPassword').value;
+    const error = document.getElementById('splashLoginError');
+
+    const emailHash = await sha256(email);
+    const passHash = await sha256(password);
+
+    // Verifier les identifiants (hash stocke ou par defaut)
+    const storedPassHash = localStorage.getItem('m17_admin_hash');
+    const storedEmailHash = localStorage.getItem('m17_admin_email_hash');
+
+    const defaultPassHash = await sha256('Melvynsidibe@225');
+    const defaultEmailHash = await sha256('mecanique017@gmail.com');
+
+    // Stocker les hash par defaut si pas encore fait
+    if (!storedPassHash) {
+        localStorage.setItem('m17_admin_hash', defaultPassHash);
+        localStorage.setItem('m17_admin_email_hash', defaultEmailHash);
+    }
+
+    const targetPassHash = storedPassHash || defaultPassHash;
+    const targetEmailHash = storedEmailHash || defaultEmailHash;
+
+    if (emailHash === targetEmailHash && passHash === targetPassHash) {
+        // Connexion reussie -> redirection vers admin
+        sessionStorage.setItem('m17_admin_logged', 'true');
+        window.location.href = 'admin.html';
+    } else {
+        error.classList.add('show');
+        document.getElementById('splashPassword').value = '';
+        document.getElementById('splashPassword').focus();
+    }
+}
+
+// Enter key pour les champs login
+document.getElementById('splashPassword')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') adminLogin();
+});
+document.getElementById('splashEmail')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('splashPassword').focus();
+});
+
+// Empecher le scroll quand le splash est visible
+if (splashScreen && !splashScreen.classList.contains('hidden')) {
+    document.body.style.overflow = 'hidden';
+}
+
+// ========== CONTENU DYNAMIQUE ==========
+async function loadDynamicContent() {
+    try {
+        const response = await fetch('data/content.json?t=' + Date.now());
+        if (!response.ok) return;
+        const data = await response.json();
+
+        // Mettre a jour la galerie
+        if (data.galerie) {
+            const galerieGrid = document.querySelector('.galerie-grid');
+            if (galerieGrid) {
+                let html = '';
+                data.galerie.forEach(photo => {
+                    if (photo.src && !photo.placeholder) {
+                        html += `
+                            <div class="galerie-item" data-animate>
+                                <img src="${photo.src}" alt="${photo.alt || 'Photo garage'}" loading="lazy">
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="galerie-item" data-animate>
+                                <div class="galerie-placeholder">
+                                    <span>&#128247;</span>
+                                    <p>${photo.alt || 'Photo'}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                galerieGrid.innerHTML = html;
+
+                // Re-observer les animations
+                galerieGrid.querySelectorAll('[data-animate]').forEach(el => {
+                    observer.observe(el);
+                });
+
+                // Re-attacher le lightbox aux nouvelles images
+                galerieGrid.querySelectorAll('img').forEach(img => {
+                    img.style.cursor = 'pointer';
+                    img.addEventListener('click', () => {
+                        lightboxImg.src = img.src;
+                        lightboxImg.alt = img.alt;
+                        lightbox.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                    });
+                });
+            }
+        }
+
+        // Mettre a jour les actualites
+        if (data.actualites) {
+            const actuGrid = document.querySelector('.actu-grid');
+            if (actuGrid) {
+                let html = '';
+                data.actualites.forEach(actu => {
+                    html += `
+                        <article class="actu-card" data-animate>
+                            <div class="actu-badge">${actu.badge}</div>
+                            <div class="actu-placeholder">${actu.icon || '&#128197;'}</div>
+                            <div class="actu-content">
+                                <h3>${actu.titre}</h3>
+                                <p>${actu.texte}</p>
+                                <span class="actu-date">${actu.date}</span>
+                            </div>
+                        </article>
+                    `;
+                });
+                actuGrid.innerHTML = html;
+
+                // Re-observer les animations
+                actuGrid.querySelectorAll('[data-animate]').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+        }
+    } catch (e) {
+        console.log('Contenu statique utilise');
+    }
+}
+
 // ========== MENU MOBILE ==========
 const menuToggle = document.getElementById('menuToggle');
 const nav = document.getElementById('nav');

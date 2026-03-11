@@ -21,6 +21,37 @@
 </head>
 <body>
 
+    <!-- SPLASH SCREEN : Choix Client / Administrateur -->
+    <div class="splash-screen" id="splashScreen">
+        <div class="splash-container">
+            <img src="images/LOGO.jpg" alt="MECANIQUE 17" class="splash-logo">
+            <h1 class="splash-title">MECANIQUE <span>17</span></h1>
+            <p class="splash-subtitle">Garage Automobile &mdash; Jarnac-Champagne</p>
+            <p class="splash-text">Bienvenue ! Comment souhaitez-vous acc&eacute;der au site ?</p>
+            <div class="splash-buttons">
+                <button class="splash-btn splash-btn-client" onclick="enterAsClient()">
+                    <span class="splash-btn-icon">&#128100;</span>
+                    <span class="splash-btn-label">Client</span>
+                    <span class="splash-btn-desc">Voir le site, prendre RDV</span>
+                </button>
+                <button class="splash-btn splash-btn-admin" onclick="showAdminLogin()">
+                    <span class="splash-btn-icon">&#128274;</span>
+                    <span class="splash-btn-label">Administrateur</span>
+                    <span class="splash-btn-desc">G&eacute;rer le site</span>
+                </button>
+            </div>
+
+            <!-- Formulaire admin (cach&eacute;) -->
+            <div class="splash-admin-login" id="splashAdminLogin">
+                <div class="splash-login-error" id="splashLoginError">Identifiants incorrects</div>
+                <input type="email" id="splashEmail" placeholder="Adresse email" autocomplete="email">
+                <input type="password" id="splashPassword" placeholder="Mot de passe" autocomplete="current-password">
+                <button class="splash-btn-connect" onclick="adminLogin()">Se connecter</button>
+                <button class="splash-btn-back" onclick="hideAdminLogin()">Retour</button>
+            </div>
+        </div>
+    </div>
+
     <!-- HEADER / NAVIGATION -->
     <header class="header" id="header">
         <div class="container header-inner">
@@ -316,7 +347,7 @@
             <div class="footer-social">
                 <h4>Suivez-nous</h4>
                 <div class="social-links">
-                    <a href="#" aria-label="Facebook" class="social-link">Facebook</a>
+                    <a href="https://www.facebook.com/profile.php?id=100076674051645" target="_blank" aria-label="Facebook" class="social-link">Facebook</a>
                     <a href="#" aria-label="Instagram" class="social-link">Instagram</a>
                 </div>
             </div>

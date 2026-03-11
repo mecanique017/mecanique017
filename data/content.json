@@ -1,0 +1,66 @@
+{
+  "galerie": [
+    {
+      "id": 1,
+      "src": "",
+      "alt": "Photo 1",
+      "placeholder": true
+    },
+    {
+      "id": 2,
+      "src": "",
+      "alt": "Photo 2",
+      "placeholder": true
+    },
+    {
+      "id": 3,
+      "src": "",
+      "alt": "Photo 3",
+      "placeholder": true
+    },
+    {
+      "id": 4,
+      "src": "",
+      "alt": "Photo 4",
+      "placeholder": true
+    },
+    {
+      "id": 5,
+      "src": "",
+      "alt": "Photo 5",
+      "placeholder": true
+    },
+    {
+      "id": 6,
+      "src": "",
+      "alt": "Photo 6",
+      "placeholder": true
+    }
+  ],
+  "actualites": [
+    {
+      "id": 1,
+      "badge": "Promo",
+      "icon": "&#127873;",
+      "titre": "Offre de bienvenue",
+      "texte": "-10% sur votre premi\u00e8re vidange compl\u00e8te. Profitez-en d\u00e8s maintenant !",
+      "date": "Mars 2026"
+    },
+    {
+      "id": 2,
+      "badge": "Nouveau",
+      "icon": "&#128295;",
+      "titre": "Diagnostic offert",
+      "texte": "Pour toute r\u00e9paration sup\u00e9rieure \u00e0 200\u20ac, le diagnostic \u00e9lectronique est offert.",
+      "date": "Mars 2026"
+    },
+    {
+      "id": 3,
+      "badge": "Info",
+      "icon": "&#128197;",
+      "titre": "Horaires \u00e9largis",
+      "texte": "Nous sommes d\u00e9sormais ouverts le samedi matin de 8h \u00e0 12h.",
+      "date": "Mars 2026"
+    }
+  ]
+}
