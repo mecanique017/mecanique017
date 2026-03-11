@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mecanique017.github.io/mecanique017/sitemap.xml
