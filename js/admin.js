@@ -379,7 +379,13 @@ function deleteActu(id) {
 
 // ========== LOCAL STORAGE ==========
 function saveContentLocal() {
-    localStorage.setItem('m17_content', JSON.stringify(contentData));
+    try {
+        localStorage.setItem('m17_content', JSON.stringify(contentData));
+        console.log('Contenu sauvegarde dans localStorage');
+    } catch (e) {
+        console.error('Erreur sauvegarde localStorage:', e);
+        showToast('Attention : stockage local plein. Configurez le token GitHub.', 'error');
+    }
 }
 
 // ========== GITHUB API ==========
@@ -484,9 +490,37 @@ async function publishToGitHub() {
 function fileToBase64(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
+        reader.onload = () => {
+            // Compresser l'image pour eviter de depasser le localStorage
+            compressImage(reader.result, 800, 0.7).then(resolve).catch(() => resolve(reader.result));
+        };
         reader.onerror = reject;
         reader.readAsDataURL(file);
+    });
+}
+
+// Compresser une image base64
+function compressImage(base64, maxWidth, quality) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+
+            if (width > maxWidth) {
+                height = (maxWidth / width) * height;
+                width = maxWidth;
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = base64;
     });
 }
 

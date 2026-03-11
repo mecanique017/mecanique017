@@ -79,13 +79,36 @@ if (splashScreen && !splashScreen.classList.contains('hidden')) {
 
 // ========== CONTENU DYNAMIQUE ==========
 async function loadDynamicContent() {
+    let data = null;
+
+    // 1. D'abord verifier le localStorage (modifications admin locales)
+    try {
+        const localData = localStorage.getItem('m17_content');
+        if (localData) {
+            data = JSON.parse(localData);
+        }
+    } catch (e) {
+        console.log('Pas de donnees locales');
+    }
+
+    // 2. Charger depuis le fichier JSON distant
     try {
         const response = await fetch('data/content.json?t=' + Date.now());
-        if (!response.ok) return;
-        const data = await response.json();
+        if (response.ok) {
+            const remoteData = await response.json();
+            // Utiliser les donnees les plus recentes
+            if (!data || !data.lastModified || (remoteData.lastModified && remoteData.lastModified > data.lastModified)) {
+                data = remoteData;
+            }
+        }
+    } catch (e) {
+        console.log('Fichier distant non disponible');
+    }
 
-        // Mettre a jour la galerie
-        if (data.galerie) {
+    if (!data) return;
+
+    // Mettre a jour la galerie
+    if (data.galerie) {
             const galerieGrid = document.querySelector('.galerie-grid');
             if (galerieGrid) {
                 let html = '';
