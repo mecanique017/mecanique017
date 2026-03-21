@@ -297,3 +297,37 @@ if (dateInput) {
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
 }
+
+// ========== BOUTON RETOUR EN HAUT ==========
+const backToTop = document.getElementById('backToTop');
+if (backToTop) {
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 500) {
+            backToTop.classList.add('visible');
+        } else {
+            backToTop.classList.remove('visible');
+        }
+    });
+    backToTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// ========== BANNIERE COOKIE RGPD ==========
+function acceptCookies() {
+    localStorage.setItem('m17_cookies', 'accepted');
+    document.getElementById('cookieBanner').classList.remove('show');
+}
+
+function refuseCookies() {
+    localStorage.setItem('m17_cookies', 'refused');
+    document.getElementById('cookieBanner').classList.remove('show');
+}
+
+// Afficher la banniere si pas encore de choix
+if (!localStorage.getItem('m17_cookies')) {
+    setTimeout(() => {
+        const banner = document.getElementById('cookieBanner');
+        if (banner) banner.classList.add('show');
+    }, 1500);
+}
