@@ -584,6 +584,11 @@
         <div class="admin-nav" id="adminNav">
             <button class="active" data-tab="galerie">Galerie</button>
             <button data-tab="actualites">Actualit&eacute;s</button>
+            <button data-tab="avis">Avis</button>
+            <button data-tab="faq">FAQ</button>
+            <button data-tab="bandeau">Bandeau</button>
+            <button data-tab="services">Services</button>
+            <button data-tab="infos">Infos</button>
             <button data-tab="config">Configuration</button>
         </div>
 
@@ -610,6 +615,98 @@
                 <div id="actuList">
                     <!-- Rempli dynamiquement -->
                 </div>
+            </div>
+
+            <!-- AVIS -->
+            <div class="admin-section" id="tab-avis">
+                <div class="section-header">
+                    <h2>Avis clients</h2>
+                    <button class="btn btn-gold" onclick="openAddAvisModal()">+ Ajouter un avis</button>
+                </div>
+                <div id="avisList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="admin-section" id="tab-faq">
+                <div class="section-header">
+                    <h2>Foire aux questions</h2>
+                    <button class="btn btn-gold" onclick="openAddFaqModal()">+ Ajouter une question</button>
+                </div>
+                <div id="faqList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- BANDEAU -->
+            <div class="admin-section" id="tab-bandeau">
+                <div class="section-header">
+                    <h2>Bandeau d&eacute;filant</h2>
+                    <button class="btn btn-gold" onclick="openAddBandeauModal()">+ Ajouter un message</button>
+                </div>
+                <div id="bandeauList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- SERVICES -->
+            <div class="admin-section" id="tab-services">
+                <div class="section-header">
+                    <h2>Services</h2>
+                    <button class="btn btn-gold" onclick="openAddServiceModal()">+ Ajouter un service</button>
+                </div>
+                <div id="servicesList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- INFOS -->
+            <div class="admin-section" id="tab-infos">
+                <div class="section-header">
+                    <h2>Informations de contact</h2>
+                </div>
+                <div class="config-card">
+                    <h3>Coordonn&eacute;es</h3>
+                    <p>Modifiez les informations de contact affich&eacute;es sur le site.</p>
+                    <div class="form-group">
+                        <label>T&eacute;l&eacute;phone</label>
+                        <input type="text" id="infosPhone" placeholder="06 51 55 00 01">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="infosEmail" placeholder="contact@mecanique17.fr">
+                    </div>
+                    <div class="form-group">
+                        <label>Adresse</label>
+                        <input type="text" id="infosAddress" placeholder="12 rue de l'exemple">
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="infosCity" placeholder="La Rochelle">
+                    </div>
+                    <div class="form-group">
+                        <label>Code postal</label>
+                        <input type="text" id="infosPostalCode" placeholder="17000">
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h3>Horaires d'ouverture</h3>
+                    <p>Modifiez les horaires affich&eacute;s sur le site.</p>
+                    <div class="form-group">
+                        <label>Lundi - Vendredi</label>
+                        <input type="text" id="infosHorairesLV" placeholder="8h30 - 18h00">
+                    </div>
+                    <div class="form-group">
+                        <label>Samedi</label>
+                        <input type="text" id="infosHorairesSamedi" placeholder="9h00 - 12h00">
+                    </div>
+                    <div class="form-group">
+                        <label>Note (ex: Ferm&eacute; le dimanche)</label>
+                        <input type="text" id="infosHorairesNote" placeholder="Ferm&eacute; le dimanche et jours f&eacute;ri&eacute;s">
+                    </div>
+                </div>
+                <button class="btn btn-gold" onclick="saveInfos()" style="margin-top:10px;">Sauvegarder les informations</button>
             </div>
 
             <!-- CONFIG -->
@@ -714,6 +811,104 @@
             <div class="modal-actions">
                 <button class="btn btn-outline" onclick="closeModal('actuModal')">Annuler</button>
                 <button class="btn btn-gold" onclick="saveActu()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT AVIS -->
+    <div class="modal-overlay" id="avisModal">
+        <div class="modal">
+            <h2 id="avisModalTitle">Ajouter un avis</h2>
+            <div class="form-group">
+                <label>Nom du client</label>
+                <input type="text" id="avisName" placeholder="Nom du client">
+            </div>
+            <div class="form-group">
+                <label>Initiale (une lettre pour l'avatar)</label>
+                <input type="text" id="avisInitial" placeholder="J" maxlength="1">
+            </div>
+            <div class="form-group">
+                <label>Note (1 &agrave; 5 &eacute;toiles)</label>
+                <select id="avisRating">
+                    <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5)</option>
+                    <option value="4">&#9733;&#9733;&#9733;&#9733; (4)</option>
+                    <option value="3">&#9733;&#9733;&#9733; (3)</option>
+                    <option value="2">&#9733;&#9733; (2)</option>
+                    <option value="1">&#9733; (1)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>T&eacute;moignage</label>
+                <textarea id="avisText" placeholder="Texte de l'avis..."></textarea>
+            </div>
+            <input type="hidden" id="avisEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('avisModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveAvis()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT FAQ -->
+    <div class="modal-overlay" id="faqModal">
+        <div class="modal">
+            <h2 id="faqModalTitle">Ajouter une question</h2>
+            <div class="form-group">
+                <label>Question</label>
+                <input type="text" id="faqQuestion" placeholder="La question fr&eacute;quemment pos&eacute;e">
+            </div>
+            <div class="form-group">
+                <label>R&eacute;ponse</label>
+                <textarea id="faqAnswer" placeholder="La r&eacute;ponse &agrave; la question..."></textarea>
+            </div>
+            <input type="hidden" id="faqEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('faqModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveFaq()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT BANDEAU -->
+    <div class="modal-overlay" id="bandeauModal">
+        <div class="modal">
+            <h2 id="bandeauModalTitle">Ajouter un message</h2>
+            <div class="form-group">
+                <label>Ic&ocirc;ne (emoji)</label>
+                <input type="text" id="bandeauIcon" placeholder="&#128295;">
+            </div>
+            <div class="form-group">
+                <label>Texte du message</label>
+                <input type="text" id="bandeauText" placeholder="Texte du bandeau d&eacute;filant">
+            </div>
+            <input type="hidden" id="bandeauEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('bandeauModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveBandeau()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT SERVICE -->
+    <div class="modal-overlay" id="serviceModal">
+        <div class="modal">
+            <h2 id="serviceModalTitle">Ajouter un service</h2>
+            <div class="form-group">
+                <label>Ic&ocirc;ne (emoji)</label>
+                <input type="text" id="serviceIcon" placeholder="&#128295;">
+            </div>
+            <div class="form-group">
+                <label>Titre</label>
+                <input type="text" id="serviceTitle" placeholder="Titre du service">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="serviceDescription" placeholder="Description du service..."></textarea>
+            </div>
+            <input type="hidden" id="serviceEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('serviceModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveService()">Sauvegarder</button>
             </div>
         </div>
     </div>
