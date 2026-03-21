@@ -1157,6 +1157,199 @@ img {
     border: 1px solid rgba(240, 165, 0, 0.15);
 }
 
+/* ========== FAQ ========== */
+.faq-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.3s;
+}
+
+.faq-item:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.faq-question {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 24px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a1a2e;
+    text-align: left;
+    transition: background 0.3s;
+}
+
+.faq-question:hover {
+    background: rgba(240, 165, 0, 0.05);
+}
+
+.faq-icon {
+    font-size: 1.5rem;
+    font-weight: 300;
+    color: #F0A500;
+    transition: transform 0.3s;
+    flex-shrink: 0;
+    margin-left: 16px;
+}
+
+.faq-item.open .faq-icon {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease, padding 0.3s;
+}
+
+.faq-item.open .faq-answer {
+    max-height: 200px;
+    padding: 0 24px 18px;
+}
+
+.faq-answer p {
+    color: #555;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+
+/* ========== BOUTON RETOUR EN HAUT ========== */
+.back-to-top {
+    position: fixed;
+    bottom: 96px;
+    right: 28px;
+    width: 44px;
+    height: 44px;
+    background: #1a1a2e;
+    color: #F0A500;
+    border: 2px solid #F0A500;
+    border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: opacity 0.3s, visibility 0.3s, transform 0.3s, background 0.3s;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: #F0A500;
+    color: #1a1a2e;
+}
+
+/* ========== BANNIERE COOKIE RGPD ========== */
+.cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1a1a2e;
+    color: #fff;
+    padding: 16px 24px;
+    z-index: 10000;
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+}
+
+.cookie-banner.show {
+    transform: translateY(0);
+}
+
+.cookie-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.cookie-content p {
+    font-size: 0.9rem;
+    color: #ccc;
+    flex: 1;
+    min-width: 250px;
+    margin: 0;
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.cookie-btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+}
+
+.cookie-accept {
+    background: #F0A500;
+    color: #1a1a2e;
+}
+
+.cookie-accept:hover {
+    background: #d4920a;
+    transform: scale(1.05);
+}
+
+.cookie-refuse {
+    background: transparent;
+    color: #ccc;
+    border: 1px solid #555;
+}
+
+.cookie-refuse:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+    .cookie-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    .cookie-content p {
+        min-width: auto;
+    }
+    .faq-question {
+        padding: 14px 16px;
+        font-size: 0.9rem;
+    }
+    .faq-item.open .faq-answer {
+        padding: 0 16px 14px;
+    }
+}
+
 /* ========== WHATSAPP FLOATING BUTTON ========== */
 .whatsapp-float {
     position: fixed;
