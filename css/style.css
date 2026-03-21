@@ -978,4 +978,77 @@ img {
         grid-template-columns: 1fr;
         gap: 30px;
     }
+
+    .header-phone {
+        display: none;
+    }
+}
+
+/* ========== HEADER PHONE ========== */
+.header-phone {
+    color: #F0A500;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color 0.3s;
+}
+
+.header-phone:hover {
+    color: #FFB820;
+}
+
+/* ========== HERO RDV NOTICE ========== */
+.hero-rdv-notice {
+    display: inline-block;
+    background: rgba(240, 165, 0, 0.15);
+    color: #F0A500;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(240, 165, 0, 0.3);
+}
+
+/* ========== SERVICES RDV NOTICE ========== */
+.rdv-notice {
+    text-align: center;
+    color: #F0A500;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: -20px;
+    margin-bottom: 40px;
+    padding: 12px 24px;
+    background: rgba(240, 165, 0, 0.08);
+    border-radius: 8px;
+    border: 1px solid rgba(240, 165, 0, 0.15);
+}
+
+/* ========== WHATSAPP FLOATING BUTTON ========== */
+.whatsapp-float {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    background: #25D366;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    z-index: 9999;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.whatsapp-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(37, 211, 102, 0.6);
+}
+
+.whatsapp-float svg {
+    width: 28px;
+    height: 28px;
 }
