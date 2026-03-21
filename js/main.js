@@ -107,8 +107,9 @@ async function loadDynamicContent() {
 
     if (!data) return;
 
-    // Mettre a jour la galerie
-    if (data.galerie) {
+    try {
+        // Mettre a jour la galerie
+        if (data.galerie) {
             const galerieGrid = document.querySelector('.galerie-grid');
             if (galerieGrid) {
                 let html = '';
