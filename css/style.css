@@ -1,3 +1,134 @@
+/* ========== BANDEAU PROMO DEFILANT ========== */
+.promo-banner {
+    background: #F0A500;
+    color: #0a0a0a;
+    overflow: hidden;
+    white-space: nowrap;
+    position: relative;
+    z-index: 9998;
+    height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.promo-track {
+    display: inline-flex;
+    align-items: center;
+    animation: promo-scroll 25s linear infinite;
+    gap: 0;
+}
+
+.promo-item {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0 24px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.promo-sep {
+    font-size: 0.6rem;
+    opacity: 0.5;
+}
+
+@keyframes promo-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* ========== AVIS CLIENTS ========== */
+.avis {
+    background: #0d0d0d;
+}
+
+.avis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+}
+
+.avis-card {
+    background: #1a1a1a;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: all 0.3s;
+}
+
+.avis-card:hover {
+    border-color: rgba(240, 165, 0, 0.2);
+    transform: translateY(-4px);
+}
+
+.avis-stars {
+    color: #F0A500;
+    font-size: 1.3rem;
+    letter-spacing: 3px;
+    margin-bottom: 16px;
+}
+
+.avis-text {
+    color: #bbb;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    font-style: italic;
+    margin-bottom: 24px;
+}
+
+.avis-author {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avis-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F0A500, #CC8800);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #fff;
+}
+
+.avis-author strong {
+    display: block;
+    color: #fff;
+    font-size: 0.95rem;
+}
+
+.avis-author span {
+    color: #999;
+    font-size: 0.82rem;
+}
+
+.avis-cta {
+    text-align: center;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.avis-google-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.avis-google-btn svg {
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .avis-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* ========== SPLASH SCREEN ========== */
 .splash-screen {
     position: fixed;
