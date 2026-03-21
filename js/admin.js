@@ -8,7 +8,7 @@ const CONTENT_PATH = 'data/content.json';
 const ADMIN_EMAIL_HASH = '5f4dcc3b5aa765d61d8327deb882cf99'; // placeholder
 const ADMIN_PASS_HASH = 'a1b2c3'; // placeholder - sera verifie cote client
 
-let contentData = { galerie: [], actualites: [] };
+let contentData = { galerie: [], actualites: [], avis: [], faq: [], bandeau: [], services: [], infos: {} };
 let currentPhotoData = null;
 
 // ========== HASH FUNCTION ==========
@@ -117,8 +117,20 @@ async function loadContent() {
         }
     }
 
+    // Assurer la compatibilite avec les anciennes versions de content.json
+    if (!contentData.avis) contentData.avis = [];
+    if (!contentData.faq) contentData.faq = [];
+    if (!contentData.bandeau) contentData.bandeau = [];
+    if (!contentData.services) contentData.services = [];
+    if (!contentData.infos) contentData.infos = {};
+
     renderGallery();
     renderActualites();
+    renderAvis();
+    renderFaq();
+    renderBandeau();
+    renderServices();
+    renderInfos();
 }
 
 // ========== GALLERY ==========
@@ -375,6 +387,411 @@ function deleteActu(id) {
     renderActualites();
     showToast('Actualit\u00e9 supprim\u00e9e');
     publishToGitHub();
+}
+
+// ========== AVIS ==========
+function renderAvis() {
+    const list = document.getElementById('avisList');
+    if (!list) return;
+
+    let html = '';
+    contentData.avis.forEach(avis => {
+        const stars = '★'.repeat(avis.rating) + '☆'.repeat(5 - avis.rating);
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <div>
+                        <h3>${avis.initial || avis.name.charAt(0).toUpperCase()} — ${avis.name}</h3>
+                        <span style="color:var(--gold);font-size:1.1rem;">${stars}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditAvisModal(${avis.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAvis(${avis.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text">${avis.text}</p>
+            </div>
+        `;
+    });
+
+    if (contentData.avis.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun avis pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddAvisModal() {
+    document.getElementById('avisModalTitle').textContent = 'Ajouter un avis';
+    document.getElementById('avisName').value = '';
+    document.getElementById('avisInitial').value = '';
+    document.getElementById('avisRating').value = '5';
+    document.getElementById('avisText').value = '';
+    document.getElementById('avisEditId').value = '';
+    openModal('avisModal');
+}
+
+function openEditAvisModal(id) {
+    const avis = contentData.avis.find(a => a.id === id);
+    if (!avis) return;
+
+    document.getElementById('avisModalTitle').textContent = 'Modifier l\'avis';
+    document.getElementById('avisName').value = avis.name;
+    document.getElementById('avisInitial').value = avis.initial || '';
+    document.getElementById('avisRating').value = avis.rating;
+    document.getElementById('avisText').value = avis.text;
+    document.getElementById('avisEditId').value = id;
+    openModal('avisModal');
+}
+
+async function saveAvis() {
+    const editId = document.getElementById('avisEditId').value;
+    const name = document.getElementById('avisName').value.trim();
+    const initial = document.getElementById('avisInitial').value.trim().toUpperCase() || name.charAt(0).toUpperCase();
+    const rating = parseInt(document.getElementById('avisRating').value);
+    const text = document.getElementById('avisText').value.trim();
+
+    if (!name || !text) {
+        showToast('Veuillez remplir le nom et le t\u00e9moignage', 'error');
+        return;
+    }
+
+    if (editId) {
+        const avis = contentData.avis.find(a => a.id === parseInt(editId));
+        if (avis) {
+            avis.name = name;
+            avis.initial = initial;
+            avis.rating = rating;
+            avis.text = text;
+        }
+    } else {
+        const newId = contentData.avis.length > 0
+            ? Math.max(...contentData.avis.map(a => a.id)) + 1
+            : 1;
+        contentData.avis.push({ id: newId, name, initial, rating, text });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderAvis();
+    closeModal('avisModal');
+    showToast('Avis sauvegard\u00e9 !');
+
+    await publishToGitHub();
+}
+
+function deleteAvis(id) {
+    if (!confirm('Supprimer cet avis ?')) return;
+    contentData.avis = contentData.avis.filter(a => a.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderAvis();
+    showToast('Avis supprim\u00e9');
+    publishToGitHub();
+}
+
+// ========== FAQ ==========
+function renderFaq() {
+    const list = document.getElementById('faqList');
+    if (!list) return;
+
+    let html = '';
+    contentData.faq.forEach(item => {
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>${item.question}</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditFaqModal(${item.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteFaq(${item.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text">${item.answer}</p>
+            </div>
+        `;
+    });
+
+    if (contentData.faq.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucune question pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddFaqModal() {
+    document.getElementById('faqModalTitle').textContent = 'Ajouter une question';
+    document.getElementById('faqQuestion').value = '';
+    document.getElementById('faqAnswer').value = '';
+    document.getElementById('faqEditId').value = '';
+    openModal('faqModal');
+}
+
+function openEditFaqModal(id) {
+    const item = contentData.faq.find(f => f.id === id);
+    if (!item) return;
+
+    document.getElementById('faqModalTitle').textContent = 'Modifier la question';
+    document.getElementById('faqQuestion').value = item.question;
+    document.getElementById('faqAnswer').value = item.answer;
+    document.getElementById('faqEditId').value = id;
+    openModal('faqModal');
+}
+
+async function saveFaq() {
+    const editId = document.getElementById('faqEditId').value;
+    const question = document.getElementById('faqQuestion').value.trim();
+    const answer = document.getElementById('faqAnswer').value.trim();
+
+    if (!question || !answer) {
+        showToast('Veuillez remplir la question et la r\u00e9ponse', 'error');
+        return;
+    }
+
+    if (editId) {
+        const item = contentData.faq.find(f => f.id === parseInt(editId));
+        if (item) {
+            item.question = question;
+            item.answer = answer;
+        }
+    } else {
+        const newId = contentData.faq.length > 0
+            ? Math.max(...contentData.faq.map(f => f.id)) + 1
+            : 1;
+        contentData.faq.push({ id: newId, question, answer });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderFaq();
+    closeModal('faqModal');
+    showToast('Question sauvegard\u00e9e !');
+
+    await publishToGitHub();
+}
+
+function deleteFaq(id) {
+    if (!confirm('Supprimer cette question ?')) return;
+    contentData.faq = contentData.faq.filter(f => f.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderFaq();
+    showToast('Question supprim\u00e9e');
+    publishToGitHub();
+}
+
+// ========== BANDEAU ==========
+function renderBandeau() {
+    const list = document.getElementById('bandeauList');
+    if (!list) return;
+
+    let html = '';
+    contentData.bandeau.forEach(item => {
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>${item.icon || ''} ${item.text}</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditBandeauModal(${item.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBandeau(${item.id})">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    if (contentData.bandeau.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun message dans le bandeau pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddBandeauModal() {
+    document.getElementById('bandeauModalTitle').textContent = 'Ajouter un message';
+    document.getElementById('bandeauIcon').value = '';
+    document.getElementById('bandeauText').value = '';
+    document.getElementById('bandeauEditId').value = '';
+    openModal('bandeauModal');
+}
+
+function openEditBandeauModal(id) {
+    const item = contentData.bandeau.find(b => b.id === id);
+    if (!item) return;
+
+    document.getElementById('bandeauModalTitle').textContent = 'Modifier le message';
+    document.getElementById('bandeauIcon').value = item.icon || '';
+    document.getElementById('bandeauText').value = item.text;
+    document.getElementById('bandeauEditId').value = id;
+    openModal('bandeauModal');
+}
+
+async function saveBandeau() {
+    const editId = document.getElementById('bandeauEditId').value;
+    const icon = document.getElementById('bandeauIcon').value.trim();
+    const text = document.getElementById('bandeauText').value.trim();
+
+    if (!text) {
+        showToast('Veuillez remplir le texte du message', 'error');
+        return;
+    }
+
+    if (editId) {
+        const item = contentData.bandeau.find(b => b.id === parseInt(editId));
+        if (item) {
+            item.icon = icon;
+            item.text = text;
+        }
+    } else {
+        const newId = contentData.bandeau.length > 0
+            ? Math.max(...contentData.bandeau.map(b => b.id)) + 1
+            : 1;
+        contentData.bandeau.push({ id: newId, icon, text });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderBandeau();
+    closeModal('bandeauModal');
+    showToast('Message sauvegard\u00e9 !');
+
+    await publishToGitHub();
+}
+
+function deleteBandeau(id) {
+    if (!confirm('Supprimer ce message ?')) return;
+    contentData.bandeau = contentData.bandeau.filter(b => b.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderBandeau();
+    showToast('Message supprim\u00e9');
+    publishToGitHub();
+}
+
+// ========== SERVICES ==========
+function renderServices() {
+    const list = document.getElementById('servicesList');
+    if (!list) return;
+
+    let html = '';
+    contentData.services.forEach(service => {
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>${service.icon || ''} ${service.title}</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditServiceModal(${service.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text">${service.description}</p>
+            </div>
+        `;
+    });
+
+    if (contentData.services.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun service pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddServiceModal() {
+    document.getElementById('serviceModalTitle').textContent = 'Ajouter un service';
+    document.getElementById('serviceIcon').value = '';
+    document.getElementById('serviceTitle').value = '';
+    document.getElementById('serviceDescription').value = '';
+    document.getElementById('serviceEditId').value = '';
+    openModal('serviceModal');
+}
+
+function openEditServiceModal(id) {
+    const service = contentData.services.find(s => s.id === id);
+    if (!service) return;
+
+    document.getElementById('serviceModalTitle').textContent = 'Modifier le service';
+    document.getElementById('serviceIcon').value = service.icon || '';
+    document.getElementById('serviceTitle').value = service.title;
+    document.getElementById('serviceDescription').value = service.description;
+    document.getElementById('serviceEditId').value = id;
+    openModal('serviceModal');
+}
+
+async function saveService() {
+    const editId = document.getElementById('serviceEditId').value;
+    const icon = document.getElementById('serviceIcon').value.trim();
+    const title = document.getElementById('serviceTitle').value.trim();
+    const description = document.getElementById('serviceDescription').value.trim();
+
+    if (!title || !description) {
+        showToast('Veuillez remplir le titre et la description', 'error');
+        return;
+    }
+
+    if (editId) {
+        const service = contentData.services.find(s => s.id === parseInt(editId));
+        if (service) {
+            service.icon = icon;
+            service.title = title;
+            service.description = description;
+        }
+    } else {
+        const newId = contentData.services.length > 0
+            ? Math.max(...contentData.services.map(s => s.id)) + 1
+            : 1;
+        contentData.services.push({ id: newId, icon, title, description });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderServices();
+    closeModal('serviceModal');
+    showToast('Service sauvegard\u00e9 !');
+
+    await publishToGitHub();
+}
+
+function deleteService(id) {
+    if (!confirm('Supprimer ce service ?')) return;
+    contentData.services = contentData.services.filter(s => s.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderServices();
+    showToast('Service supprim\u00e9');
+    publishToGitHub();
+}
+
+// ========== INFOS ==========
+function renderInfos() {
+    const infos = contentData.infos || {};
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+    setVal('infosPhone', infos.phone);
+    setVal('infosEmail', infos.email);
+    setVal('infosAddress', infos.address);
+    setVal('infosCity', infos.city);
+    setVal('infosPostalCode', infos.postalCode);
+    setVal('infosHorairesLV', infos.horairesLV);
+    setVal('infosHorairesSamedi', infos.horairesSamedi);
+    setVal('infosHorairesNote', infos.horairesNote);
+}
+
+async function saveInfos() {
+    contentData.infos = {
+        phone: document.getElementById('infosPhone').value.trim(),
+        email: document.getElementById('infosEmail').value.trim(),
+        address: document.getElementById('infosAddress').value.trim(),
+        city: document.getElementById('infosCity').value.trim(),
+        postalCode: document.getElementById('infosPostalCode').value.trim(),
+        horairesLV: document.getElementById('infosHorairesLV').value.trim(),
+        horairesSamedi: document.getElementById('infosHorairesSamedi').value.trim(),
+        horairesNote: document.getElementById('infosHorairesNote').value.trim()
+    };
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    showToast('Informations sauvegard\u00e9es !');
+
+    await publishToGitHub();
 }
 
 // ========== LOCAL STORAGE ==========
