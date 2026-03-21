@@ -177,6 +177,161 @@ async function loadDynamicContent() {
                 });
             }
         }
+        // Mettre a jour les avis
+        if (data.avis) {
+            const avisGrid = document.querySelector('.avis-grid');
+            if (avisGrid) {
+                let html = '';
+                data.avis.forEach(avis => {
+                    const stars = '★'.repeat(avis.rating) + '☆'.repeat(5 - avis.rating);
+                    html += `
+                        <div class="avis-card" data-animate>
+                            <div class="avis-avatar">${avis.initial || avis.name.charAt(0).toUpperCase()}</div>
+                            <div class="avis-stars">${stars}</div>
+                            <p class="avis-text">${avis.text}</p>
+                            <p class="avis-name">${avis.name}</p>
+                        </div>
+                    `;
+                });
+                avisGrid.innerHTML = html;
+
+                avisGrid.querySelectorAll('[data-animate]').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+        }
+
+        // Mettre a jour la FAQ
+        if (data.faq) {
+            const faqList = document.querySelector('.faq-list');
+            if (faqList) {
+                let html = '';
+                data.faq.forEach(item => {
+                    html += `
+                        <div class="faq-item" data-animate>
+                            <div class="faq-question">${item.question}</div>
+                            <div class="faq-answer">${item.answer}</div>
+                        </div>
+                    `;
+                });
+                faqList.innerHTML = html;
+
+                faqList.querySelectorAll('[data-animate]').forEach(el => {
+                    observer.observe(el);
+                });
+
+                // Re-attacher les evenements d'ouverture/fermeture FAQ
+                faqList.querySelectorAll('.faq-question').forEach(q => {
+                    q.addEventListener('click', () => {
+                        q.parentElement.classList.toggle('open');
+                    });
+                });
+            }
+        }
+
+        // Mettre a jour le bandeau defilant
+        if (data.bandeau) {
+            const promoTrack = document.querySelector('.promo-track');
+            if (promoTrack) {
+                let html = '';
+                data.bandeau.forEach(item => {
+                    html += `<span class="promo-item">${item.icon || ''} ${item.text}</span>`;
+                });
+                // Dupliquer pour l'effet de defilement continu
+                promoTrack.innerHTML = html + html;
+            }
+        }
+
+        // Mettre a jour les services
+        if (data.services) {
+            const servicesGrid = document.querySelector('.services-grid');
+            if (servicesGrid) {
+                let html = '';
+                data.services.forEach(service => {
+                    html += `
+                        <div class="service-card" data-animate>
+                            <div class="service-icon">${service.icon || ''}</div>
+                            <h3>${service.title}</h3>
+                            <p>${service.description}</p>
+                        </div>
+                    `;
+                });
+                servicesGrid.innerHTML = html;
+
+                servicesGrid.querySelectorAll('[data-animate]').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+        }
+
+        // Mettre a jour les informations de contact
+        if (data.infos) {
+            const infos = data.infos;
+
+            // Telephone
+            if (infos.phone) {
+                document.querySelectorAll('[data-info="phone"]').forEach(el => {
+                    el.textContent = infos.phone;
+                });
+                document.querySelectorAll('a[href^="tel:"]').forEach(el => {
+                    el.href = 'tel:' + infos.phone.replace(/\s/g, '');
+                    if (el.querySelector('[data-info="phone"]') === null) {
+                        el.textContent = infos.phone;
+                    }
+                });
+            }
+
+            // Email
+            if (infos.email) {
+                document.querySelectorAll('[data-info="email"]').forEach(el => {
+                    el.textContent = infos.email;
+                });
+                document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
+                    el.href = 'mailto:' + infos.email;
+                    if (el.querySelector('[data-info="email"]') === null) {
+                        el.textContent = infos.email;
+                    }
+                });
+            }
+
+            // Adresse
+            if (infos.address) {
+                document.querySelectorAll('[data-info="address"]').forEach(el => {
+                    el.textContent = infos.address;
+                });
+            }
+
+            // Ville
+            if (infos.city) {
+                document.querySelectorAll('[data-info="city"]').forEach(el => {
+                    el.textContent = infos.city;
+                });
+            }
+
+            // Code postal
+            if (infos.postalCode) {
+                document.querySelectorAll('[data-info="postalCode"]').forEach(el => {
+                    el.textContent = infos.postalCode;
+                });
+            }
+
+            // Horaires
+            if (infos.horairesLV) {
+                document.querySelectorAll('[data-info="horairesLV"]').forEach(el => {
+                    el.textContent = infos.horairesLV;
+                });
+            }
+            if (infos.horairesSamedi) {
+                document.querySelectorAll('[data-info="horairesSamedi"]').forEach(el => {
+                    el.textContent = infos.horairesSamedi;
+                });
+            }
+            if (infos.horairesNote) {
+                document.querySelectorAll('[data-info="horairesNote"]').forEach(el => {
+                    el.textContent = infos.horairesNote;
+                });
+            }
+        }
     } catch (e) {
         console.log('Contenu statique utilise');
     }
