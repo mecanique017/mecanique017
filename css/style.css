@@ -1711,6 +1711,216 @@ body.light-mode .back-to-top {
     color: #e8a800;
 }
 
+/* ========== CALCULATEUR DEVIS ========== */
+.devis {
+    background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%) !important;
+}
+
+.devis-calculator {
+    max-width: 550px;
+    margin: 0 auto;
+    background: rgba(232, 168, 0, 0.04);
+    border: 1px solid rgba(232, 168, 0, 0.15);
+    border-radius: 16px;
+    padding: 32px;
+}
+
+.devis-select-group label {
+    display: block;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 8px;
+}
+
+.devis-select-group select {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+.devis-select-group select:focus {
+    border-color: #e8a800;
+    outline: none;
+}
+
+.devis-result {
+    margin-top: 24px;
+    text-align: center;
+    animation: promoSlideIn 0.4s ease;
+}
+
+.devis-price-range {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.devis-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
+}
+
+.devis-amount {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #e8a800;
+}
+
+.devis-sep {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1rem;
+}
+
+.devis-note {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.82rem;
+    margin-top: 16px;
+    line-height: 1.5;
+}
+
+.devis-note strong {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+body.light-mode .devis {
+    background: linear-gradient(135deg, #f0f0f5 0%, #e8e8f0 100%) !important;
+}
+
+body.light-mode .devis-calculator {
+    background: #fff;
+    border-color: #e0d5b8;
+}
+
+body.light-mode .devis-select-group select {
+    background: #f8f8f8;
+    border-color: #ddd;
+    color: #333;
+}
+
+body.light-mode .devis-select-group label,
+body.light-mode .devis-note {
+    color: #666;
+}
+
+/* ========== FORMULAIRE AVIS INTEGRE ========== */
+.avis-form-container {
+    margin-top: 40px;
+    background: rgba(232, 168, 0, 0.04);
+    border: 1px solid rgba(232, 168, 0, 0.15);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.avis-form-container h3 {
+    font-family: 'Montserrat', sans-serif;
+    color: #e8a800;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.avis-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.avis-form .form-group {
+    margin-bottom: 16px;
+}
+
+.avis-form label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.avis-form input,
+.avis-form textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: #fff;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.95rem;
+    transition: border-color 0.3s;
+}
+
+.avis-form input:focus,
+.avis-form textarea:focus {
+    border-color: #e8a800;
+    outline: none;
+}
+
+.star-rating {
+    display: flex;
+    gap: 4px;
+}
+
+.star-rating .star {
+    font-size: 1.8rem;
+    color: #444;
+    cursor: pointer;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.star-rating .star:hover,
+.star-rating .star.active {
+    color: #fbbc04;
+    transform: scale(1.15);
+}
+
+.avis-form-success {
+    display: none;
+    background: rgba(39, 174, 96, 0.15);
+    border: 1px solid rgba(39, 174, 96, 0.3);
+    color: #27ae60;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 12px;
+}
+
+.avis-form-success.show {
+    display: block;
+}
+
+body.light-mode .avis-form-container {
+    background: rgba(232, 168, 0, 0.04);
+    border-color: #e0d5b8;
+}
+
+body.light-mode .avis-form input,
+body.light-mode .avis-form textarea {
+    background: #fff;
+    border-color: #ddd;
+    color: #333;
+}
+
+body.light-mode .avis-form label {
+    color: #555;
+}
+
+@media (max-width: 576px) {
+    .avis-form-row { grid-template-columns: 1fr; }
+    .avis-form-container { padding: 20px; }
+}
+
 /* ========== NOTATION GOOGLE ========== */
 .google-rating {
     display: flex;
@@ -1923,6 +2133,27 @@ body.light-mode .page-loader {
 @media (max-width: 576px) {
     .fidelite-grid { grid-template-columns: 1fr; }
     .promo-content { padding: 30px 20px; }
+}
+
+/* ========== LANGUAGE SWITCHER ========== */
+.nav-lang {
+    border: 1px solid rgba(240,165,0,0.4);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.8rem;
+    color: #e8a800;
+    text-decoration: none;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-lang:hover {
+    background: rgba(240,165,0,0.15);
+    border-color: #F0A500;
+    color: #F0A500;
 }
 
 /* ========== WHATSAPP FLOATING BUTTON ========== */
