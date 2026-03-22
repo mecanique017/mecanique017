@@ -538,6 +538,70 @@
             display: none;
         }
 
+        /* ===== EDITEUR RICHE ===== */
+        .rich-toolbar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+            padding: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px 6px 0 0;
+            border-bottom: none;
+        }
+        .rich-toolbar button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .rich-toolbar button:hover {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+        .rich-editor {
+            min-height: 100px;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0 0 6px 6px;
+            color: var(--text);
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            line-height: 1.6;
+        }
+        .rich-editor:focus { border-color: var(--gold); }
+        .rich-editor[placeholder]:empty:before {
+            content: attr(placeholder);
+            color: var(--text-muted);
+        }
+        .rich-editor a { color: var(--gold); }
+
+        /* ===== PENDING AVIS ===== */
+        .pending-avis-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .pending-avis-info { flex: 1; }
+        .pending-avis-stars { color: #fbbc04; font-size: 1rem; margin-bottom: 4px; }
+        .pending-avis-text { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px; }
+        .pending-avis-author { color: var(--gold); font-weight: 600; font-size: 0.85rem; }
+        .pending-avis-date { color: var(--text-muted); font-size: 0.75rem; }
+        .pending-avis-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
         /* ===== TOGGLE SWITCH ===== */
         .toggle-switch {
             position: relative;
@@ -678,6 +742,7 @@
             <button data-tab="bandeau">Bandeau</button>
             <button data-tab="services">Services</button>
             <button data-tab="infos">Infos</button>
+            <button data-tab="avis-pending">&#9200; Avis</button>
             <button data-tab="horaires">Horaires</button>
             <button data-tab="config">Configuration</button>
         </div>
@@ -726,6 +791,11 @@
                         <div class="stat-icon">&#128276;</div>
                         <div class="stat-number" id="statBandeau">0</div>
                         <div class="stat-label">Bandeau</div>
+                    </div>
+                    <div class="stat-card" style="cursor:pointer;" onclick="document.querySelector('[data-tab=avis-pending]').click()">
+                        <div class="stat-icon">&#9200;</div>
+                        <div class="stat-number" id="statPending" style="color:var(--danger);">0</div>
+                        <div class="stat-label">Avis en attente</div>
                     </div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px;">
@@ -865,6 +935,17 @@
                 <button class="btn btn-gold" onclick="saveInfos()" style="margin-top:10px;">Sauvegarder les informations</button>
             </div>
 
+            <!-- AVIS EN ATTENTE -->
+            <div class="admin-section" id="tab-avis-pending">
+                <div class="section-header">
+                    <h2>Avis en attente de validation</h2>
+                </div>
+                <p style="color:var(--text-muted);margin-bottom:20px;">Les avis soumis par les clients apparaissent ici. Validez-les pour les afficher sur le site.</p>
+                <div id="pendingAvisList">
+                    <p style="color:var(--text-muted);">Aucun avis en attente</p>
+                </div>
+            </div>
+
             <!-- HORAIRES EXCEPTIONNELS -->
             <div class="admin-section" id="tab-horaires">
                 <div class="section-header">
@@ -973,7 +1054,14 @@
             </div>
             <div class="form-group">
                 <label>Texte</label>
-                <textarea id="actuTexte" placeholder="Contenu de l'actualit&eacute;..."></textarea>
+                <div class="rich-toolbar">
+                    <button type="button" onclick="richCmd('bold')" title="Gras"><b>G</b></button>
+                    <button type="button" onclick="richCmd('italic')" title="Italique"><i>I</i></button>
+                    <button type="button" onclick="richCmd('underline')" title="Soulign&eacute;"><u>S</u></button>
+                    <button type="button" onclick="richCmd('insertUnorderedList')" title="Liste">&bull;</button>
+                    <button type="button" onclick="richLink()" title="Lien">&#128279;</button>
+                </div>
+                <div id="actuTexte" class="rich-editor" contenteditable="true" placeholder="Contenu de l'actualit&eacute;..."></div>
             </div>
             <div class="form-group">
                 <label>Date</label>
