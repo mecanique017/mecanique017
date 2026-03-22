@@ -1045,5 +1045,118 @@ async function changePassword() {
     showToast('Mot de passe chang\u00e9 avec succ\u00e8s !');
 }
 
+// ========== DASHBOARD STATS ==========
+function updateDashboard() {
+    const stats = {
+        statPhotos: (contentData.galerie || []).length,
+        statActus: (contentData.actualites || []).length,
+        statAvis: (contentData.avis || []).length,
+        statFaq: (contentData.faq || []).length,
+        statServices: (contentData.services || []).length,
+        statBandeau: (contentData.bandeau || []).length
+    };
+    for (const [id, val] of Object.entries(stats)) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
+    // Derniere sauvegarde
+    const lastSave = document.getElementById('lastSaveDate');
+    if (lastSave && contentData.lastModified) {
+        lastSave.textContent = new Date(contentData.lastModified).toLocaleString('fr-FR');
+    }
+}
+
+// ========== PREVIEW ==========
+function openPreview() {
+    const modal = document.getElementById('previewModal');
+    const frame = document.getElementById('previewFrame');
+    frame.src = 'index.html?preview=1&t=' + Date.now();
+    modal.classList.add('active');
+}
+
+// ========== EXPORT DONNEES ==========
+function exportData() {
+    const dataStr = JSON.stringify(contentData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mecanique17-backup-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Donn\u00e9es export\u00e9es avec succ\u00e8s !');
+}
+
+// ========== HORAIRES EXCEPTIONNELS ==========
+function addHoraireExceptionnel() {
+    document.getElementById('horaireDateDebut').value = '';
+    document.getElementById('horaireDateFin').value = '';
+    document.getElementById('horaireMotif').value = '';
+    document.getElementById('horaireModal').classList.add('active');
+}
+
+function saveHoraire() {
+    const debut = document.getElementById('horaireDateDebut').value;
+    const fin = document.getElementById('horaireDateFin').value;
+    const motif = document.getElementById('horaireMotif').value.trim();
+
+    if (!debut || !fin || !motif) {
+        showToast('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+
+    if (!contentData.horairesExceptionnels) contentData.horairesExceptionnels = [];
+    contentData.horairesExceptionnels.push({ debut, fin, motif, id: Date.now() });
+
+    saveContentLocal();
+    publishToGitHub();
+    renderHoraires();
+    closeModal('horaireModal');
+    showToast('Fermeture exceptionnelle ajout\u00e9e !');
+}
+
+function renderHoraires() {
+    const container = document.getElementById('horairesExceptionnels');
+    if (!container) return;
+    const horaires = contentData.horairesExceptionnels || [];
+
+    if (horaires.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Aucune fermeture exceptionnelle enregistr\u00e9e</p>';
+        return;
+    }
+
+    container.innerHTML = horaires.map(h => `
+        <div class="horaire-item">
+            <div class="horaire-info">
+                <div class="horaire-dates">${formatDate(h.debut)} - ${formatDate(h.fin)}</div>
+                <div class="horaire-motif">${h.motif}</div>
+            </div>
+            <button class="btn-icon" onclick="deleteHoraire(${h.id})" title="Supprimer" style="color:var(--danger);background:none;border:none;cursor:pointer;font-size:1.2rem;">&times;</button>
+        </div>
+    `).join('');
+}
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function deleteHoraire(id) {
+    if (!confirm('Supprimer cette fermeture ?')) return;
+    contentData.horairesExceptionnels = (contentData.horairesExceptionnels || []).filter(h => h.id !== id);
+    saveContentLocal();
+    publishToGitHub();
+    renderHoraires();
+    showToast('Fermeture supprim\u00e9e');
+}
+
 // ========== INIT ==========
 checkSession();
+
+// Appeler updateDashboard apres le chargement du contenu
+const origLoadContent = loadContent;
+loadContent = async function() {
+    await origLoadContent();
+    updateDashboard();
+    renderHoraires();
+};
