@@ -1113,6 +1113,22 @@ img {
     .header-phone {
         display: none;
     }
+
+    .call-float {
+        display: flex;
+    }
+    .counters-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .counter-number {
+        font-size: 2.5rem;
+    }
+    .theme-toggle {
+        top: auto;
+        bottom: 160px;
+        right: 20px;
+    }
 }
 
 /* ========== HEADER PHONE ========== */
@@ -1348,6 +1364,252 @@ img {
     .faq-item.open .faq-answer {
         padding: 0 16px 14px;
     }
+}
+
+/* ========== COMPTEURS ANIMES ========== */
+.counters {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%) !important;
+    padding: 70px 0;
+}
+
+.counters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    text-align: center;
+}
+
+.counter-item {
+    padding: 30px 20px;
+}
+
+.counter-number {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #e8a800;
+    line-height: 1;
+}
+
+.counter-plus {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #e8a800;
+}
+
+.counter-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    margin-top: 10px;
+}
+
+/* ========== AVIS CAROUSEL ========== */
+.avis-grid {
+    overflow: hidden;
+    position: relative;
+}
+
+.avis-carousel-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+    margin-bottom: 24px;
+}
+
+.avis-arrow {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(240, 165, 0, 0.4);
+    background: transparent;
+    color: #e8a800;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avis-arrow:hover {
+    background: #e8a800;
+    color: #000;
+    border-color: #e8a800;
+}
+
+.avis-dots {
+    display: flex;
+    gap: 8px;
+}
+
+.avis-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.avis-dot.active {
+    background: #e8a800;
+    transform: scale(1.2);
+}
+
+/* ========== BOUTON APPELER MOBILE ========== */
+.call-float {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    width: 60px;
+    height: 60px;
+    background: #e8a800;
+    border-radius: 50%;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(232, 168, 0, 0.4);
+    z-index: 9999;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.call-float:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 24px rgba(232, 168, 0, 0.6);
+}
+
+/* ========== THEME TOGGLE ========== */
+.theme-toggle {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    background: rgba(26, 26, 26, 0.9);
+    cursor: pointer;
+    z-index: 9997;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    backdrop-filter: blur(10px);
+}
+
+.theme-toggle:hover {
+    border-color: #e8a800;
+    transform: scale(1.1);
+}
+
+.theme-icon-light,
+.theme-icon-dark {
+    font-size: 1.2rem;
+    position: absolute;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.theme-icon-light {
+    color: #e8a800;
+    opacity: 1;
+}
+
+.theme-icon-dark {
+    color: #6c7ce0;
+    opacity: 0;
+}
+
+/* ========== MODE CLAIR ========== */
+body.light-mode {
+    background: #ffffff;
+}
+
+body.light-mode .hero {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 40%, #3a3a55 100%);
+}
+
+body.light-mode .counters {
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%) !important;
+}
+
+body.light-mode .section:nth-child(even) {
+    background: #f5f5f5;
+}
+
+body.light-mode .section-title {
+    color: #1a1a2e;
+}
+
+body.light-mode .service-card {
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+body.light-mode .service-card h3 {
+    color: #1a1a2e;
+}
+
+body.light-mode .avis {
+    background: #f0f0f0;
+}
+
+body.light-mode .avis-card {
+    background: #fff;
+    border-color: #e0e0e0;
+}
+
+body.light-mode .avis-text {
+    color: #555;
+}
+
+body.light-mode .avis-author strong {
+    color: #1a1a2e;
+}
+
+body.light-mode .faq-item {
+    border-color: #ddd;
+}
+
+body.light-mode .faq-question {
+    color: #1a1a2e;
+}
+
+body.light-mode .actu-card {
+    background: #fff;
+}
+
+body.light-mode .actu-content h3 {
+    color: #1a1a2e;
+}
+
+body.light-mode .theme-toggle {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: #ddd;
+}
+
+body.light-mode .theme-icon-light {
+    opacity: 0;
+}
+
+body.light-mode .theme-icon-dark {
+    opacity: 1;
+}
+
+body.light-mode .cookie-banner {
+    background: #fff;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+}
+
+body.light-mode .cookie-content p {
+    color: #555;
+}
+
+body.light-mode .back-to-top {
+    background: #fff;
+    border-color: #e8a800;
 }
 
 /* ========== WHATSAPP FLOATING BUTTON ========== */
