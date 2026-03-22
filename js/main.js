@@ -612,12 +612,183 @@ if (themeToggle) {
     });
 }
 
-// ========== PWA - SERVICE WORKER ==========
+// ========== PWA - SERVICE WORKER + NOTIFICATIONS ==========
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            // Verifier si des notifications en attente
+            checkForNotifications(reg);
+        }).catch(() => {});
     });
 }
+
+function checkForNotifications(reg) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    // Verifier les nouvelles promos dans content.json
+    fetch('data/content.json?t=' + Date.now()).then(r => r.json()).then(data => {
+        const lastNotif = localStorage.getItem('m17_last_notif');
+        if (data.notifications && data.notifications.length > 0) {
+            const latest = data.notifications[data.notifications.length - 1];
+            if (latest.id && latest.id !== lastNotif) {
+                reg.showNotification(latest.title || 'MECANIQUE 17', {
+                    body: latest.body || 'Nouvelle offre disponible !',
+                    icon: 'images/LOGO.jpg'
+                });
+                localStorage.setItem('m17_last_notif', latest.id);
+            }
+        }
+    }).catch(() => {});
+}
+
+// Bouton d'abonnement aux notifications
+const notifBtn = document.getElementById('notifBtn');
+if (notifBtn) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+        notifBtn.textContent = '\uD83D\uDD14 Notifications activ\u00e9es';
+        notifBtn.style.opacity = '0.6';
+    }
+    notifBtn.addEventListener('click', async () => {
+        if (!('Notification' in window)) {
+            alert('Votre navigateur ne supporte pas les notifications.');
+            return;
+        }
+        const perm = await Notification.requestPermission();
+        if (perm === 'granted') {
+            notifBtn.textContent = '\uD83D\uDD14 Notifications activ\u00e9es';
+            notifBtn.style.opacity = '0.6';
+            new Notification('MECANIQUE 17', {
+                body: 'Vous recevrez nos prochaines offres !',
+                icon: 'images/LOGO.jpg'
+            });
+        }
+    });
+}
+
+// ========== CALCULATEUR DEVIS ==========
+function updateDevis() {
+    const select = document.getElementById('devisType');
+    const result = document.getElementById('devisResult');
+    const selected = select.options[select.selectedIndex];
+
+    if (!selected.value) {
+        result.style.display = 'none';
+        return;
+    }
+
+    const min = selected.dataset.min;
+    const max = selected.dataset.max;
+    document.getElementById('devisMin').textContent = min + '\u20ac';
+    document.getElementById('devisMax').textContent = max + '\u20ac';
+    result.style.display = 'block';
+}
+
+// ========== SYSTEME D'AVIS INTEGRE ==========
+(function() {
+    const stars = document.querySelectorAll('#starRating .star');
+    const noteInput = document.getElementById('avisNote');
+
+    stars.forEach(star => {
+        star.addEventListener('click', () => {
+            const val = parseInt(star.dataset.value);
+            noteInput.value = val;
+            stars.forEach(s => {
+                s.classList.toggle('active', parseInt(s.dataset.value) <= val);
+            });
+        });
+        star.addEventListener('mouseenter', () => {
+            const val = parseInt(star.dataset.value);
+            stars.forEach(s => {
+                s.style.color = parseInt(s.dataset.value) <= val ? '#fbbc04' : '#444';
+            });
+        });
+    });
+
+    const ratingContainer = document.getElementById('starRating');
+    if (ratingContainer) {
+        ratingContainer.addEventListener('mouseleave', () => {
+            const currentVal = parseInt(noteInput.value);
+            stars.forEach(s => {
+                s.style.color = parseInt(s.dataset.value) <= currentVal ? '#fbbc04' : '#444';
+            });
+        });
+    }
+})();
+
+function submitAvis(e) {
+    e.preventDefault();
+    const nom = document.getElementById('avisNom').value.trim();
+    const note = parseInt(document.getElementById('avisNote').value);
+    const message = document.getElementById('avisMessage').value.trim();
+
+    if (!nom || !note || !message) {
+        alert('Veuillez remplir tous les champs et donner une note.');
+        return;
+    }
+
+    // Stocker l'avis en attente de validation
+    const pendingAvis = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    pendingAvis.push({
+        name: nom,
+        initial: nom.charAt(0).toUpperCase(),
+        rating: note,
+        text: message,
+        date: new Date().toISOString(),
+        id: Date.now(),
+        status: 'pending'
+    });
+    localStorage.setItem('m17_pending_avis', JSON.stringify(pendingAvis));
+
+    // Afficher le message de succes
+    document.getElementById('avisFormSuccess').classList.add('show');
+    document.getElementById('avisForm').reset();
+    document.querySelectorAll('#starRating .star').forEach(s => {
+        s.classList.remove('active');
+        s.style.color = '#444';
+    });
+    document.getElementById('avisNote').value = '0';
+
+    setTimeout(() => {
+        document.getElementById('avisFormSuccess').classList.remove('show');
+    }, 5000);
+}
+
+// ========== EFFET PARALLAXE HERO ==========
+(function() {
+    const hero = document.querySelector('.hero');
+    if (!hero) return;
+
+    // Creer un element de fond pour le parallaxe
+    const parallaxBg = document.createElement('div');
+    parallaxBg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:120%;background:inherit;z-index:0;will-change:transform;pointer-events:none;';
+    parallaxBg.className = 'parallax-bg';
+    hero.insertBefore(parallaxBg, hero.firstChild);
+
+    // Deplacer les orbes decoratifs
+    const orb1 = document.createElement('div');
+    orb1.style.cssText = 'position:absolute;top:-20%;right:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(232,168,0,0.12) 0%,transparent 70%);border-radius:50%;will-change:transform;';
+    const orb2 = document.createElement('div');
+    orb2.style.cssText = 'position:absolute;bottom:-15%;left:-5%;width:400px;height:400px;background:radial-gradient(circle,rgba(232,168,0,0.08) 0%,transparent 70%);border-radius:50%;will-change:transform;';
+    parallaxBg.appendChild(orb1);
+    parallaxBg.appendChild(orb2);
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const scrollY = window.scrollY;
+                const heroHeight = hero.offsetHeight;
+                if (scrollY < heroHeight) {
+                    parallaxBg.style.transform = `translateY(${scrollY * 0.3}px)`;
+                    orb1.style.transform = `translate(${scrollY * 0.05}px, ${scrollY * 0.15}px)`;
+                    orb2.style.transform = `translate(${scrollY * -0.08}px, ${scrollY * 0.1}px)`;
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+})();
 
 // ========== PARTAGE RESEAUX SOCIAUX ==========
 function shareOnFacebook(text) {
