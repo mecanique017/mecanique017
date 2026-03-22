@@ -1612,6 +1612,319 @@ body.light-mode .back-to-top {
     border-color: #e8a800;
 }
 
+/* ========== LOADER ========== */
+.page-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.page-loader.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.loader-content {
+    text-align: center;
+}
+
+.loader-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    animation: loaderPulse 1.5s ease-in-out infinite;
+}
+
+.loader-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(232, 168, 0, 0.2);
+    border-top-color: #e8a800;
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes loaderPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+/* ========== PROGRAMME FIDELITE ========== */
+.fidelite {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%) !important;
+}
+
+.fidelite-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.fidelite-card {
+    background: rgba(232, 168, 0, 0.05);
+    border: 1px solid rgba(232, 168, 0, 0.15);
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: all 0.4s ease;
+}
+
+.fidelite-card:hover {
+    border-color: #e8a800;
+    transform: translateY(-6px);
+    box-shadow: 0 12px 40px rgba(232, 168, 0, 0.15);
+}
+
+.fidelite-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.fidelite-card h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.15rem;
+    margin-bottom: 12px;
+    color: #e8a800;
+}
+
+.fidelite-card p {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.fidelite-card p strong {
+    color: #e8a800;
+}
+
+/* ========== NOTATION GOOGLE ========== */
+.google-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(232, 168, 0, 0.08);
+    border: 1px solid rgba(232, 168, 0, 0.2);
+    border-radius: 50px;
+    padding: 12px 28px;
+    margin: 0 auto 32px;
+    width: fit-content;
+}
+
+.google-rating-stars {
+    color: #fbbc04;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+}
+
+.google-rating-text {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+}
+
+.google-rating-text strong {
+    color: #e8a800;
+    font-size: 1.2rem;
+}
+
+.google-logo {
+    height: 20px;
+    width: 20px;
+}
+
+body.light-mode .google-rating {
+    background: rgba(232, 168, 0, 0.06);
+    border-color: #e0d5b8;
+}
+
+body.light-mode .google-rating-text {
+    color: #555;
+}
+
+/* ========== PARTAGE RESEAUX SOCIAUX ========== */
+.share-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.share-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+    color: #fff;
+}
+
+.share-fb {
+    background: #1877f2;
+}
+
+.share-fb:hover {
+    background: #0d65d9;
+    transform: scale(1.15);
+}
+
+.share-wa {
+    background: #25D366;
+}
+
+.share-wa:hover {
+    background: #1da851;
+    transform: scale(1.15);
+}
+
+/* ========== POP-UP PROMO ========== */
+.promo-popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99998;
+    backdrop-filter: blur(4px);
+}
+
+.promo-popup.show {
+    display: flex;
+}
+
+.promo-content {
+    background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+    border: 2px solid #e8a800;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 420px;
+    width: 90%;
+    position: relative;
+    animation: promoSlideIn 0.4s ease;
+}
+
+@keyframes promoSlideIn {
+    from { transform: scale(0.8) translateY(30px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+.promo-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.promo-close:hover {
+    color: #fff;
+}
+
+.promo-icon {
+    font-size: 4rem;
+    margin-bottom: 12px;
+}
+
+.promo-content h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.6rem;
+    color: #e8a800;
+    margin-bottom: 12px;
+}
+
+.promo-content p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.promo-content p strong {
+    color: #e8a800;
+    font-size: 1.3rem;
+}
+
+.promo-cta {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 14px 36px;
+    font-size: 1rem;
+    text-decoration: none;
+}
+
+.promo-note {
+    font-size: 0.8rem !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    margin-top: 12px !important;
+}
+
+/* ========== LIGHT MODE ADDITIONS ========== */
+body.light-mode .fidelite {
+    background: linear-gradient(135deg, #f0f0f5 0%, #e8e8f0 100%) !important;
+}
+
+body.light-mode .fidelite-card {
+    background: #fff;
+    border-color: #e0e0e0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+}
+
+body.light-mode .fidelite-card h3 {
+    color: #c79100;
+}
+
+body.light-mode .fidelite-card p {
+    color: #555;
+}
+
+body.light-mode .promo-content {
+    background: linear-gradient(135deg, #fff 0%, #f8f8f8 100%);
+    border-color: #e8a800;
+}
+
+body.light-mode .promo-content p {
+    color: #555;
+}
+
+body.light-mode .page-loader {
+    background: #fff;
+}
+
+@media (max-width: 992px) {
+    .fidelite-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+    .fidelite-grid { grid-template-columns: 1fr; }
+    .promo-content { padding: 30px 20px; }
+}
+
 /* ========== WHATSAPP FLOATING BUTTON ========== */
 .whatsapp-float {
     position: fixed;
