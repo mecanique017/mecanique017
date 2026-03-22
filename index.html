@@ -153,6 +153,7 @@
                 <a href="#actualites" class="nav-link">Actualit&eacute;s</a>
                 <a href="#rdv" class="nav-link nav-cta">Prendre RDV</a>
                 <a href="#contact" class="nav-link">Contact</a>
+                <a href="en.html" class="nav-lang">EN</a>
             </nav>
             <a href="tel:+33651550001" class="header-phone" aria-label="Appeler">&#128222; 06 51 55 00 01</a>
             <button class="menu-toggle" id="menuToggle" aria-label="Menu">
@@ -305,6 +306,38 @@
                 <a href="https://www.google.com/maps/place/MECANIQUE+17/@45.5563,-0.4024,17z/" target="_blank" rel="noopener" class="btn btn-primary">
                     Laisser un avis
                 </a>
+            </div>
+
+            <!-- Formulaire avis integre -->
+            <div class="avis-form-container" id="avisFormContainer" data-animate>
+                <h3>Laisser votre avis</h3>
+                <form class="avis-form" id="avisForm" onsubmit="submitAvis(event)">
+                    <div class="avis-form-row">
+                        <div class="form-group">
+                            <label for="avisNom">Votre nom *</label>
+                            <input type="text" id="avisNom" required placeholder="Votre pr&eacute;nom">
+                        </div>
+                        <div class="form-group">
+                            <label>Votre note *</label>
+                            <div class="star-rating" id="starRating">
+                                <span class="star" data-value="1">&#9733;</span>
+                                <span class="star" data-value="2">&#9733;</span>
+                                <span class="star" data-value="3">&#9733;</span>
+                                <span class="star" data-value="4">&#9733;</span>
+                                <span class="star" data-value="5">&#9733;</span>
+                            </div>
+                            <input type="hidden" id="avisNote" value="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="avisMessage">Votre t&eacute;moignage *</label>
+                        <textarea id="avisMessage" rows="3" required placeholder="Partagez votre exp&eacute;rience..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Envoyer mon avis</button>
+                    <div class="avis-form-success" id="avisFormSuccess">
+                        Merci pour votre avis ! Il sera visible apr&egrave;s validation.
+                    </div>
+                </form>
             </div>
         </div>
     </section>
@@ -499,6 +532,47 @@
                     <div class="fidelite-icon">&#128663;</div>
                     <h3>Contr&ocirc;le offert</h3>
                     <p>Un <strong>diagnostic gratuit</strong> offert une fois par an pour les clients r&eacute;guliers.</p>
+                </div>
+            </div>
+            <div style="text-align:center;margin-top:32px;">
+                <button class="btn btn-outline" id="notifBtn" style="border-color:rgba(232,168,0,0.4);">&#128276; Recevoir nos offres</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- CALCULATEUR DEVIS -->
+    <section class="section devis" id="devis">
+        <div class="container">
+            <h2 class="section-title">Estimation de Devis</h2>
+            <p class="section-subtitle">Obtenez une estimation rapide du co&ucirc;t de votre intervention</p>
+            <div class="devis-calculator" data-animate>
+                <div class="devis-select-group">
+                    <label>Type d'intervention</label>
+                    <select id="devisType" onchange="updateDevis()">
+                        <option value="">-- Choisir une prestation --</option>
+                        <option value="vidange" data-min="60" data-max="120">Vidange compl&egrave;te</option>
+                        <option value="plaquettes" data-min="80" data-max="150">Plaquettes de frein</option>
+                        <option value="disques" data-min="200" data-max="400">Disques + plaquettes de frein</option>
+                        <option value="distribution" data-min="350" data-max="800">Courroie de distribution</option>
+                        <option value="embrayage" data-min="400" data-max="900">Embrayage</option>
+                        <option value="amortisseurs" data-min="250" data-max="550">Amortisseurs (paire)</option>
+                        <option value="diagnostic" data-min="30" data-max="60">Diagnostic &eacute;lectronique</option>
+                        <option value="clim" data-min="60" data-max="120">Recharge climatisation</option>
+                        <option value="batterie" data-min="80" data-max="200">Remplacement batterie</option>
+                        <option value="demarreur" data-min="200" data-max="450">D&eacute;marreur</option>
+                        <option value="alternateur" data-min="250" data-max="500">Alternateur</option>
+                        <option value="precontrole" data-min="30" data-max="50">Pr&eacute;-contr&ocirc;le technique</option>
+                    </select>
+                </div>
+                <div class="devis-result" id="devisResult" style="display:none;">
+                    <div class="devis-price-range">
+                        <span class="devis-label">Estimation :</span>
+                        <span class="devis-amount" id="devisMin">-</span>
+                        <span class="devis-sep">&agrave;</span>
+                        <span class="devis-amount" id="devisMax">-</span>
+                    </div>
+                    <p class="devis-note">* Prix indicatifs, TVA non applicable (auto-entrepreneur). Le tarif final d&eacute;pend du mod&egrave;le de votre v&eacute;hicule. <strong>Devis gratuit et d&eacute;taill&eacute; sur demande.</strong></p>
+                    <a href="#rdv" class="btn btn-primary" style="margin-top:16px;">Demander un devis pr&eacute;cis</a>
                 </div>
             </div>
         </div>
