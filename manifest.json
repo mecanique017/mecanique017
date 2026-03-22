@@ -1,0 +1,26 @@
+{
+    "name": "MECANIQUE 17 - Garage Automobile",
+    "short_name": "MECANIQUE 17",
+    "description": "Garage automobile a Jarnac-Champagne. Reparation, entretien, diagnostic.",
+    "start_url": "./index.html",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#0a0a0a",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "images/LOGO.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "images/LOGO.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": ["auto", "business"],
+    "lang": "fr"
+}
