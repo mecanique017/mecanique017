@@ -19,6 +19,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="icon" type="image/jpeg" href="images/LOGO.jpg">
     <link rel="apple-touch-icon" href="images/LOGO.jpg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0a0a0a">
     <link rel="stylesheet" href="css/style.css">
 
     <!-- Schema.org SEO Local -->
@@ -166,6 +168,34 @@
         </div>
     </section>
 
+    <!-- COMPTEURS ANIMES -->
+    <section class="section counters" id="counters">
+        <div class="container">
+            <div class="counters-grid">
+                <div class="counter-item" data-animate>
+                    <span class="counter-number" data-target="500">0</span>
+                    <span class="counter-plus">+</span>
+                    <p class="counter-label">Clients satisfaits</p>
+                </div>
+                <div class="counter-item" data-animate>
+                    <span class="counter-number" data-target="15">0</span>
+                    <span class="counter-plus">+</span>
+                    <p class="counter-label">Ann&eacute;es d'exp&eacute;rience</p>
+                </div>
+                <div class="counter-item" data-animate>
+                    <span class="counter-number" data-target="6">0</span>
+                    <span class="counter-plus"></span>
+                    <p class="counter-label">Services propos&eacute;s</p>
+                </div>
+                <div class="counter-item" data-animate>
+                    <span class="counter-number" data-target="100">0</span>
+                    <span class="counter-plus">%</span>
+                    <p class="counter-label">Engagement qualit&eacute;</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- SERVICES -->
     <section class="section services" id="services">
         <div class="container">
@@ -246,6 +276,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="avis-carousel-controls">
+                <button class="avis-arrow avis-prev" aria-label="Avis pr&eacute;c&eacute;dent">&#8592;</button>
+                <div class="avis-dots" id="avisDots"></div>
+                <button class="avis-arrow avis-next" aria-label="Avis suivant">&#8594;</button>
             </div>
             <div class="avis-cta">
                 <a href="https://www.google.com/maps/place/MECANIQUE+17/@45.5563,-0.4024,17z/" target="_blank" rel="noopener" class="btn btn-outline avis-google-btn">
@@ -445,6 +480,38 @@
                         <input type="text" id="adresse" name="Adresse postale" required placeholder="Num&eacute;ro, rue, code postal, ville">
                     </div>
                     <div class="form-group">
+                        <label for="dateRdv">Date souhait&eacute;e *</label>
+                        <input type="date" id="dateRdv" name="Date souhaitee" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="heureRdv">Heure souhait&eacute;e *</label>
+                        <select id="heureRdv" name="Heure souhaitee" required>
+                            <option value="">-- Choisir --</option>
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                        </select>
+                    </div>
+                    <div class="form-group form-full">
+                        <label for="typeIntervention">Type d'intervention *</label>
+                        <select id="typeIntervention" name="Type intervention" required>
+                            <option value="">-- Choisir --</option>
+                            <option value="Vidange / Entretien">Vidange / Entretien</option>
+                            <option value="Freins">Freins</option>
+                            <option value="Distribution">Distribution</option>
+                            <option value="Diagnostic electronique">Diagnostic &eacute;lectronique</option>
+                            <option value="Climatisation">Climatisation</option>
+                            <option value="Electricite">Electricit&eacute; auto</option>
+                            <option value="Pre-controle technique">Pr&eacute;-contr&ocirc;le technique</option>
+                            <option value="Autre">Autre (pr&eacute;ciser dans la description)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="immatriculation">Immatriculation du v&eacute;hicule *</label>
                         <input type="text" id="immatriculation" name="Immatriculation" required placeholder="AB-123-CD" style="text-transform: uppercase;">
                     </div>
@@ -539,6 +606,7 @@
                 <a href="#galerie">Galerie</a>
                 <a href="#rdv">Prendre RDV</a>
                 <a href="#contact">Contact</a>
+                <a href="mentions-legales.html">Mentions l&eacute;gales</a>
             </div>
             <div class="footer-social">
                 <h4>Suivez-nous</h4>
@@ -550,7 +618,7 @@
         </div>
         <div class="footer-bottom">
             <div class="container">
-                <p>&copy; 2026 MECANIQUE 17 &mdash; Tous droits r&eacute;serv&eacute;s</p>
+                <p>&copy; 2026 MECANIQUE 17 &mdash; Tous droits r&eacute;serv&eacute;s | <a href="mentions-legales.html" style="color: rgba(255,255,255,0.5); text-decoration: underline;">Mentions l&eacute;gales</a></p>
             </div>
         </div>
     </footer>
@@ -559,6 +627,17 @@
     <a href="https://wa.me/33651550001?text=Bonjour%2C%20je%20souhaite%20prendre%20rendez-vous." class="whatsapp-float" target="_blank" rel="noopener" aria-label="Contacter via WhatsApp">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
     </a>
+
+    <!-- Bouton Appeler flottant (mobile) -->
+    <a href="tel:+33651550001" class="call-float" aria-label="Appeler">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 00-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53 0-.54-.45-.99-.99-.99H4.19C3.65 3 3 3.24 3 3.99 3 13.28 10.73 21 20.01 21c.71 0 .99-.63.99-1.18v-3.45c0-.54-.45-.99-.99-.99z"/></svg>
+    </a>
+
+    <!-- Toggle Mode sombre/clair -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Changer le th&egrave;me">
+        <span class="theme-icon-light">&#9788;</span>
+        <span class="theme-icon-dark">&#9790;</span>
+    </button>
 
     <!-- Bouton retour en haut -->
     <button class="back-to-top" id="backToTop" aria-label="Retour en haut">&#9650;</button>
