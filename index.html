@@ -77,6 +77,14 @@
 </head>
 <body>
 
+    <!-- LOADER -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-content">
+            <img src="images/LOGO.jpg" alt="MECANIQUE 17" class="loader-logo">
+            <div class="loader-spinner"></div>
+        </div>
+    </div>
+
     <!-- SPLASH SCREEN : Choix Client / Administrateur -->
     <div class="splash-screen" id="splashScreen">
         <div class="splash-container">
@@ -242,6 +250,13 @@
         <div class="container">
             <h2 class="section-title">Avis Clients</h2>
             <p class="section-subtitle">Ce que nos clients pensent de notre travail</p>
+            <div class="google-rating" data-animate>
+                <div class="google-rating-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <div class="google-rating-text">
+                    <strong>5.0</strong> / 5 &mdash; Avis Google
+                </div>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png" alt="Google" class="google-logo">
+            </div>
             <div class="avis-grid" id="avisGrid">
                 <div class="avis-card" data-animate>
                     <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
@@ -359,6 +374,10 @@
                         <h3>Offre de bienvenue</h3>
                         <p>-10% sur votre premi&egrave;re vidange compl&egrave;te. Profitez-en d&egrave;s maintenant !</p>
                         <span class="actu-date">Mars 2026</span>
+                        <div class="share-buttons">
+                            <a href="#" onclick="shareOnFacebook('Offre de bienvenue - MECANIQUE 17');return false;" class="share-btn share-fb" title="Partager sur Facebook">f</a>
+                            <a href="#" onclick="shareOnWhatsApp('Offre de bienvenue : -10% sur votre premi\u00e8re vidange chez MECANIQUE 17 !');return false;" class="share-btn share-wa" title="Partager sur WhatsApp">w</a>
+                        </div>
                     </div>
                 </article>
                 <article class="actu-card" data-animate>
@@ -368,6 +387,10 @@
                         <h3>Diagnostic offert</h3>
                         <p>Pour toute r&eacute;paration sup&eacute;rieure &agrave; 200&euro;, le diagnostic &eacute;lectronique est offert.</p>
                         <span class="actu-date">Mars 2026</span>
+                        <div class="share-buttons">
+                            <a href="#" onclick="shareOnFacebook('Diagnostic offert - MECANIQUE 17');return false;" class="share-btn share-fb" title="Partager sur Facebook">f</a>
+                            <a href="#" onclick="shareOnWhatsApp('Diagnostic offert pour toute r\u00e9paration sup\u00e9rieure \u00e0 200\u20ac chez MECANIQUE 17 !');return false;" class="share-btn share-wa" title="Partager sur WhatsApp">w</a>
+                        </div>
                     </div>
                 </article>
                 <article class="actu-card" data-animate>
@@ -377,6 +400,10 @@
                         <h3>Horaires &eacute;largis</h3>
                         <p>Nous sommes d&eacute;sormais ouverts le samedi matin de 8h &agrave; 12h.</p>
                         <span class="actu-date">Mars 2026</span>
+                        <div class="share-buttons">
+                            <a href="#" onclick="shareOnFacebook('Horaires \u00e9largis - MECANIQUE 17');return false;" class="share-btn share-fb" title="Partager sur Facebook">f</a>
+                            <a href="#" onclick="shareOnWhatsApp('MECANIQUE 17 est d\u00e9sormais ouvert le samedi matin de 8h \u00e0 12h !');return false;" class="share-btn share-wa" title="Partager sur WhatsApp">w</a>
+                        </div>
                     </div>
                 </article>
             </div>
@@ -447,16 +474,47 @@
         </div>
     </section>
 
+    <!-- PROGRAMME FIDELITE -->
+    <section class="section fidelite" id="fidelite">
+        <div class="container">
+            <h2 class="section-title">Programme Fid&eacute;lit&eacute;</h2>
+            <p class="section-subtitle">Parce que votre confiance m&eacute;rite d'&ecirc;tre r&eacute;compens&eacute;e</p>
+            <div class="fidelite-grid">
+                <div class="fidelite-card" data-animate>
+                    <div class="fidelite-icon">&#127873;</div>
+                    <h3>Offre de bienvenue</h3>
+                    <p><strong>-10%</strong> sur votre premi&egrave;re vidange compl&egrave;te lors de votre premi&egrave;re visite.</p>
+                </div>
+                <div class="fidelite-card" data-animate>
+                    <div class="fidelite-icon">&#128176;</div>
+                    <h3>Parrainage</h3>
+                    <p>Parrainez un proche et recevez <strong>-15%</strong> sur votre prochaine intervention.</p>
+                </div>
+                <div class="fidelite-card" data-animate>
+                    <div class="fidelite-icon">&#11088;</div>
+                    <h3>Client fid&egrave;le</h3>
+                    <p>D&egrave;s votre <strong>3&egrave;me visite</strong>, b&eacute;n&eacute;ficiez de tarifs pr&eacute;f&eacute;rentiels sur l'entretien courant.</p>
+                </div>
+                <div class="fidelite-card" data-animate>
+                    <div class="fidelite-icon">&#128663;</div>
+                    <h3>Contr&ocirc;le offert</h3>
+                    <p>Un <strong>diagnostic gratuit</strong> offert une fois par an pour les clients r&eacute;guliers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- PRISE DE RDV -->
     <section class="section rdv" id="rdv">
         <div class="container">
             <h2 class="section-title">Prendre Rendez-vous</h2>
             <p class="section-subtitle">Remplissez le formulaire ci-dessous et nous vous recontacterons rapidement</p>
             <form class="rdv-form" action="https://formsubmit.co/mecanique017@gmail.com" method="POST" id="rdvForm">
-                <input type="hidden" name="_subject" value="Nouvelle demande de RDV - MECANIQUE 17">
+                <input type="hidden" name="_subject" value="&#128197; Nouvelle demande de RDV - MECANIQUE 17">
                 <input type="hidden" name="_captcha" value="false">
-                <input type="hidden" name="_next" value="">
+                <input type="hidden" name="_next" value="https://mecanique017.github.io/mecanique017/#rdv">
                 <input type="hidden" name="_template" value="table">
+                <input type="hidden" name="_autoresponse" value="Bonjour, nous avons bien re&ccedil;u votre demande de rendez-vous. Nous vous recontacterons dans les plus brefs d&eacute;lais pour confirmer votre cr&eacute;neau. Merci de votre confiance ! - L'&eacute;quipe MECANIQUE 17">
                 <input type="text" name="_honey" style="display:none">
                 <div class="form-grid">
                     <div class="form-group">
@@ -641,6 +699,18 @@
 
     <!-- Bouton retour en haut -->
     <button class="back-to-top" id="backToTop" aria-label="Retour en haut">&#9650;</button>
+
+    <!-- Pop-up Promo -->
+    <div class="promo-popup" id="promoPopup">
+        <div class="promo-content">
+            <button class="promo-close" onclick="closePromo()">&times;</button>
+            <div class="promo-icon">&#127873;</div>
+            <h3>Offre sp&eacute;ciale !</h3>
+            <p><strong>-10%</strong> sur votre premi&egrave;re vidange compl&egrave;te en prenant rendez-vous en ligne.</p>
+            <a href="#rdv" class="btn btn-primary promo-cta" onclick="closePromo()">Prendre rendez-vous</a>
+            <p class="promo-note">Offre valable pour les nouveaux clients</p>
+        </div>
+    </div>
 
     <!-- Banni&egrave;re Cookie RGPD -->
     <div class="cookie-banner" id="cookieBanner">
