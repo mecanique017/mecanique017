@@ -1150,6 +1150,90 @@ function deleteHoraire(id) {
     showToast('Fermeture supprim\u00e9e');
 }
 
+// ========== EDITEUR RICHE ==========
+function richCmd(cmd) {
+    document.execCommand(cmd, false, null);
+    document.getElementById('actuTexte').focus();
+}
+
+function richLink() {
+    const url = prompt('URL du lien :');
+    if (url) {
+        document.execCommand('createLink', false, url);
+        document.getElementById('actuTexte').focus();
+    }
+}
+
+// ========== AVIS EN ATTENTE ==========
+function renderPendingAvis() {
+    const container = document.getElementById('pendingAvisList');
+    if (!container) return;
+
+    const pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const statEl = document.getElementById('statPending');
+    if (statEl) statEl.textContent = pending.length;
+
+    if (pending.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Aucun avis en attente</p>';
+        return;
+    }
+
+    container.innerHTML = pending.map(a => {
+        const stars = '\u2605'.repeat(a.rating) + '\u2606'.repeat(5 - a.rating);
+        const date = new Date(a.date).toLocaleDateString('fr-FR');
+        return `
+            <div class="pending-avis-card">
+                <div class="pending-avis-info">
+                    <div class="pending-avis-stars">${stars}</div>
+                    <div class="pending-avis-text">\u00ab ${a.text} \u00bb</div>
+                    <div class="pending-avis-author">${a.name} <span class="pending-avis-date">- ${date}</span></div>
+                </div>
+                <div class="pending-avis-actions">
+                    <button class="btn btn-gold btn-sm" onclick="approveAvis(${a.id})">Valider</button>
+                    <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="rejectAvis(${a.id})">Refuser</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function approveAvis(id) {
+    let pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const avis = pending.find(a => a.id === id);
+    if (!avis) return;
+
+    // Ajouter aux avis approuves
+    if (!contentData.avis) contentData.avis = [];
+    contentData.avis.push({
+        name: avis.name,
+        initial: avis.initial,
+        rating: avis.rating,
+        text: avis.text,
+        id: avis.id
+    });
+
+    // Retirer des en attente
+    pending = pending.filter(a => a.id !== id);
+    localStorage.setItem('m17_pending_avis', JSON.stringify(pending));
+
+    saveContentLocal();
+    publishToGitHub();
+    renderPendingAvis();
+    addHistory('Avis de ' + avis.name + ' valid\u00e9');
+    showToast('Avis valid\u00e9 et publi\u00e9 !');
+}
+
+function rejectAvis(id) {
+    if (!confirm('Refuser cet avis ?')) return;
+    let pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const avis = pending.find(a => a.id === id);
+    pending = pending.filter(a => a.id !== id);
+    localStorage.setItem('m17_pending_avis', JSON.stringify(pending));
+    renderPendingAvis();
+    addHistory('Avis de ' + (avis ? avis.name : 'inconnu') + ' refus\u00e9');
+    showToast('Avis refus\u00e9');
+}
+
 // ========== IMPORT DONNEES ==========
 function importData(event) {
     const file = event.target.files[0];
@@ -1247,4 +1331,5 @@ loadContent = async function() {
     renderHoraires();
     renderHistory();
     loadMaintenanceState();
+    renderPendingAvis();
 };
