@@ -1,3 +1,13 @@
+// ========== LOADER ==========
+window.addEventListener('load', () => {
+    const loader = document.getElementById('pageLoader');
+    if (loader) {
+        setTimeout(() => {
+            loader.classList.add('hidden');
+        }, 800);
+    }
+});
+
 // ========== SPLASH SCREEN ==========
 const splashScreen = document.getElementById('splashScreen');
 
@@ -106,6 +116,18 @@ async function loadDynamicContent() {
     }
 
     if (!data) return;
+
+    // Mode maintenance
+    if (data.maintenance) {
+        const main = document.querySelector('main') || document.querySelector('.hero');
+        if (main) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;';
+            overlay.innerHTML = '<img src="images/LOGO.jpg" alt="MECANIQUE 17" style="width:80px;border-radius:12px;margin-bottom:20px;"><h1 style="color:#e8a800;font-family:Montserrat,sans-serif;margin-bottom:12px;">Site en maintenance</h1><p style="color:rgba(255,255,255,0.7);max-width:400px;">Nous effectuons des am\u00e9liorations. Le site sera de retour tr\u00e8s bient\u00f4t.</p><p style="color:rgba(255,255,255,0.5);margin-top:20px;">T\u00e9l : <a href="tel:+33651550001" style="color:#e8a800;">06 51 55 00 01</a></p>';
+            document.body.appendChild(overlay);
+            return;
+        }
+    }
 
     try {
         // Mettre a jour la galerie
@@ -596,3 +618,58 @@ if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(() => {});
     });
 }
+
+// ========== PARTAGE RESEAUX SOCIAUX ==========
+function shareOnFacebook(text) {
+    const url = encodeURIComponent(window.location.href);
+    window.open('https://www.facebook.com/sharer/sharer.php?u=' + url + '&quote=' + encodeURIComponent(text), '_blank', 'width=600,height=400');
+}
+
+function shareOnWhatsApp(text) {
+    const url = window.location.href;
+    window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank');
+}
+
+// ========== POP-UP PROMO ==========
+function closePromo() {
+    const popup = document.getElementById('promoPopup');
+    if (popup) popup.classList.remove('show');
+    sessionStorage.setItem('m17_promo_closed', '1');
+}
+
+// Afficher la pop-up apres 8 secondes si pas deja fermee
+if (!sessionStorage.getItem('m17_promo_closed') && !localStorage.getItem('m17_promo_never')) {
+    setTimeout(() => {
+        const popup = document.getElementById('promoPopup');
+        if (popup) popup.classList.add('show');
+    }, 8000);
+}
+
+// Fermer en cliquant a l'exterieur
+document.addEventListener('click', (e) => {
+    const popup = document.getElementById('promoPopup');
+    if (popup && e.target === popup) closePromo();
+});
+
+// ========== ANIMATIONS SCROLL AMELIOREES ==========
+const animObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry, index) => {
+        if (entry.isIntersecting) {
+            // Delai progressif pour les elements dans une grille
+            const siblings = entry.target.parentElement.querySelectorAll('[data-animate]');
+            let delay = 0;
+            siblings.forEach((sib, i) => {
+                if (sib === entry.target) delay = i * 100;
+            });
+            setTimeout(() => {
+                entry.target.classList.add('visible');
+            }, delay);
+            animObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.15 });
+
+// Observer tous les elements avec data-animate
+document.querySelectorAll('[data-animate]').forEach(el => {
+    animObserver.observe(el);
+});
