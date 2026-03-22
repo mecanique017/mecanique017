@@ -447,7 +447,7 @@ rdvForm.addEventListener('submit', async (e) => {
 });
 
 // ========== DATE MINIMUM (aujourd'hui) ==========
-const dateInput = document.getElementById('date');
+const dateInput = document.getElementById('dateRdv') || document.getElementById('date');
 if (dateInput) {
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
@@ -485,4 +485,114 @@ if (!localStorage.getItem('m17_cookies')) {
         const banner = document.getElementById('cookieBanner');
         if (banner) banner.classList.add('show');
     }, 1500);
+}
+
+// ========== COMPTEURS ANIMES ==========
+const counterObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const counters = entry.target.querySelectorAll('.counter-number');
+            counters.forEach(counter => {
+                const target = parseInt(counter.dataset.target);
+                const duration = 2000;
+                const step = target / (duration / 16);
+                let current = 0;
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current);
+                    }
+                }, 16);
+            });
+            counterObserver.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.3 });
+
+const countersSection = document.querySelector('.counters-grid');
+if (countersSection) counterObserver.observe(countersSection);
+
+// ========== CAROUSEL AVIS ==========
+(function() {
+    const grid = document.getElementById('avisGrid');
+    const dotsContainer = document.getElementById('avisDots');
+    const prevBtn = document.querySelector('.avis-prev');
+    const nextBtn = document.querySelector('.avis-next');
+    if (!grid || !dotsContainer || !prevBtn || !nextBtn) return;
+
+    let currentSlide = 0;
+    let autoPlayTimer;
+
+    function getCardsPerView() {
+        if (window.innerWidth <= 768) return 1;
+        if (window.innerWidth <= 992) return 2;
+        return 3;
+    }
+
+    function updateCarousel() {
+        const cards = grid.querySelectorAll('.avis-card');
+        const perView = getCardsPerView();
+        const totalSlides = Math.ceil(cards.length / perView);
+        if (currentSlide >= totalSlides) currentSlide = 0;
+        if (currentSlide < 0) currentSlide = totalSlides - 1;
+
+        const offset = currentSlide * (100 / 1);
+        grid.style.display = 'flex';
+        grid.style.transition = 'transform 0.5s ease';
+        grid.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+        cards.forEach(card => {
+            card.style.minWidth = `${100 / perView}%`;
+            card.style.flex = `0 0 ${100 / perView}%`;
+            card.style.padding = '0 12px';
+            card.style.boxSizing = 'border-box';
+        });
+
+        // Update dots
+        dotsContainer.innerHTML = '';
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'avis-dot' + (i === currentSlide ? ' active' : '');
+            dot.addEventListener('click', () => { currentSlide = i; updateCarousel(); resetAutoPlay(); });
+            dotsContainer.appendChild(dot);
+        }
+    }
+
+    prevBtn.addEventListener('click', () => { currentSlide--; updateCarousel(); resetAutoPlay(); });
+    nextBtn.addEventListener('click', () => { currentSlide++; updateCarousel(); resetAutoPlay(); });
+
+    function resetAutoPlay() {
+        clearInterval(autoPlayTimer);
+        autoPlayTimer = setInterval(() => { currentSlide++; updateCarousel(); }, 5000);
+    }
+
+    updateCarousel();
+    resetAutoPlay();
+    window.addEventListener('resize', updateCarousel);
+})();
+
+// ========== THEME TOGGLE (SOMBRE / CLAIR) ==========
+const themeToggle = document.getElementById('themeToggle');
+if (themeToggle) {
+    // Charger le theme sauvegarde
+    const savedTheme = localStorage.getItem('m17_theme');
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-mode');
+    }
+
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('light-mode');
+        const isLight = document.body.classList.contains('light-mode');
+        localStorage.setItem('m17_theme', isLight ? 'light' : 'dark');
+    });
+}
+
+// ========== PWA - SERVICE WORKER ==========
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
 }
