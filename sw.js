@@ -31,6 +31,36 @@ self.addEventListener('activate', (e) => {
     self.clients.claim();
 });
 
+// Push notification
+self.addEventListener('push', (e) => {
+    const data = e.data ? e.data.json() : { title: 'MECANIQUE 17', body: 'Nouvelle notification' };
+    e.waitUntil(
+        self.registration.showNotification(data.title || 'MECANIQUE 17', {
+            body: data.body || '',
+            icon: './images/LOGO.jpg',
+            badge: './images/LOGO.jpg',
+            vibrate: [200, 100, 200],
+            data: { url: data.url || './' }
+        })
+    );
+});
+
+// Notification click
+self.addEventListener('notificationclick', (e) => {
+    e.notification.close();
+    const url = e.notification.data.url || './';
+    e.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            for (const client of windowClients) {
+                if (client.url.includes('mecanique017') && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            return clients.openWindow(url);
+        })
+    );
+});
+
 // Fetch - network first, fallback to cache
 self.addEventListener('fetch', (e) => {
     e.respondWith(
