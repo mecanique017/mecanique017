@@ -1150,6 +1150,92 @@ function deleteHoraire(id) {
     showToast('Fermeture supprim\u00e9e');
 }
 
+// ========== IMPORT DONNEES ==========
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (!confirm('Importer ces donn\u00e9es ? Cela remplacera le contenu actuel.')) return;
+            contentData = imported;
+            saveContentLocal();
+            publishToGitHub();
+            loadContent();
+            addHistory('Import de donn\u00e9es depuis un fichier');
+            showToast('Donn\u00e9es import\u00e9es avec succ\u00e8s !');
+        } catch (err) {
+            showToast('Fichier invalide : ' + err.message, 'error');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// ========== HISTORIQUE DES MODIFICATIONS ==========
+function addHistory(action) {
+    let history = JSON.parse(localStorage.getItem('m17_history') || '[]');
+    history.unshift({
+        action: action,
+        date: new Date().toISOString()
+    });
+    // Garder les 50 dernieres
+    if (history.length > 50) history = history.slice(0, 50);
+    localStorage.setItem('m17_history', JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    if (!container) return;
+    const history = JSON.parse(localStorage.getItem('m17_history') || '[]');
+
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Aucune modification enregistr\u00e9e</p>';
+        return;
+    }
+
+    container.innerHTML = history.slice(0, 20).map(h => {
+        const d = new Date(h.date);
+        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="history-item"><span class="history-date">${dateStr}</span> <span class="history-action">${h.action}</span></div>`;
+    }).join('');
+}
+
+// Intercepter les sauvegardes pour ajouter a l'historique
+const origSaveContentLocal = saveContentLocal;
+saveContentLocal = function() {
+    origSaveContentLocal();
+    contentData.lastModified = new Date().toISOString();
+};
+
+// ========== MODE MAINTENANCE ==========
+function toggleMaintenance() {
+    const toggle = document.getElementById('maintenanceToggle');
+    const status = document.getElementById('maintenanceStatus');
+    contentData.maintenance = toggle.checked;
+    status.textContent = toggle.checked ? 'Activ\u00e9' : 'D\u00e9sactiv\u00e9';
+    status.style.color = toggle.checked ? 'var(--danger)' : 'var(--text-muted)';
+    saveContentLocal();
+    publishToGitHub();
+    addHistory(toggle.checked ? 'Mode maintenance activ\u00e9' : 'Mode maintenance d\u00e9sactiv\u00e9');
+    showToast(toggle.checked ? 'Mode maintenance activ\u00e9' : 'Mode maintenance d\u00e9sactiv\u00e9');
+}
+
+function loadMaintenanceState() {
+    const toggle = document.getElementById('maintenanceToggle');
+    const status = document.getElementById('maintenanceStatus');
+    if (toggle && contentData.maintenance) {
+        toggle.checked = true;
+        if (status) {
+            status.textContent = 'Activ\u00e9';
+            status.style.color = 'var(--danger)';
+        }
+    }
+}
+
 // ========== INIT ==========
 checkSession();
 
@@ -1159,4 +1245,6 @@ loadContent = async function() {
     await origLoadContent();
     updateDashboard();
     renderHoraires();
+    renderHistory();
+    loadMaintenanceState();
 };
