@@ -538,6 +538,192 @@
             display: none;
         }
 
+        /* ===== EDITEUR RICHE ===== */
+        .rich-toolbar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+            padding: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px 6px 0 0;
+            border-bottom: none;
+        }
+        .rich-toolbar button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .rich-toolbar button:hover {
+            background: var(--gold);
+            color: #000;
+            border-color: var(--gold);
+        }
+        .rich-editor {
+            min-height: 100px;
+            padding: 12px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0 0 6px 6px;
+            color: var(--text);
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            line-height: 1.6;
+        }
+        .rich-editor:focus { border-color: var(--gold); }
+        .rich-editor[placeholder]:empty:before {
+            content: attr(placeholder);
+            color: var(--text-muted);
+        }
+        .rich-editor a { color: var(--gold); }
+
+        /* ===== PENDING AVIS ===== */
+        .pending-avis-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .pending-avis-info { flex: 1; }
+        .pending-avis-stars { color: #fbbc04; font-size: 1rem; margin-bottom: 4px; }
+        .pending-avis-text { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 6px; }
+        .pending-avis-author { color: var(--gold); font-weight: 600; font-size: 0.85rem; }
+        .pending-avis-date { color: var(--text-muted); font-size: 0.75rem; }
+        .pending-avis-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+        /* ===== TOGGLE SWITCH ===== */
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            display: inline-block;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #444;
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--gold);
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(22px);
+        }
+        .history-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-date { color: var(--gold); font-size: 0.75rem; }
+        .history-action { color: var(--text-muted); }
+
+        /* ===== STATS DASHBOARD ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px 16px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .stat-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+        .stat-icon { font-size: 2rem; margin-bottom: 8px; }
+        .stat-number {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--gold);
+        }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; margin-top: 4px; }
+
+        .horaire-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+        }
+        .horaire-item .horaire-info { flex: 1; }
+        .horaire-item .horaire-dates { color: var(--gold); font-weight: 600; font-size: 0.9rem; }
+        .horaire-item .horaire-motif { color: var(--text-muted); font-size: 0.85rem; }
+
+        /* ===== NOTIFICATION BADGE ===== */
+        .admin-header-right .notif-badge {
+            position: relative;
+        }
+        .admin-header-right .notif-badge .badge-count {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: var(--danger);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== REPARATION STATUS BADGES ===== */
+        .rep-status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .rep-status-reception { background: #3498db22; color: #3498db; }
+        .rep-status-diagnostic { background: #9b59b622; color: #9b59b6; }
+        .rep-status-commande { background: #e67e2222; color: #e67e22; }
+        .rep-status-reparation { background: #f39c1222; color: #f39c12; }
+        .rep-status-termine { background: #27ae6022; color: #27ae60; }
+        .rep-status-pret { background: #2ecc7122; color: #2ecc71; }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .admin-header { padding: 12px 15px; }
@@ -547,6 +733,7 @@
             .gallery-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
             .config-row { flex-direction: column; }
             .admin-header h1 span { display: none; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -575,6 +762,10 @@
                 <h1>MECANIQUE 17 <span>| Administration</span></h1>
             </div>
             <div class="admin-header-right">
+                <span class="notif-badge" id="notifBadge" style="display:none;cursor:pointer;" onclick="document.querySelector('[data-tab=avis-pending]').click()">
+                    <span class="badge-count" id="notifCount">0</span>
+                    &#128276;
+                </span>
                 <a href="index.html" class="btn btn-outline btn-sm" target="_blank">Voir le site</a>
                 <button class="btn btn-outline btn-sm" onclick="logout()">D&eacute;connexion</button>
             </div>
@@ -582,16 +773,98 @@
 
         <!-- NAV -->
         <div class="admin-nav" id="adminNav">
-            <button class="active" data-tab="galerie">Galerie</button>
+            <button class="active" data-tab="dashboard">Dashboard</button>
+            <button data-tab="galerie">Galerie</button>
             <button data-tab="actualites">Actualit&eacute;s</button>
+            <button data-tab="avis">Avis</button>
+            <button data-tab="faq">FAQ</button>
+            <button data-tab="bandeau">Bandeau</button>
+            <button data-tab="services">Services</button>
+            <button data-tab="infos">Infos</button>
+            <button data-tab="avis-pending">&#9200; Avis</button>
+            <button data-tab="horaires">Horaires</button>
+            <button data-tab="reparations">Suivi r&eacute;parations</button>
+            <button data-tab="statistiques">Statistiques</button>
+            <button data-tab="fidelite-admin">Fid&eacute;lit&eacute;</button>
             <button data-tab="config">Configuration</button>
         </div>
 
         <!-- CONTENT -->
         <div class="admin-content">
 
+            <!-- DASHBOARD -->
+            <div class="admin-section active" id="tab-dashboard">
+                <div class="section-header">
+                    <h2>Tableau de bord</h2>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <button class="btn btn-gold" onclick="openPreview()">&#128065; Pr&eacute;visualiser</button>
+                        <button class="btn btn-outline" onclick="exportData()">&#128190; Exporter</button>
+                        <button class="btn btn-outline" onclick="document.getElementById('importFile').click()">&#128194; Importer</button>
+                        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+                    </div>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128247;</div>
+                        <div class="stat-number" id="statPhotos">0</div>
+                        <div class="stat-label">Photos</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128240;</div>
+                        <div class="stat-number" id="statActus">0</div>
+                        <div class="stat-label">Actualit&eacute;s</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#11088;</div>
+                        <div class="stat-number" id="statAvis">0</div>
+                        <div class="stat-label">Avis</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#10067;</div>
+                        <div class="stat-number" id="statFaq">0</div>
+                        <div class="stat-label">FAQ</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128295;</div>
+                        <div class="stat-number" id="statServices">0</div>
+                        <div class="stat-label">Services</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128276;</div>
+                        <div class="stat-number" id="statBandeau">0</div>
+                        <div class="stat-label">Bandeau</div>
+                    </div>
+                    <div class="stat-card" style="cursor:pointer;" onclick="document.querySelector('[data-tab=avis-pending]').click()">
+                        <div class="stat-icon">&#9200;</div>
+                        <div class="stat-number" id="statPending" style="color:var(--danger);">0</div>
+                        <div class="stat-label">Avis en attente</div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:24px;">
+                    <div class="config-card">
+                        <h3>Acc&egrave;s rapide</h3>
+                        <p>Derni&egrave;re sauvegarde : <span id="lastSaveDate">-</span></p>
+                        <p style="margin-top:8px;">Site en ligne : <a href="https://mecanique017.github.io/mecanique017/" target="_blank" style="color:var(--gold);">mecanique017.github.io/mecanique017</a></p>
+                        <div style="margin-top:12px;display:flex;align-items:center;gap:10px;">
+                            <span>Mode maintenance :</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="maintenanceToggle" onchange="toggleMaintenance()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span id="maintenanceStatus" style="color:var(--text-muted);font-size:0.85rem;">D&eacute;sactiv&eacute;</span>
+                        </div>
+                    </div>
+                    <div class="config-card">
+                        <h3>Historique des modifications</h3>
+                        <div id="historyList" style="max-height:200px;overflow-y:auto;">
+                            <p style="color:var(--text-muted);">Aucune modification enregistr&eacute;e</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- GALERIE -->
-            <div class="admin-section active" id="tab-galerie">
+            <div class="admin-section" id="tab-galerie">
                 <div class="section-header">
                     <h2>Galerie photos</h2>
                     <button class="btn btn-gold" onclick="openAddPhotoModal()">+ Ajouter une photo</button>
@@ -609,6 +882,189 @@
                 </div>
                 <div id="actuList">
                     <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- AVIS -->
+            <div class="admin-section" id="tab-avis">
+                <div class="section-header">
+                    <h2>Avis clients</h2>
+                    <button class="btn btn-gold" onclick="openAddAvisModal()">+ Ajouter un avis</button>
+                </div>
+                <div id="avisList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="admin-section" id="tab-faq">
+                <div class="section-header">
+                    <h2>Foire aux questions</h2>
+                    <button class="btn btn-gold" onclick="openAddFaqModal()">+ Ajouter une question</button>
+                </div>
+                <div id="faqList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- BANDEAU -->
+            <div class="admin-section" id="tab-bandeau">
+                <div class="section-header">
+                    <h2>Bandeau d&eacute;filant</h2>
+                    <button class="btn btn-gold" onclick="openAddBandeauModal()">+ Ajouter un message</button>
+                </div>
+                <div id="bandeauList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- SERVICES -->
+            <div class="admin-section" id="tab-services">
+                <div class="section-header">
+                    <h2>Services</h2>
+                    <button class="btn btn-gold" onclick="openAddServiceModal()">+ Ajouter un service</button>
+                </div>
+                <div id="servicesList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </div>
+
+            <!-- INFOS -->
+            <div class="admin-section" id="tab-infos">
+                <div class="section-header">
+                    <h2>Informations de contact</h2>
+                </div>
+                <div class="config-card">
+                    <h3>Coordonn&eacute;es</h3>
+                    <p>Modifiez les informations de contact affich&eacute;es sur le site.</p>
+                    <div class="form-group">
+                        <label>T&eacute;l&eacute;phone</label>
+                        <input type="text" id="infosPhone" placeholder="06 51 55 00 01">
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="infosEmail" placeholder="contact@mecanique17.fr">
+                    </div>
+                    <div class="form-group">
+                        <label>Adresse</label>
+                        <input type="text" id="infosAddress" placeholder="12 rue de l'exemple">
+                    </div>
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="infosCity" placeholder="La Rochelle">
+                    </div>
+                    <div class="form-group">
+                        <label>Code postal</label>
+                        <input type="text" id="infosPostalCode" placeholder="17000">
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h3>Horaires d'ouverture</h3>
+                    <p>Modifiez les horaires affich&eacute;s sur le site.</p>
+                    <div class="form-group">
+                        <label>Lundi - Vendredi</label>
+                        <input type="text" id="infosHorairesLV" placeholder="8h30 - 18h00">
+                    </div>
+                    <div class="form-group">
+                        <label>Samedi</label>
+                        <input type="text" id="infosHorairesSamedi" placeholder="9h00 - 12h00">
+                    </div>
+                    <div class="form-group">
+                        <label>Note (ex: Ferm&eacute; le dimanche)</label>
+                        <input type="text" id="infosHorairesNote" placeholder="Ferm&eacute; le dimanche et jours f&eacute;ri&eacute;s">
+                    </div>
+                </div>
+                <button class="btn btn-gold" onclick="saveInfos()" style="margin-top:10px;">Sauvegarder les informations</button>
+            </div>
+
+            <!-- AVIS EN ATTENTE -->
+            <div class="admin-section" id="tab-avis-pending">
+                <div class="section-header">
+                    <h2>Avis en attente de validation</h2>
+                </div>
+                <p style="color:var(--text-muted);margin-bottom:20px;">Les avis soumis par les clients apparaissent ici. Validez-les pour les afficher sur le site.</p>
+                <div id="pendingAvisList">
+                    <p style="color:var(--text-muted);">Aucun avis en attente</p>
+                </div>
+            </div>
+
+            <!-- HORAIRES EXCEPTIONNELS -->
+            <div class="admin-section" id="tab-horaires">
+                <div class="section-header">
+                    <h2>Horaires exceptionnels</h2>
+                    <button class="btn btn-gold" onclick="addHoraireExceptionnel()">+ Ajouter une fermeture</button>
+                </div>
+                <p style="color:var(--text-muted);margin-bottom:20px;">G&eacute;rez les fermetures exceptionnelles, vacances et jours f&eacute;ri&eacute;s.</p>
+                <div id="horairesList"></div>
+                <div class="config-card" style="margin-top:20px;">
+                    <h3>Fermetures enregistr&eacute;es</h3>
+                    <div id="horairesExceptionnels">
+                        <p style="color:var(--text-muted);">Aucune fermeture exceptionnelle enregistr&eacute;e</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUIVI REPARATIONS -->
+            <div class="admin-section" id="tab-reparations">
+                <div class="section-header">
+                    <h2>Suivi des r&eacute;parations</h2>
+                    <button class="btn btn-gold" onclick="openAddReparationModal()">+ Ajouter</button>
+                </div>
+                <p style="color:var(--text-muted);margin-bottom:20px;">G&eacute;rez le suivi des r&eacute;parations en cours. Les clients peuvent consulter leur suivi sur la page d&eacute;di&eacute;e.</p>
+                <div id="reparationsList"></div>
+            </div>
+
+            <!-- STATISTIQUES -->
+            <div class="admin-section" id="tab-statistiques">
+                <div class="section-header">
+                    <h2>Statistiques du site</h2>
+                    <button class="btn btn-outline" onclick="exportRdvCSV()">&#128190; Exporter RDV (CSV)</button>
+                </div>
+                <div class="stats-grid" style="margin-bottom:24px;">
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128065;</div>
+                        <div class="stat-number" id="statTotalVisits">0</div>
+                        <div class="stat-label">Visites totales</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128197;</div>
+                        <div class="stat-number" id="statTodayVisits">0</div>
+                        <div class="stat-label">Visites aujourd'hui</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#128197;</div>
+                        <div class="stat-number" id="statRdvCount">0</div>
+                        <div class="stat-label">Demandes RDV</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#11088;</div>
+                        <div class="stat-number" id="statPopSection">-</div>
+                        <div class="stat-label">Section populaire</div>
+                    </div>
+                </div>
+                <div class="config-card">
+                    <h3>Sections les plus visit&eacute;es</h3>
+                    <div id="sectionStatsDetail" style="margin-top:12px;"></div>
+                </div>
+                <div class="config-card" style="margin-top:16px;">
+                    <h3>Derni&egrave;res demandes RDV</h3>
+                    <div id="rdvListAdmin" style="max-height:300px;overflow-y:auto;margin-top:12px;"></div>
+                </div>
+            </div>
+
+            <!-- FIDELITE ADMIN -->
+            <div class="admin-section" id="tab-fidelite-admin">
+                <div class="section-header">
+                    <h2>Gestion Fid&eacute;lit&eacute;</h2>
+                </div>
+                <div class="config-card">
+                    <h3>Valider un tampon de fid&eacute;lit&eacute;</h3>
+                    <p>Le client doit pr&eacute;senter son t&eacute;l&eacute;phone avec la page du site ouverte. Cliquez sur le bouton pour ajouter un tampon.</p>
+                    <div style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+                        <button class="btn btn-gold" onclick="adminAddStamp()">+ Ajouter un tampon</button>
+                        <button class="btn btn-danger" onclick="adminResetStamps()">Remettre &agrave; z&eacute;ro</button>
+                    </div>
+                    <p style="margin-top:12px;color:var(--text-muted);">Tampons actuels du client : <strong id="adminStampCount">0</strong> / 5</p>
                 </div>
             </div>
 
@@ -704,7 +1160,14 @@
             </div>
             <div class="form-group">
                 <label>Texte</label>
-                <textarea id="actuTexte" placeholder="Contenu de l'actualit&eacute;..."></textarea>
+                <div class="rich-toolbar">
+                    <button type="button" onclick="richCmd('bold')" title="Gras"><b>G</b></button>
+                    <button type="button" onclick="richCmd('italic')" title="Italique"><i>I</i></button>
+                    <button type="button" onclick="richCmd('underline')" title="Soulign&eacute;"><u>S</u></button>
+                    <button type="button" onclick="richCmd('insertUnorderedList')" title="Liste">&bull;</button>
+                    <button type="button" onclick="richLink()" title="Lien">&#128279;</button>
+                </div>
+                <div id="actuTexte" class="rich-editor" contenteditable="true" placeholder="Contenu de l'actualit&eacute;..."></div>
             </div>
             <div class="form-group">
                 <label>Date</label>
@@ -715,6 +1178,173 @@
                 <button class="btn btn-outline" onclick="closeModal('actuModal')">Annuler</button>
                 <button class="btn btn-gold" onclick="saveActu()">Sauvegarder</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT AVIS -->
+    <div class="modal-overlay" id="avisModal">
+        <div class="modal">
+            <h2 id="avisModalTitle">Ajouter un avis</h2>
+            <div class="form-group">
+                <label>Nom du client</label>
+                <input type="text" id="avisName" placeholder="Nom du client">
+            </div>
+            <div class="form-group">
+                <label>Initiale (une lettre pour l'avatar)</label>
+                <input type="text" id="avisInitial" placeholder="J" maxlength="1">
+            </div>
+            <div class="form-group">
+                <label>Note (1 &agrave; 5 &eacute;toiles)</label>
+                <select id="avisRating">
+                    <option value="5">&#9733;&#9733;&#9733;&#9733;&#9733; (5)</option>
+                    <option value="4">&#9733;&#9733;&#9733;&#9733; (4)</option>
+                    <option value="3">&#9733;&#9733;&#9733; (3)</option>
+                    <option value="2">&#9733;&#9733; (2)</option>
+                    <option value="1">&#9733; (1)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>T&eacute;moignage</label>
+                <textarea id="avisText" placeholder="Texte de l'avis..."></textarea>
+            </div>
+            <input type="hidden" id="avisEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('avisModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveAvis()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT FAQ -->
+    <div class="modal-overlay" id="faqModal">
+        <div class="modal">
+            <h2 id="faqModalTitle">Ajouter une question</h2>
+            <div class="form-group">
+                <label>Question</label>
+                <input type="text" id="faqQuestion" placeholder="La question fr&eacute;quemment pos&eacute;e">
+            </div>
+            <div class="form-group">
+                <label>R&eacute;ponse</label>
+                <textarea id="faqAnswer" placeholder="La r&eacute;ponse &agrave; la question..."></textarea>
+            </div>
+            <input type="hidden" id="faqEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('faqModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveFaq()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT BANDEAU -->
+    <div class="modal-overlay" id="bandeauModal">
+        <div class="modal">
+            <h2 id="bandeauModalTitle">Ajouter un message</h2>
+            <div class="form-group">
+                <label>Ic&ocirc;ne (emoji)</label>
+                <input type="text" id="bandeauIcon" placeholder="&#128295;">
+            </div>
+            <div class="form-group">
+                <label>Texte du message</label>
+                <input type="text" id="bandeauText" placeholder="Texte du bandeau d&eacute;filant">
+            </div>
+            <input type="hidden" id="bandeauEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('bandeauModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveBandeau()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT SERVICE -->
+    <div class="modal-overlay" id="serviceModal">
+        <div class="modal">
+            <h2 id="serviceModalTitle">Ajouter un service</h2>
+            <div class="form-group">
+                <label>Ic&ocirc;ne (emoji)</label>
+                <input type="text" id="serviceIcon" placeholder="&#128295;">
+            </div>
+            <div class="form-group">
+                <label>Titre</label>
+                <input type="text" id="serviceTitle" placeholder="Titre du service">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="serviceDescription" placeholder="Description du service..."></textarea>
+            </div>
+            <input type="hidden" id="serviceEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('serviceModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveService()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HORAIRE EXCEPTIONNEL -->
+    <div class="modal-overlay" id="horaireModal">
+        <div class="modal">
+            <h2>Ajouter une fermeture exceptionnelle</h2>
+            <div class="form-group">
+                <label>Date de d&eacute;but</label>
+                <input type="date" id="horaireDateDebut">
+            </div>
+            <div class="form-group">
+                <label>Date de fin</label>
+                <input type="date" id="horaireDateFin">
+            </div>
+            <div class="form-group">
+                <label>Motif</label>
+                <input type="text" id="horaireMotif" placeholder="Ex: Vacances d'&eacute;t&eacute;, Jour f&eacute;ri&eacute;...">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('horaireModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveHoraire()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT REPARATION -->
+    <div class="modal-overlay" id="reparationModal">
+        <div class="modal">
+            <h2 id="reparationModalTitle">Ajouter un suivi</h2>
+            <div class="form-group">
+                <label>T&eacute;l&eacute;phone du client</label>
+                <input type="tel" id="repPhone" placeholder="06 XX XX XX XX">
+            </div>
+            <div class="form-group">
+                <label>Immatriculation</label>
+                <input type="text" id="repImmat" placeholder="AB-123-CD" style="text-transform:uppercase;">
+            </div>
+            <div class="form-group">
+                <label>Statut</label>
+                <select id="repStatus">
+                    <option value="reception">R&eacute;ceptionn&eacute;</option>
+                    <option value="diagnostic">En diagnostic</option>
+                    <option value="commande">Pi&egrave;ces command&eacute;es</option>
+                    <option value="reparation">En r&eacute;paration</option>
+                    <option value="termine">Termin&eacute;</option>
+                    <option value="pret">Pr&ecirc;t &agrave; retirer</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="repNotes" placeholder="D&eacute;tails de l'intervention..."></textarea>
+            </div>
+            <input type="hidden" id="repEditId">
+            <div class="modal-actions">
+                <button class="btn btn-outline" onclick="closeModal('reparationModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="saveReparation()">Sauvegarder</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW -->
+    <div class="modal-overlay" id="previewModal" style="padding:20px;">
+        <div style="width:100%;height:100%;position:relative;background:var(--card);border-radius:12px;overflow:hidden;">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:var(--bg);border-bottom:1px solid var(--border);">
+                <span style="color:var(--gold);font-weight:700;">Pr&eacute;visualisation du site</span>
+                <button class="btn btn-outline" onclick="closeModal('previewModal')" style="padding:6px 16px;">Fermer</button>
+            </div>
+            <iframe id="previewFrame" src="" style="width:100%;height:calc(100% - 50px);border:none;"></iframe>
         </div>
     </div>
 

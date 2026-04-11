@@ -4,11 +4,11 @@ const REPO_NAME = 'mecanique017';
 const CONTENT_PATH = 'data/content.json';
 
 // Hash SHA-256 des identifiants admin (ne pas stocker en clair)
-// Email: mecanique017@gmail.com / Password: hashed
+// Email: mecanique17@gmail.com / Password: hashed
 const ADMIN_EMAIL_HASH = '5f4dcc3b5aa765d61d8327deb882cf99'; // placeholder
 const ADMIN_PASS_HASH = 'a1b2c3'; // placeholder - sera verifie cote client
 
-let contentData = { galerie: [], actualites: [] };
+let contentData = { galerie: [], actualites: [], avis: [], faq: [], bandeau: [], services: [], infos: {} };
 let currentPhotoData = null;
 
 // ========== HASH FUNCTION ==========
@@ -38,7 +38,7 @@ async function attemptLogin() {
     if (!storedHash) {
         // Hash par defaut
         const defaultPassHash = await sha256('Melvynsidibe@225');
-        const defaultEmailHash = await sha256('mecanique017@gmail.com');
+        const defaultEmailHash = await sha256('mecanique17@gmail.com');
         localStorage.setItem('m17_admin_hash', defaultPassHash);
         localStorage.setItem('m17_admin_email_hash', defaultEmailHash);
 
@@ -49,7 +49,7 @@ async function attemptLogin() {
     }
 
     const targetPassHash = storedHash || await sha256('Melvynsidibe@225');
-    const targetEmailHash = storedEmailHash || await sha256('mecanique017@gmail.com');
+    const targetEmailHash = storedEmailHash || await sha256('mecanique17@gmail.com');
 
     if (passHash === targetPassHash && emailHash === targetEmailHash) {
         loginSuccess();
@@ -117,8 +117,20 @@ async function loadContent() {
         }
     }
 
+    // Assurer la compatibilite avec les anciennes versions de content.json
+    if (!contentData.avis) contentData.avis = [];
+    if (!contentData.faq) contentData.faq = [];
+    if (!contentData.bandeau) contentData.bandeau = [];
+    if (!contentData.services) contentData.services = [];
+    if (!contentData.infos) contentData.infos = {};
+
     renderGallery();
     renderActualites();
+    renderAvis();
+    renderFaq();
+    renderBandeau();
+    renderServices();
+    renderInfos();
 }
 
 // ========== GALLERY ==========
@@ -377,6 +389,411 @@ function deleteActu(id) {
     publishToGitHub();
 }
 
+// ========== AVIS ==========
+function renderAvis() {
+    const list = document.getElementById('avisList');
+    if (!list) return;
+
+    let html = '';
+    contentData.avis.forEach(avis => {
+        const stars = '★'.repeat(avis.rating) + '☆'.repeat(5 - avis.rating);
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <div>
+                        <h3>${avis.initial || avis.name.charAt(0).toUpperCase()} — ${avis.name}</h3>
+                        <span style="color:var(--gold);font-size:1.1rem;">${stars}</span>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditAvisModal(${avis.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAvis(${avis.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text">${avis.text}</p>
+            </div>
+        `;
+    });
+
+    if (contentData.avis.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun avis pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddAvisModal() {
+    document.getElementById('avisModalTitle').textContent = 'Ajouter un avis';
+    document.getElementById('avisName').value = '';
+    document.getElementById('avisInitial').value = '';
+    document.getElementById('avisRating').value = '5';
+    document.getElementById('avisText').value = '';
+    document.getElementById('avisEditId').value = '';
+    openModal('avisModal');
+}
+
+function openEditAvisModal(id) {
+    const avis = contentData.avis.find(a => a.id === id);
+    if (!avis) return;
+
+    document.getElementById('avisModalTitle').textContent = 'Modifier l\'avis';
+    document.getElementById('avisName').value = avis.name;
+    document.getElementById('avisInitial').value = avis.initial || '';
+    document.getElementById('avisRating').value = avis.rating;
+    document.getElementById('avisText').value = avis.text;
+    document.getElementById('avisEditId').value = id;
+    openModal('avisModal');
+}
+
+async function saveAvis() {
+    const editId = document.getElementById('avisEditId').value;
+    const name = document.getElementById('avisName').value.trim();
+    const initial = document.getElementById('avisInitial').value.trim().toUpperCase() || name.charAt(0).toUpperCase();
+    const rating = parseInt(document.getElementById('avisRating').value);
+    const text = document.getElementById('avisText').value.trim();
+
+    if (!name || !text) {
+        showToast('Veuillez remplir le nom et le t\u00e9moignage', 'error');
+        return;
+    }
+
+    if (editId) {
+        const avis = contentData.avis.find(a => a.id === parseInt(editId));
+        if (avis) {
+            avis.name = name;
+            avis.initial = initial;
+            avis.rating = rating;
+            avis.text = text;
+        }
+    } else {
+        const newId = contentData.avis.length > 0
+            ? Math.max(...contentData.avis.map(a => a.id)) + 1
+            : 1;
+        contentData.avis.push({ id: newId, name, initial, rating, text });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderAvis();
+    closeModal('avisModal');
+    showToast('Avis sauvegard\u00e9 !');
+
+    await publishToGitHub();
+}
+
+function deleteAvis(id) {
+    if (!confirm('Supprimer cet avis ?')) return;
+    contentData.avis = contentData.avis.filter(a => a.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderAvis();
+    showToast('Avis supprim\u00e9');
+    publishToGitHub();
+}
+
+// ========== FAQ ==========
+function renderFaq() {
+    const list = document.getElementById('faqList');
+    if (!list) return;
+
+    let html = '';
+    contentData.faq.forEach(item => {
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>${item.question}</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditFaqModal(${item.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteFaq(${item.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text">${item.answer}</p>
+            </div>
+        `;
+    });
+
+    if (contentData.faq.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucune question pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddFaqModal() {
+    document.getElementById('faqModalTitle').textContent = 'Ajouter une question';
+    document.getElementById('faqQuestion').value = '';
+    document.getElementById('faqAnswer').value = '';
+    document.getElementById('faqEditId').value = '';
+    openModal('faqModal');
+}
+
+function openEditFaqModal(id) {
+    const item = contentData.faq.find(f => f.id === id);
+    if (!item) return;
+
+    document.getElementById('faqModalTitle').textContent = 'Modifier la question';
+    document.getElementById('faqQuestion').value = item.question;
+    document.getElementById('faqAnswer').value = item.answer;
+    document.getElementById('faqEditId').value = id;
+    openModal('faqModal');
+}
+
+async function saveFaq() {
+    const editId = document.getElementById('faqEditId').value;
+    const question = document.getElementById('faqQuestion').value.trim();
+    const answer = document.getElementById('faqAnswer').value.trim();
+
+    if (!question || !answer) {
+        showToast('Veuillez remplir la question et la r\u00e9ponse', 'error');
+        return;
+    }
+
+    if (editId) {
+        const item = contentData.faq.find(f => f.id === parseInt(editId));
+        if (item) {
+            item.question = question;
+            item.answer = answer;
+        }
+    } else {
+        const newId = contentData.faq.length > 0
+            ? Math.max(...contentData.faq.map(f => f.id)) + 1
+            : 1;
+        contentData.faq.push({ id: newId, question, answer });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderFaq();
+    closeModal('faqModal');
+    showToast('Question sauvegard\u00e9e !');
+
+    await publishToGitHub();
+}
+
+function deleteFaq(id) {
+    if (!confirm('Supprimer cette question ?')) return;
+    contentData.faq = contentData.faq.filter(f => f.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderFaq();
+    showToast('Question supprim\u00e9e');
+    publishToGitHub();
+}
+
+// ========== BANDEAU ==========
+function renderBandeau() {
+    const list = document.getElementById('bandeauList');
+    if (!list) return;
+
+    let html = '';
+    contentData.bandeau.forEach(item => {
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>${item.icon || ''} ${item.text}</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditBandeauModal(${item.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteBandeau(${item.id})">Supprimer</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    if (contentData.bandeau.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun message dans le bandeau pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddBandeauModal() {
+    document.getElementById('bandeauModalTitle').textContent = 'Ajouter un message';
+    document.getElementById('bandeauIcon').value = '';
+    document.getElementById('bandeauText').value = '';
+    document.getElementById('bandeauEditId').value = '';
+    openModal('bandeauModal');
+}
+
+function openEditBandeauModal(id) {
+    const item = contentData.bandeau.find(b => b.id === id);
+    if (!item) return;
+
+    document.getElementById('bandeauModalTitle').textContent = 'Modifier le message';
+    document.getElementById('bandeauIcon').value = item.icon || '';
+    document.getElementById('bandeauText').value = item.text;
+    document.getElementById('bandeauEditId').value = id;
+    openModal('bandeauModal');
+}
+
+async function saveBandeau() {
+    const editId = document.getElementById('bandeauEditId').value;
+    const icon = document.getElementById('bandeauIcon').value.trim();
+    const text = document.getElementById('bandeauText').value.trim();
+
+    if (!text) {
+        showToast('Veuillez remplir le texte du message', 'error');
+        return;
+    }
+
+    if (editId) {
+        const item = contentData.bandeau.find(b => b.id === parseInt(editId));
+        if (item) {
+            item.icon = icon;
+            item.text = text;
+        }
+    } else {
+        const newId = contentData.bandeau.length > 0
+            ? Math.max(...contentData.bandeau.map(b => b.id)) + 1
+            : 1;
+        contentData.bandeau.push({ id: newId, icon, text });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderBandeau();
+    closeModal('bandeauModal');
+    showToast('Message sauvegard\u00e9 !');
+
+    await publishToGitHub();
+}
+
+function deleteBandeau(id) {
+    if (!confirm('Supprimer ce message ?')) return;
+    contentData.bandeau = contentData.bandeau.filter(b => b.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderBandeau();
+    showToast('Message supprim\u00e9');
+    publishToGitHub();
+}
+
+// ========== SERVICES ==========
+function renderServices() {
+    const list = document.getElementById('servicesList');
+    if (!list) return;
+
+    let html = '';
+    contentData.services.forEach(service => {
+        html += `
+            <div class="admin-card">
+                <div class="card-header">
+                    <h3>${service.icon || ''} ${service.title}</h3>
+                    <div class="card-actions">
+                        <button class="btn btn-gold btn-sm" onclick="openEditServiceModal(${service.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text">${service.description}</p>
+            </div>
+        `;
+    });
+
+    if (contentData.services.length === 0) {
+        html = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun service pour le moment</p>';
+    }
+
+    list.innerHTML = html;
+}
+
+function openAddServiceModal() {
+    document.getElementById('serviceModalTitle').textContent = 'Ajouter un service';
+    document.getElementById('serviceIcon').value = '';
+    document.getElementById('serviceTitle').value = '';
+    document.getElementById('serviceDescription').value = '';
+    document.getElementById('serviceEditId').value = '';
+    openModal('serviceModal');
+}
+
+function openEditServiceModal(id) {
+    const service = contentData.services.find(s => s.id === id);
+    if (!service) return;
+
+    document.getElementById('serviceModalTitle').textContent = 'Modifier le service';
+    document.getElementById('serviceIcon').value = service.icon || '';
+    document.getElementById('serviceTitle').value = service.title;
+    document.getElementById('serviceDescription').value = service.description;
+    document.getElementById('serviceEditId').value = id;
+    openModal('serviceModal');
+}
+
+async function saveService() {
+    const editId = document.getElementById('serviceEditId').value;
+    const icon = document.getElementById('serviceIcon').value.trim();
+    const title = document.getElementById('serviceTitle').value.trim();
+    const description = document.getElementById('serviceDescription').value.trim();
+
+    if (!title || !description) {
+        showToast('Veuillez remplir le titre et la description', 'error');
+        return;
+    }
+
+    if (editId) {
+        const service = contentData.services.find(s => s.id === parseInt(editId));
+        if (service) {
+            service.icon = icon;
+            service.title = title;
+            service.description = description;
+        }
+    } else {
+        const newId = contentData.services.length > 0
+            ? Math.max(...contentData.services.map(s => s.id)) + 1
+            : 1;
+        contentData.services.push({ id: newId, icon, title, description });
+    }
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderServices();
+    closeModal('serviceModal');
+    showToast('Service sauvegard\u00e9 !');
+
+    await publishToGitHub();
+}
+
+function deleteService(id) {
+    if (!confirm('Supprimer ce service ?')) return;
+    contentData.services = contentData.services.filter(s => s.id !== id);
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    renderServices();
+    showToast('Service supprim\u00e9');
+    publishToGitHub();
+}
+
+// ========== INFOS ==========
+function renderInfos() {
+    const infos = contentData.infos || {};
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+
+    setVal('infosPhone', infos.phone);
+    setVal('infosEmail', infos.email);
+    setVal('infosAddress', infos.address);
+    setVal('infosCity', infos.city);
+    setVal('infosPostalCode', infos.postalCode);
+    setVal('infosHorairesLV', infos.horairesLV);
+    setVal('infosHorairesSamedi', infos.horairesSamedi);
+    setVal('infosHorairesNote', infos.horairesNote);
+}
+
+async function saveInfos() {
+    contentData.infos = {
+        phone: document.getElementById('infosPhone').value.trim(),
+        email: document.getElementById('infosEmail').value.trim(),
+        address: document.getElementById('infosAddress').value.trim(),
+        city: document.getElementById('infosCity').value.trim(),
+        postalCode: document.getElementById('infosPostalCode').value.trim(),
+        horairesLV: document.getElementById('infosHorairesLV').value.trim(),
+        horairesSamedi: document.getElementById('infosHorairesSamedi').value.trim(),
+        horairesNote: document.getElementById('infosHorairesNote').value.trim()
+    };
+
+    contentData.lastModified = Date.now();
+    saveContentLocal();
+    showToast('Informations sauvegard\u00e9es !');
+
+    await publishToGitHub();
+}
+
 // ========== LOCAL STORAGE ==========
 function saveContentLocal() {
     try {
@@ -628,5 +1045,531 @@ async function changePassword() {
     showToast('Mot de passe chang\u00e9 avec succ\u00e8s !');
 }
 
+// ========== DASHBOARD STATS ==========
+function updateDashboard() {
+    const stats = {
+        statPhotos: (contentData.galerie || []).length,
+        statActus: (contentData.actualites || []).length,
+        statAvis: (contentData.avis || []).length,
+        statFaq: (contentData.faq || []).length,
+        statServices: (contentData.services || []).length,
+        statBandeau: (contentData.bandeau || []).length
+    };
+    for (const [id, val] of Object.entries(stats)) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
+    // Derniere sauvegarde
+    const lastSave = document.getElementById('lastSaveDate');
+    if (lastSave && contentData.lastModified) {
+        lastSave.textContent = new Date(contentData.lastModified).toLocaleString('fr-FR');
+    }
+}
+
+// ========== PREVIEW ==========
+function openPreview() {
+    const modal = document.getElementById('previewModal');
+    const frame = document.getElementById('previewFrame');
+    frame.src = 'index.html?preview=1&t=' + Date.now();
+    modal.classList.add('active');
+}
+
+// ========== EXPORT DONNEES ==========
+function exportData() {
+    const dataStr = JSON.stringify(contentData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mecanique17-backup-' + new Date().toISOString().split('T')[0] + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Donn\u00e9es export\u00e9es avec succ\u00e8s !');
+}
+
+// ========== HORAIRES EXCEPTIONNELS ==========
+function addHoraireExceptionnel() {
+    document.getElementById('horaireDateDebut').value = '';
+    document.getElementById('horaireDateFin').value = '';
+    document.getElementById('horaireMotif').value = '';
+    document.getElementById('horaireModal').classList.add('active');
+}
+
+function saveHoraire() {
+    const debut = document.getElementById('horaireDateDebut').value;
+    const fin = document.getElementById('horaireDateFin').value;
+    const motif = document.getElementById('horaireMotif').value.trim();
+
+    if (!debut || !fin || !motif) {
+        showToast('Veuillez remplir tous les champs', 'error');
+        return;
+    }
+
+    if (!contentData.horairesExceptionnels) contentData.horairesExceptionnels = [];
+    contentData.horairesExceptionnels.push({ debut, fin, motif, id: Date.now() });
+
+    saveContentLocal();
+    publishToGitHub();
+    renderHoraires();
+    closeModal('horaireModal');
+    showToast('Fermeture exceptionnelle ajout\u00e9e !');
+}
+
+function renderHoraires() {
+    const container = document.getElementById('horairesExceptionnels');
+    if (!container) return;
+    const horaires = contentData.horairesExceptionnels || [];
+
+    if (horaires.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Aucune fermeture exceptionnelle enregistr\u00e9e</p>';
+        return;
+    }
+
+    container.innerHTML = horaires.map(h => `
+        <div class="horaire-item">
+            <div class="horaire-info">
+                <div class="horaire-dates">${formatDate(h.debut)} - ${formatDate(h.fin)}</div>
+                <div class="horaire-motif">${h.motif}</div>
+            </div>
+            <button class="btn-icon" onclick="deleteHoraire(${h.id})" title="Supprimer" style="color:var(--danger);background:none;border:none;cursor:pointer;font-size:1.2rem;">&times;</button>
+        </div>
+    `).join('');
+}
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+function deleteHoraire(id) {
+    if (!confirm('Supprimer cette fermeture ?')) return;
+    contentData.horairesExceptionnels = (contentData.horairesExceptionnels || []).filter(h => h.id !== id);
+    saveContentLocal();
+    publishToGitHub();
+    renderHoraires();
+    showToast('Fermeture supprim\u00e9e');
+}
+
+// ========== EDITEUR RICHE ==========
+function richCmd(cmd) {
+    document.execCommand(cmd, false, null);
+    document.getElementById('actuTexte').focus();
+}
+
+function richLink() {
+    const url = prompt('URL du lien :');
+    if (url) {
+        document.execCommand('createLink', false, url);
+        document.getElementById('actuTexte').focus();
+    }
+}
+
+// ========== AVIS EN ATTENTE ==========
+function renderPendingAvis() {
+    const container = document.getElementById('pendingAvisList');
+    if (!container) return;
+
+    const pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const statEl = document.getElementById('statPending');
+    if (statEl) statEl.textContent = pending.length;
+
+    if (pending.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Aucun avis en attente</p>';
+        return;
+    }
+
+    container.innerHTML = pending.map(a => {
+        const stars = '\u2605'.repeat(a.rating) + '\u2606'.repeat(5 - a.rating);
+        const date = new Date(a.date).toLocaleDateString('fr-FR');
+        return `
+            <div class="pending-avis-card">
+                <div class="pending-avis-info">
+                    <div class="pending-avis-stars">${stars}</div>
+                    <div class="pending-avis-text">\u00ab ${a.text} \u00bb</div>
+                    <div class="pending-avis-author">${a.name} <span class="pending-avis-date">- ${date}</span></div>
+                </div>
+                <div class="pending-avis-actions">
+                    <button class="btn btn-gold btn-sm" onclick="approveAvis(${a.id})">Valider</button>
+                    <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);" onclick="rejectAvis(${a.id})">Refuser</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function approveAvis(id) {
+    let pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const avis = pending.find(a => a.id === id);
+    if (!avis) return;
+
+    // Ajouter aux avis approuves
+    if (!contentData.avis) contentData.avis = [];
+    contentData.avis.push({
+        name: avis.name,
+        initial: avis.initial,
+        rating: avis.rating,
+        text: avis.text,
+        id: avis.id
+    });
+
+    // Retirer des en attente
+    pending = pending.filter(a => a.id !== id);
+    localStorage.setItem('m17_pending_avis', JSON.stringify(pending));
+
+    saveContentLocal();
+    publishToGitHub();
+    renderPendingAvis();
+    addHistory('Avis de ' + avis.name + ' valid\u00e9');
+    showToast('Avis valid\u00e9 et publi\u00e9 !');
+}
+
+function rejectAvis(id) {
+    if (!confirm('Refuser cet avis ?')) return;
+    let pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const avis = pending.find(a => a.id === id);
+    pending = pending.filter(a => a.id !== id);
+    localStorage.setItem('m17_pending_avis', JSON.stringify(pending));
+    renderPendingAvis();
+    addHistory('Avis de ' + (avis ? avis.name : 'inconnu') + ' refus\u00e9');
+    showToast('Avis refus\u00e9');
+}
+
+// ========== IMPORT DONNEES ==========
+function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const imported = JSON.parse(e.target.result);
+            if (!confirm('Importer ces donn\u00e9es ? Cela remplacera le contenu actuel.')) return;
+            contentData = imported;
+            saveContentLocal();
+            publishToGitHub();
+            loadContent();
+            addHistory('Import de donn\u00e9es depuis un fichier');
+            showToast('Donn\u00e9es import\u00e9es avec succ\u00e8s !');
+        } catch (err) {
+            showToast('Fichier invalide : ' + err.message, 'error');
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// ========== HISTORIQUE DES MODIFICATIONS ==========
+function addHistory(action) {
+    let history = JSON.parse(localStorage.getItem('m17_history') || '[]');
+    history.unshift({
+        action: action,
+        date: new Date().toISOString()
+    });
+    // Garder les 50 dernieres
+    if (history.length > 50) history = history.slice(0, 50);
+    localStorage.setItem('m17_history', JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    const container = document.getElementById('historyList');
+    if (!container) return;
+    const history = JSON.parse(localStorage.getItem('m17_history') || '[]');
+
+    if (history.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted);">Aucune modification enregistr\u00e9e</p>';
+        return;
+    }
+
+    container.innerHTML = history.slice(0, 20).map(h => {
+        const d = new Date(h.date);
+        const dateStr = d.toLocaleDateString('fr-FR') + ' ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        return `<div class="history-item"><span class="history-date">${dateStr}</span> <span class="history-action">${h.action}</span></div>`;
+    }).join('');
+}
+
+// Intercepter les sauvegardes pour ajouter a l'historique
+const origSaveContentLocal = saveContentLocal;
+saveContentLocal = function() {
+    origSaveContentLocal();
+    contentData.lastModified = new Date().toISOString();
+};
+
+// ========== MODE MAINTENANCE ==========
+function toggleMaintenance() {
+    const toggle = document.getElementById('maintenanceToggle');
+    const status = document.getElementById('maintenanceStatus');
+    contentData.maintenance = toggle.checked;
+    status.textContent = toggle.checked ? 'Activ\u00e9' : 'D\u00e9sactiv\u00e9';
+    status.style.color = toggle.checked ? 'var(--danger)' : 'var(--text-muted)';
+    saveContentLocal();
+    publishToGitHub();
+    addHistory(toggle.checked ? 'Mode maintenance activ\u00e9' : 'Mode maintenance d\u00e9sactiv\u00e9');
+    showToast(toggle.checked ? 'Mode maintenance activ\u00e9' : 'Mode maintenance d\u00e9sactiv\u00e9');
+}
+
+function loadMaintenanceState() {
+    const toggle = document.getElementById('maintenanceToggle');
+    const status = document.getElementById('maintenanceStatus');
+    if (toggle && contentData.maintenance) {
+        toggle.checked = true;
+        if (status) {
+            status.textContent = 'Activ\u00e9';
+            status.style.color = 'var(--danger)';
+        }
+    }
+}
+
 // ========== INIT ==========
 checkSession();
+
+// ========== SUIVI REPARATIONS ==========
+function renderReparations() {
+    const list = document.getElementById('reparationsList');
+    if (!list) return;
+
+    const reps = JSON.parse(localStorage.getItem('m17_reparations') || '[]');
+    const statusLabels = {
+        'reception': 'Receptionne',
+        'diagnostic': 'En diagnostic',
+        'commande': 'Pieces commandees',
+        'reparation': 'En reparation',
+        'termine': 'Termine',
+        'pret': 'Pret a retirer'
+    };
+
+    if (reps.length === 0) {
+        list.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucune reparation en cours</p>';
+        return;
+    }
+
+    list.innerHTML = reps.map(r => `
+        <div class="admin-card">
+            <div class="card-header">
+                <div>
+                    <h3>${r.immat || 'N/A'} - ${r.phone || 'N/A'}</h3>
+                    <span class="rep-status-badge rep-status-${r.status}">${statusLabels[r.status] || r.status}</span>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-gold btn-sm" onclick="openEditReparationModal(${r.id})">Modifier</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteReparation(${r.id})">Supprimer</button>
+                </div>
+            </div>
+            <p class="card-text">${r.notes || ''}</p>
+            <p class="card-date">Ajout\u00e9 le ${new Date(r.id).toLocaleDateString('fr-FR')}</p>
+        </div>
+    `).join('');
+}
+
+function openAddReparationModal() {
+    document.getElementById('reparationModalTitle').textContent = 'Ajouter un suivi';
+    document.getElementById('repPhone').value = '';
+    document.getElementById('repImmat').value = '';
+    document.getElementById('repStatus').value = 'reception';
+    document.getElementById('repNotes').value = '';
+    document.getElementById('repEditId').value = '';
+    openModal('reparationModal');
+}
+
+function openEditReparationModal(id) {
+    const reps = JSON.parse(localStorage.getItem('m17_reparations') || '[]');
+    const rep = reps.find(r => r.id === id);
+    if (!rep) return;
+
+    document.getElementById('reparationModalTitle').textContent = 'Modifier le suivi';
+    document.getElementById('repPhone').value = rep.phone || '';
+    document.getElementById('repImmat').value = rep.immat || '';
+    document.getElementById('repStatus').value = rep.status || 'reception';
+    document.getElementById('repNotes').value = rep.notes || '';
+    document.getElementById('repEditId').value = id;
+    openModal('reparationModal');
+}
+
+function saveReparation() {
+    const editId = document.getElementById('repEditId').value;
+    const phone = document.getElementById('repPhone').value.trim();
+    const immat = document.getElementById('repImmat').value.trim().toUpperCase();
+    const status = document.getElementById('repStatus').value;
+    const notes = document.getElementById('repNotes').value.trim();
+
+    if (!phone && !immat) {
+        showToast('Veuillez remplir le telephone ou l\'immatriculation', 'error');
+        return;
+    }
+
+    let reps = JSON.parse(localStorage.getItem('m17_reparations') || '[]');
+
+    if (editId) {
+        const rep = reps.find(r => r.id === parseInt(editId));
+        if (rep) {
+            rep.phone = phone;
+            rep.immat = immat;
+            rep.status = status;
+            rep.notes = notes;
+        }
+    } else {
+        reps.push({
+            id: Date.now(),
+            phone: phone,
+            immat: immat,
+            status: status,
+            notes: notes
+        });
+    }
+
+    localStorage.setItem('m17_reparations', JSON.stringify(reps));
+    renderReparations();
+    closeModal('reparationModal');
+    showToast('Suivi sauvegarde !');
+    addHistory('Suivi reparation ' + immat + ' mis a jour');
+}
+
+function deleteReparation(id) {
+    if (!confirm('Supprimer ce suivi ?')) return;
+    let reps = JSON.parse(localStorage.getItem('m17_reparations') || '[]');
+    reps = reps.filter(r => r.id !== id);
+    localStorage.setItem('m17_reparations', JSON.stringify(reps));
+    renderReparations();
+    showToast('Suivi supprime');
+}
+
+// ========== STATISTIQUES ==========
+function renderStatistiques() {
+    const analytics = JSON.parse(localStorage.getItem('m17_analytics') || '{}');
+    const today = new Date().toISOString().split('T')[0];
+    const rdvList = JSON.parse(localStorage.getItem('m17_rdv_list') || '[]');
+
+    // Total visits
+    const totalEl = document.getElementById('statTotalVisits');
+    if (totalEl) totalEl.textContent = analytics.totalVisits || 0;
+
+    // Today visits
+    const todayEl = document.getElementById('statTodayVisits');
+    if (todayEl) todayEl.textContent = (analytics.dailyVisits && analytics.dailyVisits[today]) || 0;
+
+    // RDV count
+    const rdvEl = document.getElementById('statRdvCount');
+    if (rdvEl) rdvEl.textContent = rdvList.length;
+
+    // Most popular section
+    const popEl = document.getElementById('statPopSection');
+    if (popEl && analytics.sectionViews) {
+        const sections = Object.entries(analytics.sectionViews);
+        if (sections.length > 0) {
+            sections.sort((a, b) => b[1] - a[1]);
+            popEl.textContent = sections[0][0];
+            popEl.style.fontSize = '1rem';
+        }
+    }
+
+    // Section details
+    const detailEl = document.getElementById('sectionStatsDetail');
+    if (detailEl && analytics.sectionViews) {
+        const sections = Object.entries(analytics.sectionViews).sort((a, b) => b[1] - a[1]);
+        if (sections.length > 0) {
+            detailEl.innerHTML = sections.map(([name, count]) =>
+                '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);"><span style="color:var(--text);">' + name + '</span><span style="color:var(--gold);font-weight:700;">' + count + ' vues</span></div>'
+            ).join('');
+        } else {
+            detailEl.innerHTML = '<p style="color:var(--text-muted);">Pas encore de donnees</p>';
+        }
+    }
+
+    // RDV list
+    const rdvListEl = document.getElementById('rdvListAdmin');
+    if (rdvListEl) {
+        if (rdvList.length === 0) {
+            rdvListEl.innerHTML = '<p style="color:var(--text-muted);">Aucune demande de RDV</p>';
+        } else {
+            rdvListEl.innerHTML = rdvList.slice().reverse().slice(0, 20).map(r => {
+                const date = r.date ? new Date(r.date).toLocaleDateString('fr-FR') : '-';
+                return '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">' +
+                    '<div><strong style="color:var(--text);">' + (r.nom || '') + ' ' + (r.prenom || '') + '</strong><br><span style="color:var(--text-muted);font-size:0.85rem;">' + (r.intervention || '') + '</span></div>' +
+                    '<div style="text-align:right;"><span style="color:var(--gold);font-size:0.85rem;">' + (r.telephone || '') + '</span><br><span style="color:var(--text-muted);font-size:0.75rem;">' + date + '</span></div></div>';
+            }).join('');
+        }
+    }
+}
+
+// ========== EXPORT RDV CSV ==========
+function exportRdvCSV() {
+    const rdvList = JSON.parse(localStorage.getItem('m17_rdv_list') || '[]');
+    if (rdvList.length === 0) {
+        showToast('Aucune donnee RDV a exporter', 'error');
+        return;
+    }
+
+    let csv = 'Nom,Prenom,Telephone,Type intervention,Description,Date\n';
+    rdvList.forEach(r => {
+        csv += '"' + (r.nom || '') + '","' + (r.prenom || '') + '","' + (r.telephone || '') + '","' + (r.intervention || '') + '","' + (r.travaux || '').replace(/"/g, '""') + '","' + (r.date || '') + '"\n';
+    });
+
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'rdv-mecanique17-' + new Date().toISOString().split('T')[0] + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('RDV exportes en CSV !');
+}
+
+// ========== FIDELITE ADMIN ==========
+function adminAddStamp() {
+    let stamps = parseInt(localStorage.getItem('m17_loyalty_stamps') || '0');
+    if (stamps >= 5) {
+        showToast('Maximum de tampons atteint (5/5)', 'error');
+        return;
+    }
+    stamps++;
+    localStorage.setItem('m17_loyalty_stamps', stamps);
+    document.getElementById('adminStampCount').textContent = stamps;
+    showToast('Tampon ajoute ! (' + stamps + '/5)');
+    addHistory('Tampon de fidelite ajoute (' + stamps + '/5)');
+}
+
+function adminResetStamps() {
+    if (!confirm('Remettre les tampons a zero ?')) return;
+    localStorage.setItem('m17_loyalty_stamps', '0');
+    document.getElementById('adminStampCount').textContent = '0';
+    showToast('Tampons remis a zero');
+    addHistory('Tampons de fidelite remis a zero');
+}
+
+function renderFideliteAdmin() {
+    const stamps = parseInt(localStorage.getItem('m17_loyalty_stamps') || '0');
+    const el = document.getElementById('adminStampCount');
+    if (el) el.textContent = stamps;
+}
+
+// ========== NOTIFICATION BADGE ==========
+function updateNotifBadge() {
+    const pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    const rdvList = JSON.parse(localStorage.getItem('m17_rdv_list') || '[]');
+    const total = pending.length;
+    const badge = document.getElementById('notifBadge');
+    const count = document.getElementById('notifCount');
+    if (badge && count) {
+        if (total > 0) {
+            badge.style.display = 'inline-block';
+            count.textContent = total;
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+// Appeler updateDashboard apres le chargement du contenu
+const origLoadContent = loadContent;
+loadContent = async function() {
+    await origLoadContent();
+    updateDashboard();
+    renderHoraires();
+    renderHistory();
+    loadMaintenanceState();
+    renderPendingAvis();
+    renderReparations();
+    renderStatistiques();
+    renderFideliteAdmin();
+    updateNotifBadge();
+};

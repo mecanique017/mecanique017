@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide des Voyants Tableau de Bord - MECANIQUE 17 | Garage Jarnac-Champagne (17)</title>
+    <meta name="description" content="Guide complet des voyants du tableau de bord par MECANIQUE 17, garage &agrave; Jarnac-Champagne. Voyant moteur, huile, temp&eacute;rature, batterie, ABS. Diagnostic auto en Charente-Maritime.">
+    <meta name="keywords" content="voyants tableau de bord, voyant moteur signification, voyant huile, voyant ABS, voyant batterie, diagnostic auto jarnac-champagne, MECANIQUE 17, garage charente-maritime">
+    <meta name="author" content="MECANIQUE 17">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mecanique017.github.io/mecanique017/voyants.html">
+    <meta property="og:title" content="Guide des Voyants Tableau de Bord - MECANIQUE 17 Jarnac-Champagne">
+    <meta property="og:description" content="Comprenez les voyants de votre tableau de bord. Guide interactif par MECANIQUE 17, garage en Charente-Maritime.">
+    <meta property="og:url" content="https://mecanique017.github.io/mecanique017/voyants.html">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:image" content="https://mecanique017.github.io/mecanique017/images/LOGO.jpg">
+    <meta property="og:image:width" content="400">
+    <meta property="og:image:height" content="400">
+    <meta property="og:site_name" content="MECANIQUE 17">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Guide des Voyants - MECANIQUE 17 Jarnac-Champagne">
+    <meta name="twitter:description" content="Comprenez les alertes de votre tableau de bord. Diagnostic auto en Charente-Maritime.">
+    <meta name="twitter:image" content="https://mecanique017.github.io/mecanique017/images/LOGO.jpg">
+    <meta name="geo.region" content="FR-17">
+    <meta name="geo.placename" content="Jarnac-Champagne">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/LOGO.jpg">
+    <link rel="apple-touch-icon" href="images/LOGO.jpg">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Schema.org BreadcrumbList -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://mecanique017.github.io/mecanique017/"},
+            {"@type": "ListItem", "position": 2, "name": "Guide des Voyants", "item": "https://mecanique017.github.io/mecanique017/voyants.html"}
+        ]
+    }
+    </script>
+    <style>
+        .page-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0a 100%);
+            padding: 120px 0 60px;
+            text-align: center;
+            color: #fff;
+        }
+        .page-hero h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .page-hero h1 span { color: #e8a800; }
+        .page-hero p {
+            font-family: 'Open Sans', sans-serif;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .legend-bar {
+            background: #fff;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .legend-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .legend-dot.red { background: #e63946; }
+        .legend-dot.yellow { background: #f4a261; }
+        .legend-dot.green { background: #2a9d8f; }
+        .voyants-section {
+            padding: 60px 0;
+            background: #f5f5f5;
+        }
+        .voyants-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .voyants-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .voyant-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .voyant-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .voyant-card.red { border-top: 4px solid #e63946; }
+        .voyant-card.yellow { border-top: 4px solid #f4a261; }
+        .voyant-card.green { border-top: 4px solid #2a9d8f; }
+        .voyant-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .voyant-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .voyant-card.red .voyant-icon { background: rgba(230,57,70,0.12); }
+        .voyant-card.yellow .voyant-icon { background: rgba(244,162,97,0.12); }
+        .voyant-card.green .voyant-icon { background: rgba(42,157,143,0.12); }
+        .voyant-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1a1a2e;
+        }
+        .voyant-severity {
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .voyant-card.red .voyant-severity { color: #e63946; }
+        .voyant-card.yellow .voyant-severity { color: #f4a261; }
+        .voyant-card.green .voyant-severity { color: #2a9d8f; }
+        .voyant-toggle-icon {
+            margin-left: auto;
+            font-size: 1.2rem;
+            color: #999;
+            transition: transform 0.3s;
+        }
+        .voyant-card.active .voyant-toggle-icon {
+            transform: rotate(180deg);
+        }
+        .voyant-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        .voyant-card.active .voyant-details {
+            max-height: 300px;
+        }
+        .voyant-details-inner {
+            padding: 0 20px 20px;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+        .voyant-desc {
+            font-family: 'Open Sans', sans-serif;
+            color: #555;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        .voyant-action {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 8px 14px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .voyant-card.red .voyant-action {
+            background: rgba(230,57,70,0.1);
+            color: #e63946;
+        }
+        .voyant-card.yellow .voyant-action {
+            background: rgba(244,162,97,0.1);
+            color: #c77b35;
+        }
+        .voyant-card.green .voyant-action {
+            background: rgba(42,157,143,0.1);
+            color: #2a9d8f;
+        }
+        .voyants-cta {
+            text-align: center;
+            margin-top: 50px;
+            padding: 40px 20px;
+            background: #1a1a2e;
+            border-radius: 12px;
+            color: #fff;
+        }
+        .voyants-cta h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .voyants-cta h2 span { color: #e8a800; }
+        .voyants-cta p {
+            font-family: 'Open Sans', sans-serif;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 20px;
+        }
+        .voyants-cta .btn {
+            display: inline-block;
+            padding: 14px 36px;
+            background: #e8a800;
+            color: #000;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .voyants-cta .btn:hover {
+            background: #F0A500;
+            transform: translateY(-2px);
+        }
+        .sub-header-nav {
+            background: #1a1a2e;
+            border-bottom: 2px solid #e8a800;
+            padding: 12px 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        .sub-header-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sub-header-logo {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            gap: 10px;
+        }
+        .sub-header-logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        .sub-header-logo span {
+            font-family: 'Montserrat', sans-serif;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .sub-header-logo strong { color: #e8a800; }
+        .sub-header-links {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .sub-header-links a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .sub-header-links a:hover { color: #e8a800; }
+        .sub-header-links .btn-back {
+            background: #e8a800;
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .sub-header-links .btn-back:hover { background: #F0A500; color: #000; }
+        .sub-footer {
+            background: #1a1a2e;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            padding: 30px 20px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 0.9rem;
+        }
+        .sub-footer a { color: #e8a800; text-decoration: none; }
+        .sub-footer a:hover { text-decoration: underline; }
+        .sub-footer .footer-line { margin: 5px 0; }
+        @media (max-width: 600px) {
+            .page-hero h1 { font-size: 1.8rem; }
+            .voyants-grid { grid-template-columns: 1fr; }
+            .sub-header-links { gap: 10px; }
+            .sub-header-links a:not(.btn-back) { display: none; }
+        }
+    </style>
+</head>
+<body class="light-mode">
+
+    <!-- HEADER -->
+    <nav class="sub-header-nav">
+        <div class="sub-header-inner">
+            <a href="index.html" class="sub-header-logo">
+                <img src="images/LOGO.jpg" alt="MECANIQUE 17">
+                <span>MECANIQUE <strong>17</strong></span>
+            </a>
+            <div class="sub-header-links">
+                <a href="tarifs.html">Tarifs</a>
+                <a href="index.html#rdv">Prendre RDV</a>
+                <a href="tel:+33651550001">&#128222; 06 51 55 00 01</a>
+                <a href="index.html" class="btn-back">&#8592; Retour au site</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="page-hero">
+        <h1>Guide des <span>Voyants</span></h1>
+        <p>Un voyant s'allume sur votre tableau de bord ? Identifiez-le et d&eacute;couvrez la marche &agrave; suivre.</p>
+    </section>
+
+    <!-- LEGEND -->
+    <div class="legend-bar">
+        <div class="legend-inner">
+            <div class="legend-item"><span class="legend-dot red"></span> STOP / Urgent</div>
+            <div class="legend-item"><span class="legend-dot yellow"></span> &Agrave; v&eacute;rifier</div>
+            <div class="legend-item"><span class="legend-dot green"></span> Normal / Info</div>
+        </div>
+    </div>
+
+    <!-- VOYANTS -->
+    <section class="voyants-section">
+        <div class="voyants-container">
+            <div class="voyants-grid">
+
+                <!-- Huile moteur -->
+                <div class="voyant-card red" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128167;</div>
+                        <div>
+                            <div class="voyant-title">Huile moteur</div>
+                            <div class="voyant-severity">&#128308; STOP imm&eacute;diat</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Arr&ecirc;tez-vous imm&eacute;diatement. Le niveau d'huile est trop bas ou la pression est insuffisante. Continuer &agrave; rouler peut entra&icirc;ner la casse du moteur. V&eacute;rifiez le niveau d'huile et compl&eacute;tez si n&eacute;cessaire. Si le voyant persiste, ne red&eacute;marrez pas.</p>
+                            <span class="voyant-action">&#9888; Ne pas rouler &mdash; Appelez-nous</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Temp&eacute;rature moteur -->
+                <div class="voyant-card red" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#127777;</div>
+                        <div>
+                            <div class="voyant-title">Temp&eacute;rature moteur</div>
+                            <div class="voyant-severity">&#128308; STOP imm&eacute;diat</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Surchauffe moteur d&eacute;tect&eacute;e. Arr&ecirc;tez-vous d&egrave;s que possible en s&eacute;curit&eacute; et laissez le moteur refroidir. V&eacute;rifiez le niveau de liquide de refroidissement. Ne jamais ouvrir le bouchon du radiateur &agrave; chaud. Causes possibles : fuite, pompe &agrave; eau, thermostat d&eacute;faillant.</p>
+                            <span class="voyant-action">&#9888; Arr&ecirc;tez le moteur imm&eacute;diatement</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Freins -->
+                <div class="voyant-card red" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128711;</div>
+                        <div>
+                            <div class="voyant-title">Freins</div>
+                            <div class="voyant-severity">&#128308; STOP / V&eacute;rification urgente</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Le frein &agrave; main est peut-&ecirc;tre encore serr&eacute;, ou le niveau de liquide de frein est trop bas. Si le frein &agrave; main est desserr&eacute; et le voyant reste allum&eacute;, arr&ecirc;tez-vous prudemment. Un niveau de liquide de frein bas peut indiquer une fuite dans le circuit de freinage.</p>
+                            <span class="voyant-action">&#9888; V&eacute;rifiez le frein &agrave; main puis le liquide</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Batterie -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128267;</div>
+                        <div>
+                            <div class="voyant-title">Batterie / Charge</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier rapidement</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Probl&egrave;me de charge d&eacute;tect&eacute;. L'alternateur ne charge peut-&ecirc;tre plus la batterie, ou la batterie est d&eacute;faillante. La voiture risque de s'arr&ecirc;ter lorsque la batterie sera &eacute;puis&eacute;e. &Eacute;teignez les &eacute;quipements non essentiels (clim, radio) et rendez-vous au garage.</p>
+                            <span class="voyant-action">&#128295; Faites v&eacute;rifier alternateur et batterie</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ABS -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#9888;</div>
+                        <div>
+                            <div class="voyant-title">ABS</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Le syst&egrave;me antiblocage des roues est d&eacute;faillant. Le freinage classique fonctionne normalement, mais l'ABS ne pourra pas intervenir en cas de freinage d'urgence. Conduisez prudemment et faites v&eacute;rifier le syst&egrave;me d&egrave;s que possible. Causes fr&eacute;quentes : capteur de roue encrass&eacute; ou d&eacute;faillant.</p>
+                            <span class="voyant-action">&#128295; Diagnostic ABS recommand&eacute;</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ESP/ESC -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128663;</div>
+                        <div>
+                            <div class="voyant-title">ESP / ESC</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Le contr&ocirc;le &eacute;lectronique de stabilit&eacute; est d&eacute;sactiv&eacute; ou d&eacute;faillant. Si le voyant clignote, c'est normal : il intervient pour stabiliser le v&eacute;hicule. S'il reste allum&eacute; en continu, le syst&egrave;me est en panne. Conduisez prudemment, surtout sur route mouill&eacute;e.</p>
+                            <span class="voyant-action">&#128295; Faites v&eacute;rifier le syst&egrave;me ESP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Airbag -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128101;</div>
+                        <div>
+                            <div class="voyant-title">Airbag / SRS</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier rapidement</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Le syst&egrave;me airbag est d&eacute;faillant. En cas de choc, les airbags pourraient ne pas se d&eacute;clencher, ou au contraire se d&eacute;clencher de mani&egrave;re intempestive. Il est important de faire v&eacute;rifier ce syst&egrave;me rapidement pour votre s&eacute;curit&eacute; et celle de vos passagers.</p>
+                            <span class="voyant-action">&#128295; Diagnostic airbag n&eacute;cessaire</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moteur / Check engine -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#9881;</div>
+                        <div>
+                            <div class="voyant-title">Moteur / Check Engine</div>
+                            <div class="voyant-severity">&#128992; Diagnostic n&eacute;cessaire</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Un d&eacute;faut moteur a &eacute;t&eacute; d&eacute;tect&eacute; par le calculateur. Les causes sont multiples : sonde lambda, catalyseur, injection, allumage, vanne EGR... Un diagnostic &eacute;lectronique est n&eacute;cessaire pour identifier le code d&eacute;faut pr&eacute;cis. Si le voyant clignote, r&eacute;duisez votre vitesse.</p>
+                            <span class="voyant-action">&#128187; Diagnostic &eacute;lectronique recommand&eacute;</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Direction assist&eacute;e -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#9855;</div>
+                        <div>
+                            <div class="voyant-title">Direction assist&eacute;e</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">La direction assist&eacute;e est en panne. La conduite reste possible mais le volant sera beaucoup plus dur &agrave; tourner, surtout &agrave; basse vitesse et lors des man&oelig;uvres de stationnement. Soyez vigilant et faites r&eacute;parer rapidement. Causes possibles : pompe, calculateur, colonne de direction.</p>
+                            <span class="voyant-action">&#128295; R&eacute;paration direction assist&eacute;e</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pneus / TPMS -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128661;</div>
+                        <div>
+                            <div class="voyant-title">Pneus / TPMS</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">La pression d'un ou plusieurs pneus est incorrecte. V&eacute;rifiez la pression de tous vos pneus &agrave; froid et regonflez-les aux valeurs pr&eacute;conis&eacute;es (indications sur le montant de la porti&egrave;re conducteur). Un sous-gonflage augmente la consommation et l'usure, et r&eacute;duit la tenue de route.</p>
+                            <span class="voyant-action">&#128661; V&eacute;rifiez et regonflez vos pneus</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAP / DPF -->
+                <div class="voyant-card yellow" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#128168;</div>
+                        <div>
+                            <div class="voyant-title">FAP / DPF (Filtre &agrave; particules)</div>
+                            <div class="voyant-severity">&#128992; &Agrave; v&eacute;rifier</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Le filtre &agrave; particules est satur&eacute; et n&eacute;cessite une r&eacute;g&eacute;n&eacute;ration. Roulez environ 20 minutes sur autoroute ou route &agrave; 80-110 km/h en maintenant un r&eacute;gime moteur &eacute;lev&eacute; (3000-3500 tr/min) pour permettre la r&eacute;g&eacute;n&eacute;ration. Si le voyant persiste, un nettoyage ou un diagnostic s'impose.</p>
+                            <span class="voyant-action">&#128663; Roulez 20 min sur autoroute</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pr&eacute;chauffage -->
+                <div class="voyant-card green" onclick="this.classList.toggle('active')">
+                    <div class="voyant-header">
+                        <div class="voyant-icon">&#9733;</div>
+                        <div>
+                            <div class="voyant-title">Pr&eacute;chauffage (Diesel)</div>
+                            <div class="voyant-severity">&#128994; Normal au d&eacute;marrage</div>
+                        </div>
+                        <span class="voyant-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="voyant-details">
+                        <div class="voyant-details-inner">
+                            <p class="voyant-desc">Ce voyant est normal au d&eacute;marrage d'un moteur diesel : il indique que les bougies de pr&eacute;chauffage r&eacute;chauffent les chambres de combustion. Attendez qu'il s'&eacute;teigne avant de d&eacute;marrer. Si le voyant clignote ou reste allum&eacute; en roulant, il indique un probl&egrave;me d'injection ou de pr&eacute;chauffage.</p>
+                            <span class="voyant-action">&#9989; Normal &mdash; Si clignote : diagnostic</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- CTA -->
+            <div class="voyants-cta">
+                <h2>Un voyant est <span>allum&eacute;</span> ?</h2>
+                <p>Ne prenez pas de risque. Prenez rendez-vous pour un diagnostic.</p>
+                <a href="index.html#rdv" class="btn">&#128197; Prendre rendez-vous</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="sub-footer">
+        <p class="footer-line">&copy; 2026 MECANIQUE 17 &mdash; Tous droits r&eacute;serv&eacute;s</p>
+        <p class="footer-line">38 rue Chotard, 17520 Jarnac-Champagne | <a href="tel:+33651550001">06 51 55 00 01</a> | <a href="mailto:mecanique17@gmail.com">mecanique17@gmail.com</a></p>
+        <p class="footer-line"><a href="mentions-legales.html">Mentions l&eacute;gales</a></p>
+    </footer>
+
+</body>
+</html>
