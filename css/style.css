@@ -3996,3 +3996,271 @@ body.light-mode .devis .section-subtitle {
 .brands-track { will-change: transform; }
 [data-animate] { will-change: transform, opacity; }
 .hero .parallax-bg { will-change: transform; }
+
+/* ========== AMÉLIE - ASSISTANTE VIRTUELLE ========== */
+
+/* Bulle flottante */
+.amelie-bubble {
+    position: fixed;
+    bottom: 110px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #e8a800, #f0c040);
+    color: #1a1a2e;
+    border-radius: 50px;
+    padding: 10px 16px 10px 10px;
+    cursor: pointer;
+    z-index: 9990;
+    box-shadow: 0 4px 20px rgba(232,168,0,0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    user-select: none;
+}
+.amelie-bubble:hover { transform: scale(1.06); box-shadow: 0 6px 28px rgba(232,168,0,0.65); }
+.amelie-bubble.hidden { display: none; }
+
+.amelie-bubble-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #1a1a2e;
+    color: #e8a800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    flex-shrink: 0;
+}
+
+.amelie-bubble-label { white-space: nowrap; }
+
+.amelie-bubble-ping {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
+    background: #2ecc71;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    animation: ameliePing 2s infinite;
+}
+@keyframes ameliePing {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+}
+
+/* Fenêtre chat */
+.amelie-window {
+    position: fixed;
+    bottom: 100px;
+    right: 24px;
+    width: 360px;
+    max-height: 560px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.22);
+    display: flex;
+    flex-direction: column;
+    z-index: 9991;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    font-family: 'Open Sans', sans-serif;
+}
+.amelie-window.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+}
+
+/* Header */
+.amelie-header {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+}
+.amelie-header-info { display: flex; align-items: center; gap: 10px; }
+.amelie-header-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8a800, #f0c040);
+    color: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    flex-shrink: 0;
+}
+.amelie-header-name {
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+}
+.amelie-header-status {
+    color: #2ecc71;
+    font-size: 11px;
+    margin-top: 1px;
+}
+.amelie-close {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.6);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+    transition: color 0.2s;
+}
+.amelie-close:hover { color: #fff; }
+
+/* Messages */
+.amelie-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #f5f6fa;
+    scroll-behavior: smooth;
+}
+.amelie-messages::-webkit-scrollbar { width: 4px; }
+.amelie-messages::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+
+.amelie-msg {
+    max-width: 82%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 13.5px;
+    line-height: 1.5;
+    white-space: pre-line;
+    word-break: break-word;
+}
+.amelie-msg-bot {
+    background: #fff;
+    color: #1a1a2e;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}
+.amelie-msg-user {
+    background: linear-gradient(135deg, #e8a800, #f0c040);
+    color: #1a1a2e;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    font-weight: 600;
+}
+
+/* Indicateur de saisie */
+.amelie-typing {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 16px;
+    background: #f5f6fa;
+    flex-shrink: 0;
+}
+.amelie-typing span {
+    width: 7px;
+    height: 7px;
+    background: #aaa;
+    border-radius: 50%;
+    animation: amelieDot 1.2s infinite ease-in-out;
+}
+.amelie-typing span:nth-child(2) { animation-delay: 0.2s; }
+.amelie-typing span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes amelieDot {
+    0%, 80%, 100% { transform: scale(0.7); opacity: 0.5; }
+    40% { transform: scale(1.1); opacity: 1; }
+}
+
+/* Réponses rapides */
+.amelie-quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #f5f6fa;
+    flex-shrink: 0;
+}
+.amelie-quick-btn {
+    background: #fff;
+    border: 1.5px solid #e8a800;
+    color: #1a1a2e;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.18s, color 0.18s;
+    font-family: 'Open Sans', sans-serif;
+}
+.amelie-quick-btn:hover {
+    background: #e8a800;
+    color: #1a1a2e;
+}
+
+/* Zone de saisie */
+.amelie-input-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fff;
+    border-top: 1px solid #eee;
+    flex-shrink: 0;
+}
+#amelieInput {
+    flex: 1;
+    border: 1.5px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 9px 16px;
+    font-size: 13.5px;
+    outline: none;
+    font-family: 'Open Sans', sans-serif;
+    transition: border-color 0.2s;
+    background: #f5f6fa;
+}
+#amelieInput:focus { border-color: #e8a800; background: #fff; }
+#amelieSend {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #e8a800, #f0c040);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(232,168,0,0.4);
+}
+#amelieSend:hover { transform: scale(1.08); box-shadow: 0 4px 14px rgba(232,168,0,0.55); }
+
+/* Mobile */
+@media (max-width: 480px) {
+    .amelie-window {
+        width: calc(100vw - 20px);
+        right: 10px;
+        bottom: 80px;
+        max-height: 70vh;
+    }
+    .amelie-bubble { bottom: 80px; right: 10px; }
+}

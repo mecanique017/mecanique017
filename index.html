@@ -1289,29 +1289,44 @@
         <p class="social-proof-text" id="socialProofText"></p>
     </div>
 
-    <!-- Chatbot -->
-    <div class="chatbot-bubble" id="chatbotBubble" onclick="toggleChatbot()" role="button" aria-label="Ouvrir le chatbot" tabindex="0">
-        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+    <!-- Amélie - Assistante Virtuelle -->
+    <div class="amelie-bubble" id="amelieBubble" onclick="toggleAmelie()" role="button" aria-label="Parler à Amélie, assistante virtuelle" tabindex="0">
+        <div class="amelie-bubble-avatar">A</div>
+        <span class="amelie-bubble-label">Amélie</span>
+        <span class="amelie-bubble-ping"></span>
     </div>
-    <div class="chatbot-window" id="chatbotWindow">
-        <div class="chatbot-header">
-            <span>&#128172; MECANIQUE 17</span>
-            <button class="chatbot-close" onclick="toggleChatbot()" aria-label="Fermer le chatbot">&times;</button>
+
+    <div class="amelie-window" id="amelieWindow" aria-live="polite">
+        <div class="amelie-header">
+            <div class="amelie-header-info">
+                <div class="amelie-header-avatar">A</div>
+                <div>
+                    <div class="amelie-header-name">Amélie</div>
+                    <div class="amelie-header-status">&#9679; Assistante Mécanique 17</div>
+                </div>
+            </div>
+            <button class="amelie-close" onclick="toggleAmelie()" aria-label="Fermer">&times;</button>
         </div>
-        <div class="chatbot-messages" id="chatbotMessages">
-            <div class="chatbot-msg chatbot-msg-bot">Bonjour ! Comment puis-je vous aider ?</div>
+        <div class="amelie-messages" id="amelieMessages">
+            <!-- Les messages s'affichent ici dynamiquement -->
         </div>
-        <div class="chatbot-quick-replies" id="chatbotQuickReplies">
-            <button class="chatbot-quick-btn" data-q="horaires">Quels sont vos horaires ?</button>
-            <button class="chatbot-quick-btn" data-q="rdv">Comment prendre RDV ?</button>
-            <button class="chatbot-quick-btn" data-q="tarifs">Quels sont vos tarifs ?</button>
-            <button class="chatbot-quick-btn" data-q="lieu">O&ugrave; &ecirc;tes-vous situ&eacute; ?</button>
+        <div class="amelie-typing" id="amelieTyping" style="display:none;">
+            <span></span><span></span><span></span>
         </div>
+        <div class="amelie-quick-replies" id="amelieQuickReplies"></div>
+        <div class="amelie-input-area">
+            <input type="text" id="amelieInput" placeholder="Écrivez votre message..." autocomplete="off" aria-label="Message pour Amélie">
+            <button id="amelieSend" aria-label="Envoyer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
+    </div>
     </div>
 
     <!-- Confetti Canvas -->
     <canvas id="confettiCanvas"></canvas>
 
     <script src="js/main.js"></script>
+    <script src="js/amelie.js"></script>
 </body>
 </html>
