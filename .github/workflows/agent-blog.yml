@@ -1,0 +1,121 @@
+name: 🤖 Agent 4 — Blog automatique
+
+on:
+  schedule:
+    - cron: '0 7 * * 1'   # Chaque lundi à 7h00 UTC (8h Paris)
+  workflow_dispatch:       # Déclenchement manuel possible
+
+jobs:
+  generer-article:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout du dépôt
+        uses: actions/checkout@v4
+
+      - name: Générer l'article avec Claude API
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Sujets rotatifs selon la semaine
+          SEMAINE=$(date +%V)
+          SUJETS=(
+            "Quand changer sa courroie de distribution ? Tout ce qu'il faut savoir"
+            "5 signes que vos freins ont besoin d'entretien"
+            "Comment entretenir sa voiture en hiver à Jarnac-Champagne"
+            "Clim, batterie, pneus : le bilan de printemps pour votre véhicule"
+            "Pourquoi faire son entretien chez un garagiste indépendant ?"
+            "Les voyants du tableau de bord : ce qu'ils signifient vraiment"
+            "Vidange : huile minérale ou synthétique, quelle différence ?"
+            "Économiser sur l'entretien de sa voiture sans rogner sur la sécurité"
+          )
+          INDEX=$(( (SEMAINE - 1) % ${#SUJETS[@]} ))
+          SUJET="${SUJETS[$INDEX]}"
+          DATE=$(date +%Y-%m-%d)
+          SLUG=$(echo "$SUJET" | iconv -t ascii//TRANSLIT | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | cut -c1-60)
+
+          echo "Sujet: $SUJET"
+          echo "Slug: $SLUG"
+
+          # Appel à l'API Claude
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "{
+              \"model\": \"claude-opus-4-5\",
+              \"max_tokens\": 2048,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": \"Tu es le rédacteur web du garage Mécanique 17 à Jarnac-Champagne (Charente-Maritime, 17). Rédige un article de blog complet en HTML sur le sujet : \\\"$SUJET\\\". L'article doit : être naturel et utile pour les automobilistes locaux, contenir 400-600 mots, être structuré avec des balises h2/h3/p/ul, mentionner naturellement Mécanique 17 et Yann le mécanicien (Jarnac-Champagne, 06 51 55 00 01), se terminer par un appel à l'action pour prendre RDV. Retourne UNIQUEMENT le contenu HTML de l'article (pas de balise html/head/body, juste le contenu intérieur).\"
+              }]
+            }")
+
+          CONTENU=$(echo "$RESPONSE" | python3 -c "import sys,json; data=json.load(sys.stdin); print(data['content'][0]['text'])" 2>/dev/null || echo "<p>Article en cours de génération...</p>")
+
+          # Créer le fichier HTML
+          cat > "blog/article-$SLUG.html" << HTMLEOF
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>$SUJET — Mécanique 17</title>
+              <meta name="description" content="$SUJET - Conseils et informations de Mécanique 17, votre garage à Jarnac-Champagne.">
+              <link rel="stylesheet" href="../css/style.css">
+              <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+          </head>
+          <body>
+          <header class="header scrolled" style="position:relative;">
+              <div class="container header-inner">
+                  <a href="../index.html" class="logo"><img src="../images/LOGO.jpg" alt="Mécanique 17" class="logo-img"><span class="logo-text">MECANIQUE <strong>17</strong></span></a>
+                  <a href="../index.html#rdv" class="btn btn-primary btn-sm">Prendre RDV</a>
+              </div>
+          </header>
+          <main style="padding: 60px 0; max-width: 800px; margin: 0 auto; padding-left: 24px; padding-right: 24px;">
+              <p style="color:#888; font-size:13px; margin-bottom:8px;">📅 Publié le $DATE · 🤖 Rédigé par l'agent IA Mécanique 17</p>
+              <h1 style="font-family:Montserrat; font-size:clamp(22px,4vw,36px); margin-bottom:32px;">$SUJET</h1>
+              $CONTENU
+              <div style="background:linear-gradient(135deg,#1a1a2e,#16213e); color:#fff; border-radius:14px; padding:32px; margin-top:48px; text-align:center;">
+                  <h3 style="color:#e8a800; margin-bottom:12px;">Besoin d'un entretien ?</h3>
+                  <p>Yann, votre mécanicien à Jarnac-Champagne, est disponible du lundi au samedi de 9h à 19h.</p>
+                  <a href="../index.html#rdv" style="display:inline-block; background:#e8a800; color:#1a1a2e; font-weight:700; padding:12px 28px; border-radius:8px; text-decoration:none; margin-top:16px;">Prendre rendez-vous →</a>
+              </div>
+          </main>
+          <footer style="text-align:center; padding:24px; color:#888; font-size:13px;">
+              <a href="../index.html">← Retour au site Mécanique 17</a>
+          </footer>
+          </body>
+          </html>
+          HTMLEOF
+
+          echo "SLUG=$SLUG" >> $GITHUB_ENV
+          echo "SUJET=$SUJET" >> $GITHUB_ENV
+
+      - name: Mettre à jour l'index du blog
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          SLUG="${{ env.SLUG }}"
+          SUJET="${{ env.SUJET }}"
+
+          # Ajouter l'article à data/blog-index.json
+          if [ ! -f data/blog-index.json ]; then echo "[]" > data/blog-index.json; fi
+          python3 -c "
+          import json, sys
+          with open('data/blog-index.json') as f:
+              articles = json.load(f)
+          articles.insert(0, {'titre': '$SUJET', 'slug': '$SLUG', 'date': '$DATE', 'url': 'blog/article-$SLUG.html'})
+          articles = articles[:20]  # Garder 20 articles max
+          with open('data/blog-index.json', 'w') as f:
+              json.dump(articles, f, ensure_ascii=False, indent=2)
+          "
+
+      - name: Commit et push
+        run: |
+          git config user.name "Agent Blog - Mécanique 17"
+          git config user.email "mecanique017@gmail.com"
+          git add blog/ data/blog-index.json
+          git diff --staged --quiet || git commit -m "🤖 Agent Blog : ${{ env.SUJET }}"
+          git push

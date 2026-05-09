@@ -1,0 +1,84 @@
+name: 🤖 Agent 3 — Audit SEO hebdomadaire
+
+on:
+  schedule:
+    - cron: '0 6 * * 0'   # Chaque dimanche à 6h00 UTC
+  workflow_dispatch:
+
+jobs:
+  audit-seo:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Analyser le SEO et générer un rapport
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Extraire le contenu pertinent de index.html
+          TITRE=$(grep -o '<title>[^<]*' index.html | head -1 | sed 's/<title>//')
+          META_DESC=$(grep -o 'name="description" content="[^"]*"' index.html | head -1 | sed 's/name="description" content="//;s/"//')
+          KEYWORDS=$(grep -o 'name="keywords" content="[^"]*"' index.html | head -1 | sed 's/name="keywords" content="//;s/"//')
+          NB_H1=$(grep -c '<h1' index.html || echo 0)
+          NB_H2=$(grep -c '<h2' index.html || echo 0)
+          NB_IMAGES=$(grep -c '<img' index.html || echo 0)
+          NB_ALTS=$(grep -c 'alt="[^"]*"' index.html || echo 0)
+          NB_ARTICLES=$(ls blog/article-*.html 2>/dev/null | wc -l || echo 0)
+          DATE=$(date +%Y-%m-%d)
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "{
+              \"model\": \"claude-opus-4-5\",
+              \"max_tokens\": 1500,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": \"Tu es un expert SEO. Analyse le site Mécanique 17 (garage automobile à Jarnac-Champagne, Charente-Maritime 17). Données actuelles : Titre page : $TITRE | Meta description : $META_DESC | Balises H1 : $NB_H1 | Balises H2 : $NB_H2 | Images : $NB_IMAGES | Images avec alt : $NB_ALTS | Articles de blog : $NB_ARTICLES. Génère un rapport SEO concis en markdown avec : 1) Score SEO estimé /100, 2) 3 points forts, 3) 5 améliorations prioritaires avec actions concrètes, 4) 5 mots-clés locaux à cibler (Jarnac-Champagne, 17, Charente-Maritime). Sois précis et actionnable.\"
+              }]
+            }")
+
+          RAPPORT=$(echo "$RESPONSE" | python3 -c "import sys,json; data=json.load(sys.stdin); print(data['content'][0]['text'])" 2>/dev/null || echo "Rapport non disponible - configurer ANTHROPIC_API_KEY")
+
+          # Sauvegarder le rapport
+          mkdir -p data
+          cat > "data/rapport-seo-$DATE.md" << EOF
+          # 📊 Rapport SEO — Mécanique 17
+          **Date :** $DATE
+          **Généré par :** Agent SEO automatique
+
+          $RAPPORT
+          EOF
+
+          echo "RAPPORT_FILE=data/rapport-seo-$DATE.md" >> $GITHUB_ENV
+          echo "$RAPPORT" > /tmp/rapport.txt
+
+      - name: Créer une issue GitHub avec le rapport
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          DATE=$(date +%Y-%m-%d)
+          RAPPORT=$(cat /tmp/rapport.txt)
+          gh issue create \
+            --title "🤖 Rapport SEO du $DATE" \
+            --body "## Rapport SEO automatique — Mécanique 17
+
+          $RAPPORT
+
+          ---
+          *Généré automatiquement par l'Agent SEO chaque dimanche*" \
+            --label "seo,automatique" 2>/dev/null || echo "Issue non créée (normal si pas de token)"
+
+      - name: Commit du rapport
+        run: |
+          git config user.name "Agent SEO - Mécanique 17"
+          git config user.email "mecanique017@gmail.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "🤖 Agent SEO : rapport du $(date +%Y-%m-%d)"
+          git push 2>/dev/null || echo "Push non nécessaire"

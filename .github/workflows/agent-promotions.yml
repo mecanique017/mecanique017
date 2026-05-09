@@ -1,0 +1,127 @@
+name: 🤖 Agent 6 — Promotions saisonnières & veille
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'   # Le 1er de chaque mois à 6h00 UTC
+  workflow_dispatch:
+
+jobs:
+  mettre-a-jour-promotions:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Générer les promotions du mois
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          MOIS=$(date +%m)
+          ANNEE=$(date +%Y)
+          NOM_MOIS=$(date '+%B %Y')
+
+          # Déterminer la saison et les services prioritaires
+          python3 << PYEOF
+          import json
+          from datetime import datetime
+
+          mois = datetime.now().month
+
+          promos = {
+              1:  [{"service": "Batterie & Démarrage", "offre": "-15% sur le remplacement batterie", "raison": "Froid intense, risque de panne"}],
+              2:  [{"service": "Pneus & Freins",       "offre": "Contrôle freins offert avec tout achat", "raison": "Routes hivernales usent les freins"}],
+              3:  [{"service": "Climatisation",        "offre": "Recharge clim dès 69€",               "raison": "Préparez l'été en avance"}],
+              4:  [{"service": "Pré-contrôle technique","offre": "Bilan complet avant CT offert",        "raison": "Saison des CT de printemps"}],
+              5:  [{"service": "Climatisation",        "offre": "Recharge clim à 69€ (avant les fortes chaleurs)", "raison": "Dernier rappel avant l'été"}],
+              6:  [{"service": "Climatisation",        "offre": "Urgence clim : RDV sous 24h",          "raison": "Canicule estivale"}],
+              7:  [{"service": "Climatisation",        "offre": "Pack été : clim + niveaux + pression",  "raison": "Vacances d'été, partez serein"}],
+              8:  [{"service": "Vidange complète",     "offre": "Vidange complète dès 59€",             "raison": "Préparation rentrée scolaire"}],
+              9:  [{"service": "Distribution & Courroie","offre": "Devis distribution gratuit + prioritaire", "raison": "Avant les grands froids"}],
+              10: [{"service": "Pneus hiver & Batterie","offre": "Pack hiver : batterie + pneus vérifiés", "raison": "Préparation hiver"}],
+              11: [{"service": "Batterie & Démarrage", "offre": "-10% batterie + pose offerte",          "raison": "Températures en chute"}],
+              12: [{"service": "Bon cadeau entretien", "offre": "Bon cadeau entretien pour Noël",        "raison": "Idée cadeau originale"}],
+          }
+
+          data = {
+              "mois": datetime.now().strftime("%B %Y"),
+              "date_maj": datetime.now().isoformat(),
+              "promotions": promos.get(mois, promos[1])
+          }
+
+          with open('data/promotions-actives.json', 'w') as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+
+          print(f"Promotions générées pour {data['mois']}: {len(data['promotions'])} offre(s)")
+          PYEOF
+
+      - name: Veille concurrents (garages 17)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Recherche d'informations sur les garages concurrents
+          if [ -z "$ANTHROPIC_API_KEY" ]; then exit 0; fi
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "{
+              \"model\": \"claude-haiku-4-5\",
+              \"max_tokens\": 500,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": \"Tu es un consultant pour Mécanique 17, garage indépendant à Jarnac-Champagne (Charente-Maritime). Donne 3 conseils stratégiques concrets pour ce mois-ci ($(date '+%B %Y')) pour se démarquer des garages concurrents dans la région de Jonzac/Barbezieux/Pons. Focus sur : tarifs compétitifs sans TVA, expertise VW/Skoda/Renault, proximité et réactivité. Sois bref et actionnable.\"
+                  }]
+              }")
+
+          CONSEILS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['content'][0]['text'])" 2>/dev/null || echo "Conseils non disponibles")
+
+          python3 << PYEOF
+          import json
+          from datetime import datetime
+
+          with open('data/promotions-actives.json') as f:
+              data = json.load(f)
+
+          data['conseils_strategiques'] = """$CONSEILS"""
+          data['date_maj'] = datetime.now().isoformat()
+
+          with open('data/promotions-actives.json', 'w') as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+          PYEOF
+
+      - name: Envoyer rapport mensuel
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          if [ -z "$RESEND_API_KEY" ]; then exit 0; fi
+          PROMOS=$(python3 -c "
+          import json
+          with open('data/promotions-actives.json') as f:
+              d = json.load(f)
+          rows = ''
+          for p in d.get('promotions', []):
+              rows += f'<li><strong>{p[\"service\"]}</strong> : {p[\"offre\"]} <em>({p[\"raison\"]})</em></li>'
+          print(rows)
+          ")
+
+          curl -s -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"from\": \"Agent Promotions <onboarding@resend.dev>\",
+              \"to\": [\"mecanique017@gmail.com\"],
+              \"subject\": \"🤖 Promotions du mois — $(date '+%B %Y') — Mécanique 17\",
+              \"html\": \"<h2>Promotions suggérées pour $(date '+%B %Y')</h2><ul>$PROMOS</ul><p>Ces offres sont actives sur votre site automatiquement.</p>\"
+            }" || true
+
+      - name: Commit
+        run: |
+          git config user.name "Agent Promotions - Mécanique 17"
+          git config user.email "mecanique017@gmail.com"
+          git add data/
+          git diff --staged --quiet || git commit -m "🤖 Agent Promotions : $(date '+%B %Y')"
+          git push 2>/dev/null || true
