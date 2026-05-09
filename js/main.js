@@ -52,7 +52,7 @@ async function adminLogin() {
     const storedEmailHash = localStorage.getItem('m17_admin_email_hash');
 
     const defaultPassHash = await sha256('Melvynsidibe@225');
-    const defaultEmailHash = await sha256('mecanique17@gmail.com');
+    const defaultEmailHash = await sha256('mecanique017@gmail.com');
 
     // Stocker les hash par defaut si pas encore fait
     if (!storedPassHash) {
@@ -1283,7 +1283,7 @@ function printRdvConfirmation() {
         summary.innerHTML +
         '<hr style="margin-top:20px;border:none;border-top:1px solid #ddd;">' +
         '<p style="margin-top:16px;color:#666;font-size:12px;">MECANIQUE 17 - 38 rue Chotard, 17520 Jarnac-Champagne</p>' +
-        '<p style="color:#666;font-size:12px;">Tel : 06 51 55 00 01 | Email : mecanique17@gmail.com</p>' +
+        '<p style="color:#666;font-size:12px;">Tel : 06 51 55 00 01 | Email : mecanique017@gmail.com</p>' +
         '<p style="margin-top:12px;color:#999;font-size:11px;">Ce document est une confirmation de votre demande. Le garage vous recontactera pour valider le creneau.</p>';
 
     document.body.appendChild(printDiv);

@@ -2,7 +2,7 @@
 
 const AMELIE_CONTACT = {
     phone: '06 51 55 00 01',
-    email: 'mecanique17@gmail.com',
+    email: 'mecanique017@gmail.com',
     address: '38 rue Chotard, 17520 Jarnac-Champagne'
 };
 
@@ -11,7 +11,7 @@ const AMELIE_KB = [
     {
         id: 'horaires',
         keywords: ['horaire', 'heure', 'ouvert', 'ouverture', 'fermé', 'fermeture', 'quand', 'samedi', 'dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi'],
-        answer: `Nous sommes ouverts :\n\n📅 Lundi – Vendredi : 8h00 à 18h00\n📅 Samedi : 8h00 à 12h00\n❌ Dimanche : Fermé\n\nSouhaitez-vous prendre rendez-vous ?`,
+        answer: `Nous sommes ouverts :\n\n📅 Lundi – Samedi : 9h00 à 19h00\n❌ Dimanche : Fermé\n\nToutes les prestations sont sur rendez-vous uniquement.\n\nSouhaitez-vous prendre rendez-vous ?`,
         quickReplies: ['Prendre RDV', 'Autre question']
     },
     {
@@ -23,7 +23,7 @@ const AMELIE_KB = [
     {
         id: 'contact',
         keywords: ['téléphone', 'appeler', 'numéro', 'mail', 'email', 'contact', 'joindre', 'message'],
-        answer: `Vous pouvez nous contacter :\n\n📞 ${AMELIE_CONTACT.phone}\n✉️ ${AMELIE_CONTACT.email}\n\nNous répondons du lundi au vendredi de 8h à 18h et le samedi de 8h à 12h.\n\nEn dehors des horaires, ce numéro reste disponible pour les urgences.`,
+        answer: `Vous pouvez nous contacter :\n\n📞 ${AMELIE_CONTACT.phone}\n✉️ ${AMELIE_CONTACT.email}\n\nNous répondons du lundi au samedi de 9h à 19h.\n\nEn dehors des horaires, ce numéro reste disponible pour les urgences.`,
         quickReplies: ['Prendre RDV', 'Autre question']
     },
     {
@@ -392,7 +392,7 @@ function amelieHandleQuickReply(reply) {
         amelieReply(kb.answer, kb.quickReplies);
     } else if (r.includes('appeler')) {
         amelieReply(
-            '📞 Appelez-nous au ' + AMELIE_CONTACT.phone + '\n\nDisponible :\nLun-Ven : 8h00 – 18h00\nSam : 8h00 – 12h00\n\nCe numéro est aussi disponible pour les urgences en dehors des horaires.',
+            '📞 Appelez-nous au ' + AMELIE_CONTACT.phone + '\n\nDisponible :\nLun-Sam : 9h00 – 19h00\n\nCe numéro est aussi disponible pour les urgences en dehors des horaires.',
             ['Prendre RDV', 'Autre question']
         );
     } else if (r.includes('autre') || r.includes('fermer')) {

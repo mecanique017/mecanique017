@@ -4,7 +4,7 @@ const REPO_NAME = 'mecanique017';
 const CONTENT_PATH = 'data/content.json';
 
 // Hash SHA-256 des identifiants admin (ne pas stocker en clair)
-// Email: mecanique17@gmail.com / Password: hashed
+// Email: mecanique017@gmail.com / Password: hashed
 const ADMIN_EMAIL_HASH = '5f4dcc3b5aa765d61d8327deb882cf99'; // placeholder
 const ADMIN_PASS_HASH = 'a1b2c3'; // placeholder - sera verifie cote client
 
@@ -38,7 +38,7 @@ async function attemptLogin() {
     if (!storedHash) {
         // Hash par defaut
         const defaultPassHash = await sha256('Melvynsidibe@225');
-        const defaultEmailHash = await sha256('mecanique17@gmail.com');
+        const defaultEmailHash = await sha256('mecanique017@gmail.com');
         localStorage.setItem('m17_admin_hash', defaultPassHash);
         localStorage.setItem('m17_admin_email_hash', defaultEmailHash);
 
@@ -49,7 +49,7 @@ async function attemptLogin() {
     }
 
     const targetPassHash = storedHash || await sha256('Melvynsidibe@225');
-    const targetEmailHash = storedEmailHash || await sha256('mecanique17@gmail.com');
+    const targetEmailHash = storedEmailHash || await sha256('mecanique017@gmail.com');
 
     if (passHash === targetPassHash && emailHash === targetEmailHash) {
         loginSuccess();

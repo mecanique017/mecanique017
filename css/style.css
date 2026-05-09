@@ -3997,6 +3997,70 @@ body.light-mode .devis .section-subtitle {
 [data-animate] { will-change: transform, opacity; }
 .hero .parallax-bg { will-change: transform; }
 
+/* ========== ENCADRÉ YANN ========== */
+.yann-card {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-left: 4px solid #e8a800;
+    border-radius: 14px;
+    padding: 32px 36px;
+    margin-top: 32px;
+    text-align: center;
+    color: #fff;
+}
+.yann-card-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+}
+.yann-card-quote {
+    font-size: 16px;
+    line-height: 1.75;
+    color: rgba(255,255,255,0.92);
+    margin: 0 0 16px;
+    font-style: normal;
+}
+.yann-card-quote strong {
+    color: #e8a800;
+    font-size: 18px;
+    display: block;
+    margin-bottom: 12px;
+}
+.yann-card-cite {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    font-style: normal;
+}
+
+/* ========== GALERIE COMING SOON ========== */
+.galerie-coming-soon {
+    background: #f5f6fa;
+    border: 2px dashed #e0e0e0;
+    border-radius: 16px;
+    padding: 60px 32px;
+    text-align: center;
+}
+.galerie-coming-icon {
+    font-size: 52px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+.galerie-coming-text {
+    font-size: 17px;
+    color: #555;
+    margin: 0;
+}
+
+/* ========== RDV EMAIL NOTICE ========== */
+.rdv-email-notice {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    margin: 10px 0 0;
+}
+.rdv-email-notice a {
+    color: #e8a800;
+    text-decoration: underline;
+}
+
 /* ========== AMÉLIE - ASSISTANTE VIRTUELLE ========== */
 
 /* Bulle flottante */
