@@ -55,6 +55,9 @@ jobs:
 
           CONTENU=$(echo "$RESPONSE" | python3 -c "import sys,json; data=json.load(sys.stdin); print(data['content'][0]['text'])" 2>/dev/null || echo "<p>Article en cours de génération...</p>")
 
+          # Créer le dossier blog s'il n'existe pas
+          mkdir -p blog
+
           # Créer le fichier HTML
           cat > "blog/article-$SLUG.html" << HTMLEOF
           <!DOCTYPE html>
@@ -90,9 +93,6 @@ jobs:
           </body>
           </html>
           HTMLEOF
-
-          # Créer le dossier blog s'il n'existe pas
-          mkdir -p blog
 
           echo "SLUG=$SLUG" >> $GITHUB_ENV
           echo "SUJET=$SUJET" >> $GITHUB_ENV
