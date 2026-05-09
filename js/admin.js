@@ -337,7 +337,8 @@ async function saveActu() {
     const editId = document.getElementById('actuEditId').value;
     const badge = document.getElementById('actuBadge').value;
     const titre = document.getElementById('actuTitre').value.trim();
-    const texte = document.getElementById('actuTexte').value.trim();
+    const texteEl = document.getElementById('actuTexte');
+    const texte = (texteEl.value !== undefined ? texteEl.value : texteEl.innerText || texteEl.textContent || '').trim();
     const date = document.getElementById('actuDate').value.trim();
 
     if (!titre || !texte) {
