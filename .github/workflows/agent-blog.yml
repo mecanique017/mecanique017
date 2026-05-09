@@ -91,6 +91,9 @@ jobs:
           </html>
           HTMLEOF
 
+          # Créer le dossier blog s'il n'existe pas
+          mkdir -p blog
+
           echo "SLUG=$SLUG" >> $GITHUB_ENV
           echo "SUJET=$SUJET" >> $GITHUB_ENV
 
