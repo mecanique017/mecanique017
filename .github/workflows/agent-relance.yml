@@ -99,7 +99,7 @@ jobs:
             -H "Authorization: Bearer $RESEND_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{
-              \"from\": \"Agent Relance <onboarding@resend.dev>\",
+              \"from\": \"Agent Relance <agents@ouliecalio.resend.app>\",
               \"to\": [\"mecanique017@gmail.com\"],
               \"subject\": \"🤖 $NB client(s) à relancer cette semaine — Mécanique 17\",
               \"html\": $(echo "$HTML" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))')

@@ -112,7 +112,7 @@ jobs:
             -H "Authorization: Bearer $RESEND_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{
-              \"from\": \"Agent Promotions <onboarding@resend.dev>\",
+              \"from\": \"Agent Promotions <agents@ouliecalio.resend.app>\",
               \"to\": [\"mecanique017@gmail.com\"],
               \"subject\": \"🤖 Promotions du mois — $(date '+%B %Y') — Mécanique 17\",
               \"html\": \"<h2>Promotions suggérées pour $(date '+%B %Y')</h2><ul>$PROMOS</ul><p>Ces offres sont actives sur votre site automatiquement.</p>\"

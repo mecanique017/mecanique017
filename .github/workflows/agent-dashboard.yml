@@ -69,7 +69,7 @@ jobs:
             -H "Authorization: Bearer $RESEND_API_KEY" \
             -H "Content-Type: application/json" \
             -d "{
-              \"from\": \"Agents Mécanique 17 <onboarding@resend.dev>\",
+              \"from\": \"Agents Mécanique 17 <agents@ouliecalio.resend.app>\",
               \"to\": [\"mecanique017@gmail.com\"],
               \"subject\": \"🤖 Dashboard Mécanique 17 — $JOUR\",
               \"html\": $(echo "$HTML_BODY" | python3 -c 'import sys,json; print(json.dumps(sys.stdin.read()))')
