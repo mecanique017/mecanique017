@@ -259,6 +259,7 @@
                 <a href="#accueil" class="nav-link">Accueil</a>
                 <a href="#services" class="nav-link">Services</a>
                 <a href="tarifs.html" class="nav-link">Tarifs</a>
+                <a href="vehicules-occasion.html" class="nav-link" style="color:#e8a800;font-weight:700;">🚗 Véhicules VO</a>
                 <a href="#apropos" class="nav-link">&Agrave; propos</a>
                 <a href="#galerie" class="nav-link">Galerie</a>
                 <a href="#avis" class="nav-link">Avis</a>
@@ -621,6 +622,47 @@
         <button class="lightbox-close" id="lightboxClose" aria-label="Fermer la visionneuse">&times;</button>
         <img class="lightbox-img" id="lightboxImg" src="" alt="Photo garage automobile MECANIQUE 17 Jarnac-Champagne">
     </div>
+
+    <!-- VÉHICULES D'OCCASION -->
+    <section style="background:linear-gradient(135deg,#1a1a2e 0%,#0d1117 100%);padding:60px 0;" id="vo">
+        <div class="container">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;">
+                <div style="max-width:520px;">
+                    <div style="display:inline-block;background:rgba(232,168,0,0.15);border:1px solid rgba(232,168,0,0.4);color:#e8a800;padding:5px 16px;border-radius:20px;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;">🚗 Nouveau service</div>
+                    <h2 style="font-family:'Montserrat',sans-serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;color:#fff;margin-bottom:12px;">Véhicules d'<span style="color:#e8a800;">Occasion</span></h2>
+                    <p style="color:rgba(255,255,255,0.7);line-height:1.7;margin-bottom:20px;">Yann sélectionne, révise et garantit chaque véhicule avant la mise en vente. Contrôle technique inclus, garantie 3 mois, essai possible sur rendez-vous.</p>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px;">
+                        <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">✓ CT inclus</span>
+                        <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">✓ Garantie 3 mois</span>
+                        <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">✓ Révisé par Yann</span>
+                        <span style="background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.8);padding:6px 14px;border-radius:20px;font-size:0.82rem;font-weight:600;">✓ Essai sur RDV</span>
+                    </div>
+                    <a href="vehicules-occasion.html" style="display:inline-block;background:#e8a800;color:#1a1a2e;font-family:'Montserrat',sans-serif;font-weight:800;padding:14px 32px;border-radius:10px;text-decoration:none;font-size:1rem;transition:background 0.2s;" onmouseover="this.style.background='#f0b800'" onmouseout="this.style.background='#e8a800'">Voir les véhicules disponibles →</a>
+                </div>
+                <div id="vo-preview-cards" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;"></div>
+            </div>
+        </div>
+    </section>
+    <script>
+    (function() {
+        fetch('data/vehicules.json?t=' + Date.now())
+            .then(r => r.json())
+            .then(data => {
+                const dispos = data.filter(v => v.statut === 'disponible').slice(0, 2);
+                const container = document.getElementById('vo-preview-cards');
+                if (!container || !dispos.length) return;
+                container.innerHTML = dispos.map(v => `
+                    <a href="vehicules-occasion.html" style="display:block;background:rgba(255,255,255,0.06);border:1px solid rgba(232,168,0,0.25);border-radius:12px;padding:18px;width:180px;text-decoration:none;transition:border-color 0.2s;" onmouseover="this.style.borderColor='#e8a800'" onmouseout="this.style.borderColor='rgba(232,168,0,0.25)'">
+                        <div style="font-size:2.8rem;text-align:center;margin-bottom:10px;">${v.emoji || '🚗'}</div>
+                        <div style="font-family:'Montserrat',sans-serif;font-weight:700;color:#fff;font-size:0.9rem;">${v.marque} ${v.modele}</div>
+                        <div style="color:rgba(255,255,255,0.5);font-size:0.78rem;margin:4px 0;">${v.annee} · ${(v.km/1000).toFixed(0)}k km</div>
+                        <div style="font-family:'Montserrat',sans-serif;font-weight:800;color:#e8a800;font-size:1.1rem;margin-top:8px;">${v.prix.toLocaleString('fr-FR')} €</div>
+                        <div style="background:#2ecc71;color:#fff;font-size:0.65rem;font-weight:700;padding:2px 8px;border-radius:10px;display:inline-block;margin-top:6px;text-transform:uppercase;">Disponible</div>
+                    </a>`).join('');
+            })
+            .catch(() => {});
+    })();
+    </script>
 
     <!-- ACTUALITES / PROMOTIONS -->
     <section class="section actualites" id="actualites">

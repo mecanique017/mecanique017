@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Véhicules d'Occasion — MECANIQUE 17 | Jarnac-Champagne (17)</title>
+    <meta name="description" content="Véhicules d'occasion révisés et garantis chez Mécanique 17 à Jarnac-Champagne. Achetez votre voiture d'occasion en toute confiance. Contrôle technique inclus. ☎ 06 51 55 00 01">
+    <meta name="keywords" content="voiture occasion jarnac-champagne, VO charente-maritime, véhicule occasion 17520, achat voiture occasion garage mécanique 17">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://mecanique017.github.io/mecanique017/vehicules-occasion.html">
+    <meta property="og:title" content="Véhicules d'Occasion — MECANIQUE 17 Jarnac-Champagne">
+    <meta property="og:description" content="Voitures d'occasion révisées et garanties par Yann, mécanicien indépendant à Jarnac-Champagne.">
+    <meta property="og:image" content="https://mecanique017.github.io/mecanique017/images/LOGO.jpg">
+    <meta property="og:url" content="https://mecanique017.github.io/mecanique017/vehicules-occasion.html">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="icon" type="image/jpeg" href="images/LOGO.jpg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Open Sans', sans-serif; background: #f5f5f5; color: #1a1a2e; }
+
+        /* NAV */
+        .nav {
+            background: #1a1a2e;
+            border-bottom: 2px solid #e8a800;
+            padding: 0 20px;
+            height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo img { width: 38px; height: 38px; border-radius: 50%; }
+        .nav-logo span { font-family: 'Montserrat', sans-serif; color: #fff; font-weight: 700; }
+        .nav-logo strong { color: #e8a800; }
+        .nav-links { display: flex; align-items: center; gap: 16px; }
+        .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88rem; transition: color 0.2s; }
+        .nav-links a:hover { color: #e8a800; }
+        .nav-links .btn-rdv { background: #e8a800; color: #1a1a2e; padding: 8px 18px; border-radius: 6px; font-family: 'Montserrat', sans-serif; font-weight: 700; }
+        .nav-links .btn-rdv:hover { background: #f0b800; color: #1a1a2e; }
+        @media(max-width:600px) { .nav-links a:not(.btn-rdv) { display: none; } }
+
+        /* HERO */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0d1117 100%);
+            padding: 90px 20px 50px;
+            text-align: center; color: #fff;
+        }
+        .hero-tag {
+            display: inline-block;
+            background: rgba(232,168,0,0.15); border: 1px solid rgba(232,168,0,0.4);
+            color: #e8a800; padding: 5px 16px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .hero h1 { font-family: 'Montserrat', sans-serif; font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800; margin-bottom: 10px; }
+        .hero h1 span { color: #e8a800; }
+        .hero p { color: rgba(255,255,255,0.65); font-size: 1rem; max-width: 500px; margin: 0 auto; }
+
+        /* GARANTIES */
+        .garanties {
+            background: #e8a800; padding: 14px 20px;
+            display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+        }
+        .garantie { display: flex; align-items: center; gap: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.83rem; color: #1a1a2e; }
+
+        /* FILTRES */
+        .filtres-bar {
+            background: #fff; border-bottom: 1px solid #eee;
+            padding: 16px 20px;
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            position: sticky; top: 60px; z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .filtre-label { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.82rem; color: #888; }
+        .filtre-btn {
+            padding: 7px 16px; border-radius: 20px; border: 2px solid #e0e0e0;
+            background: #fff; color: #555; font-family: 'Montserrat', sans-serif;
+            font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+        }
+        .filtre-btn:hover { border-color: #e8a800; color: #e8a800; }
+        .filtre-btn.active { background: #e8a800; border-color: #e8a800; color: #1a1a2e; }
+        .filtre-count { margin-left: auto; font-size: 0.82rem; color: #888; font-weight: 600; }
+
+        /* GRILLE VÉHICULES */
+        .catalogue { max-width: 1100px; margin: 0 auto; padding: 40px 20px 60px; }
+        .cars-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+
+        /* CARTE VÉHICULE */
+        .car-card {
+            background: #fff; border-radius: 14px; overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 2px solid transparent;
+        }
+        .car-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.14); border-color: rgba(232,168,0,0.3); }
+        .car-card.vendu { opacity: 0.6; }
+        .car-card.vendu:hover { transform: none; }
+
+        /* GALERIE */
+        .car-gallery { position: relative; height: 200px; background: linear-gradient(135deg, #1a1a2e, #16213e); overflow: hidden; cursor: pointer; }
+        .car-gallery .gallery-main {
+            width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+            font-size: 5rem;
+        }
+        .car-gallery img { width: 100%; height: 100%; object-fit: cover; }
+        .car-gallery .gallery-thumbs {
+            position: absolute; bottom: 8px; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 5px;
+        }
+        .gallery-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; transition: background 0.2s; }
+        .gallery-dot.active { background: #e8a800; }
+        .car-gallery .gallery-prev, .car-gallery .gallery-next {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0,0,0,0.4); color: #fff; border: none;
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+            font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity 0.2s;
+        }
+        .car-gallery:hover .gallery-prev, .car-gallery:hover .gallery-next { opacity: 1; }
+        .car-gallery .gallery-prev { left: 10px; }
+        .car-gallery .gallery-next { right: 10px; }
+
+        /* BADGE STATUT */
+        .statut-badge {
+            position: absolute; top: 12px; left: 12px;
+            padding: 4px 12px; border-radius: 20px;
+            font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.72rem; text-transform: uppercase;
+        }
+        .statut-disponible { background: #2ecc71; color: #fff; }
+        .statut-reserve { background: #e8a800; color: #1a1a2e; }
+        .statut-vendu { background: rgba(0,0,0,0.5); color: rgba(255,255,255,0.8); }
+
+        /* BADGE CT */
+        .ct-badge {
+            position: absolute; top: 12px; right: 12px;
+            background: rgba(46,204,113,0.9); color: #fff;
+            padding: 4px 10px; border-radius: 20px;
+            font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.68rem;
+        }
+
+        /* INFOS CARTE */
+        .car-body { padding: 18px; }
+        .car-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+        .car-marque { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.1rem; color: #1a1a2e; }
+        .car-modele { font-size: 0.88rem; color: #555; margin-top: 2px; }
+        .car-prix { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1.4rem; color: #e8a800; white-space: nowrap; }
+
+        .car-specs { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+        .car-spec {
+            display: flex; align-items: center; gap: 4px;
+            background: #f5f5f5; padding: 4px 10px; border-radius: 6px;
+            font-size: 0.78rem; color: #555; font-weight: 600;
+        }
+
+        .car-desc { font-size: 0.82rem; color: #777; line-height: 1.5; margin-bottom: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .car-equipements { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 16px; }
+        .car-equip { background: rgba(232,168,0,0.1); color: #b38000; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 10px; }
+
+        .car-actions { display: flex; gap: 8px; }
+        .btn-interesse {
+            flex: 1; padding: 11px 16px; background: #e8a800; color: #1a1a2e;
+            border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif;
+            font-weight: 700; font-size: 0.88rem; cursor: pointer; transition: background 0.2s;
+        }
+        .btn-interesse:hover { background: #f0b800; }
+        .btn-wa {
+            width: 44px; height: 44px; background: #25D366; color: #fff;
+            border: none; border-radius: 8px; cursor: pointer; display: flex;
+            align-items: center; justify-content: center; flex-shrink: 0;
+            text-decoration: none; transition: background 0.2s;
+        }
+        .btn-wa:hover { background: #20b857; }
+        .btn-detail {
+            padding: 11px 14px; background: #fff; color: #1a1a2e;
+            border: 2px solid #e0e0e0; border-radius: 8px;
+            font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.82rem;
+            cursor: pointer; transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
+        }
+        .btn-detail:hover { border-color: #1a1a2e; }
+
+        /* ÉTAT VIDE */
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+        .empty-state .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+        .empty-state h3 { font-family: 'Montserrat', sans-serif; margin-bottom: 8px; color: #555; }
+
+        /* MODAL DÉTAIL */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff; border-radius: 16px; max-width: 700px; width: 100%;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-gallery { position: relative; height: 260px; background: #1a1a2e; border-radius: 16px 16px 0 0; overflow: hidden; }
+        .modal-gallery-main { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 6rem; }
+        .modal-gallery img { width: 100%; height: 100%; object-fit: cover; }
+        .modal-close {
+            position: absolute; top: 14px; right: 14px;
+            background: rgba(0,0,0,0.5); color: #fff; border: none;
+            width: 36px; height: 36px; border-radius: 50%; font-size: 1.1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-body { padding: 24px; }
+        .modal-title { font-family: 'Montserrat', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
+        .modal-version { color: #888; font-size: 0.88rem; margin-bottom: 16px; }
+        .modal-prix { font-family: 'Montserrat', sans-serif; font-size: 2rem; font-weight: 800; color: #e8a800; margin-bottom: 20px; }
+        .modal-specs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .modal-spec { background: #f5f5f5; border-radius: 8px; padding: 10px 14px; }
+        .modal-spec-label { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .modal-spec-value { font-weight: 700; font-size: 0.95rem; color: #1a1a2e; margin-top: 2px; }
+        .modal-section-title { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.88rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin: 20px 0 10px; }
+        .modal-desc { font-size: 0.92rem; color: #555; line-height: 1.7; }
+        .modal-equips { display: flex; flex-wrap: wrap; gap: 6px; }
+        .modal-equip { background: rgba(232,168,0,0.1); color: #b38000; font-size: 0.78rem; font-weight: 600; padding: 4px 10px; border-radius: 10px; }
+        .modal-garanties { background: #f0fff4; border: 1px solid #2ecc71; border-radius: 10px; padding: 14px; margin: 20px 0; }
+        .modal-garantie-item { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; color: #27ae60; font-weight: 600; margin-bottom: 4px; }
+        .modal-garantie-item:last-child { margin-bottom: 0; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-btn-interesse { flex: 1; padding: 14px; background: #e8a800; color: #1a1a2e; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 1rem; cursor: pointer; transition: background 0.2s; }
+        .modal-btn-interesse:hover { background: #f0b800; }
+        .modal-btn-wa { padding: 14px 20px; background: #25D366; color: #fff; border: none; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.9rem; text-decoration: none; }
+
+        /* MODAL CONTACT */
+        .contact-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 3000; display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .contact-modal-overlay.open { display: flex; }
+        .contact-modal { background: #fff; border-radius: 16px; max-width: 460px; width: 100%; padding: 32px; }
+        .contact-modal h3 { font-family: 'Montserrat', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 6px; }
+        .contact-modal .car-name-ref { color: #e8a800; font-weight: 700; font-size: 0.88rem; margin-bottom: 20px; }
+        .contact-form-group { margin-bottom: 14px; }
+        .contact-form-group label { display: block; font-size: 0.82rem; font-weight: 700; color: #555; margin-bottom: 5px; }
+        .contact-form-group input, .contact-form-group textarea {
+            width: 100%; padding: 10px 14px; border: 2px solid #e0e0e0;
+            border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 0.9rem;
+            color: #1a1a2e; transition: border-color 0.2s;
+        }
+        .contact-form-group input:focus, .contact-form-group textarea:focus { outline: none; border-color: #e8a800; }
+        .contact-form-group textarea { height: 90px; resize: vertical; }
+        .contact-form-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-envoyer { flex: 1; padding: 13px; background: #e8a800; color: #1a1a2e; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 0.95rem; cursor: pointer; }
+        .btn-annuler { padding: 13px 20px; background: #fff; color: #555; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; cursor: pointer; }
+        .contact-success { text-align: center; padding: 20px 0; }
+        .contact-success .success-icon { font-size: 3rem; margin-bottom: 12px; }
+        .contact-success h4 { font-family: 'Montserrat', sans-serif; font-size: 1.1rem; margin-bottom: 8px; }
+        .contact-success p { color: #777; font-size: 0.88rem; }
+
+        /* SECTION CONTACT BAS DE PAGE */
+        .section-contact {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 50px 20px; text-align: center; color: #fff;
+        }
+        .section-contact h2 { font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 800; color: #e8a800; margin-bottom: 10px; }
+        .section-contact p { color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+        .contact-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .contact-btns a { display: inline-flex; align-items: center; gap: 8px; padding: 13px 28px; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: all 0.2s; }
+        .btn-tel { background: #e8a800; color: #1a1a2e; }
+        .btn-tel:hover { background: #f0b800; }
+        .btn-wa2 { background: #25D366; color: #fff; }
+        .btn-wa2:hover { background: #20b857; }
+
+        /* FOOTER */
+        footer { background: #1a1a2e; color: rgba(255,255,255,0.5); text-align: center; padding: 24px 20px; font-size: 0.85rem; line-height: 1.8; }
+        footer a { color: #e8a800; text-decoration: none; }
+
+        /* ALERTE NEWSLETTER */
+        .alerte-section { background: #fff; border-top: 1px solid #eee; padding: 30px 20px; text-align: center; }
+        .alerte-form { display: flex; gap: 10px; max-width: 440px; margin: 14px auto 0; flex-wrap: wrap; }
+        .alerte-form input { flex: 1; min-width: 200px; padding: 11px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 0.9rem; }
+        .alerte-form input:focus { outline: none; border-color: #e8a800; }
+        .alerte-form button { padding: 11px 22px; background: #1a1a2e; color: #fff; border: none; border-radius: 8px; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 0.88rem; cursor: pointer; }
+        .alerte-form button:hover { background: #e8a800; color: #1a1a2e; }
+    </style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="nav">
+    <a href="index.html" class="nav-logo">
+        <img src="images/LOGO.jpg" alt="Mécanique 17">
+        <span>MECANIQUE <strong>17</strong></span>
+    </a>
+    <div class="nav-links">
+        <a href="index.html#services">Mécanique</a>
+        <a href="tarifs.html">Tarifs</a>
+        <a href="tel:+33651550001">📞 06 51 55 00 01</a>
+        <a href="index.html#rdv" class="btn-rdv">Prendre RDV</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-tag">🚗 Nouveau service</div>
+    <h1>Véhicules d'<span>Occasion</span></h1>
+    <p>Chaque véhicule est révisé, contrôlé et garanti par Yann avant la mise en vente</p>
+</section>
+
+<!-- GARANTIES -->
+<div class="garanties">
+    <div class="garantie">✓ Contrôle technique inclus</div>
+    <div class="garantie">✓ Révisé par notre mécanicien</div>
+    <div class="garantie">✓ Garantie 3 mois</div>
+    <div class="garantie">✓ Essai possible sur RDV</div>
+</div>
+
+<!-- FILTRES -->
+<div class="filtres-bar" id="filtresBar">
+    <span class="filtre-label">Filtrer :</span>
+    <button class="filtre-btn active" data-filtre="tous" onclick="setFiltre('tous')">Tous</button>
+    <button class="filtre-btn" data-filtre="disponible" onclick="setFiltre('disponible')">Disponibles</button>
+    <button class="filtre-btn" data-filtre="reserve" onclick="setFiltre('reserve')">Réservés</button>
+    <button class="filtre-btn" data-filtre="vendu" onclick="setFiltre('vendu')">Vendus</button>
+    <span class="filtre-count" id="filtreCount"></span>
+</div>
+
+<!-- CATALOGUE -->
+<div class="catalogue">
+    <div class="cars-grid" id="carsGrid">
+        <div style="text-align:center;padding:60px;color:#888;grid-column:1/-1;">
+            <div style="font-size:2rem;margin-bottom:10px;">⏳</div>
+            <p>Chargement des véhicules...</p>
+        </div>
+    </div>
+</div>
+
+<!-- ALERTE NOUVEAU VÉHICULE -->
+<div class="alerte-section">
+    <h3 style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">🔔 Recevoir une alerte pour les nouveaux véhicules</h3>
+    <p style="color:#888;font-size:0.85rem;">Soyez prévenu par email dès qu'un nouveau véhicule est mis en vente</p>
+    <form class="alerte-form" id="alerteForm" onsubmit="submitAlerte(event)">
+        <input type="email" placeholder="Votre email" required id="alerteEmail">
+        <button type="submit">📬 M'alerter</button>
+    </form>
+    <p id="alerteMsg" style="font-size:0.82rem;color:#2ecc71;margin-top:8px;display:none;">✅ Vous serez alerté pour les prochains véhicules !</p>
+</div>
+
+<!-- SECTION CONTACT -->
+<div class="section-contact">
+    <h2>Une question sur un véhicule ?</h2>
+    <p>Yann est disponible du lundi au samedi de 9h à 19h pour répondre à vos questions.</p>
+    <div class="contact-btns">
+        <a href="tel:+33651550001" class="btn-tel">📞 06 51 55 00 01</a>
+        <a href="https://wa.me/33651550001?text=Bonjour%2C%20je%20suis%20int%C3%A9ress%C3%A9%20par%20un%20v%C3%A9hicule%20sur%20votre%20site." target="_blank" class="btn-wa2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WhatsApp
+        </a>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <p>© 2026 MECANIQUE 17 — 38 rue Chotard, 17520 Jarnac-Champagne</p>
+    <p><a href="tel:+33651550001">06 51 55 00 01</a> · <a href="mailto:mecanique017@gmail.com">mecanique017@gmail.com</a></p>
+    <p style="margin-top:8px;"><a href="index.html">← Retour au site</a> · <a href="tarifs.html">Tarifs atelier</a> · <a href="mentions-legales.html">Mentions légales</a></p>
+</footer>
+
+<!-- MODAL DÉTAIL VÉHICULE -->
+<div class="modal-overlay" id="detailModal" onclick="closeDetailIfOverlay(event)">
+    <div class="modal-box" id="detailModalBox"></div>
+</div>
+
+<!-- MODAL CONTACT INTÉRÊT -->
+<div class="contact-modal-overlay" id="contactModal" onclick="closeContactIfOverlay(event)">
+    <div class="contact-modal" id="contactModalBox">
+        <h3>Je suis intéressé par ce véhicule</h3>
+        <div class="car-name-ref" id="contactCarRef"></div>
+        <div id="contactFormContent">
+            <form id="contactVOForm" onsubmit="submitInterest(event)">
+                <input type="hidden" id="contactCarId">
+                <input type="hidden" id="contactCarName">
+                <div class="contact-form-group">
+                    <label>Votre prénom & nom *</label>
+                    <input type="text" id="ci_nom" placeholder="Jean Dupont" required>
+                </div>
+                <div class="contact-form-group">
+                    <label>Téléphone *</label>
+                    <input type="tel" id="ci_tel" placeholder="06 XX XX XX XX" required>
+                </div>
+                <div class="contact-form-group">
+                    <label>Email</label>
+                    <input type="email" id="ci_email" placeholder="votre@email.fr">
+                </div>
+                <div class="contact-form-group">
+                    <label>Message (facultatif)</label>
+                    <textarea id="ci_message" placeholder="Question sur le véhicule, disponibilité pour un essai..."></textarea>
+                </div>
+                <div class="contact-form-actions">
+                    <button type="button" class="btn-annuler" onclick="closeContactModal()">Annuler</button>
+                    <button type="submit" class="btn-envoyer">📩 Envoyer ma demande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let vehicules = [];
+let filtreActif = 'tous';
+
+// Charger les véhicules
+async function loadVehicules() {
+    try {
+        const r = await fetch('data/vehicules.json?t=' + Date.now());
+        vehicules = await r.json();
+    } catch(e) {
+        vehicules = [];
+    }
+    renderCars();
+}
+
+function setFiltre(f) {
+    filtreActif = f;
+    document.querySelectorAll('.filtre-btn').forEach(b => b.classList.toggle('active', b.dataset.filtre === f));
+    renderCars();
+}
+
+function getStatutLabel(s) {
+    return { disponible: 'Disponible', reserve: 'Réservé', vendu: 'Vendu' }[s] || s;
+}
+function getStatutClass(s) {
+    return { disponible: 'statut-disponible', reserve: 'statut-reserve', vendu: 'statut-vendu' }[s] || '';
+}
+
+function renderCars() {
+    const grid = document.getElementById('carsGrid');
+    const filtered = filtreActif === 'tous' ? vehicules : vehicules.filter(v => v.statut === filtreActif);
+
+    document.getElementById('filtreCount').textContent = filtered.length + ' véhicule' + (filtered.length > 1 ? 's' : '');
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><h3>Aucun véhicule dans cette catégorie</h3><p>Revenez bientôt ou activez les alertes ci-dessous.</p></div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(v => {
+        const hasPhotos = v.photos && v.photos.length > 0;
+        const mainPhoto = hasPhotos
+            ? `<img src="${v.photos[0]}" alt="${v.marque} ${v.modele}" onerror="this.parentNode.innerHTML='<div class=\\'gallery-main\\'>${v.emoji || '🚗'}</div>'">`
+            : `<div class="gallery-main">${v.emoji || '🚗'}</div>`;
+
+        const dots = hasPhotos && v.photos.length > 1
+            ? `<div class="gallery-thumbs">${v.photos.map((_, i) => `<div class="gallery-dot ${i===0?'active':''}" onclick="changePhoto(${v.id},${i},event)"></div>`).join('')}</div>` : '';
+
+        const vendu = v.statut === 'vendu';
+        const reserve = v.statut === 'reserve';
+
+        return `<div class="car-card ${vendu ? 'vendu' : ''}" id="card-${v.id}">
+            <div class="car-gallery" onclick="openDetail(${v.id})">
+                ${mainPhoto}
+                <span class="statut-badge ${getStatutClass(v.statut)}">${getStatutLabel(v.statut)}</span>
+                ${v.ct ? `<span class="ct-badge">✓ CT OK</span>` : ''}
+                ${dots}
+                ${hasPhotos && v.photos.length > 1 ? `<button class="gallery-prev" onclick="changePhotoDir(${v.id},-1,event)">‹</button><button class="gallery-next" onclick="changePhotoDir(${v.id},1,event)">›</button>` : ''}
+            </div>
+            <div class="car-body">
+                <div class="car-header">
+                    <div>
+                        <div class="car-marque">${v.marque} ${v.modele}</div>
+                        <div class="car-modele">${v.annee} · ${v.version || ''}</div>
+                    </div>
+                    <div class="car-prix">${v.prix.toLocaleString('fr-FR')} €</div>
+                </div>
+                <div class="car-specs">
+                    <span class="car-spec">📍 ${v.km.toLocaleString('fr-FR')} km</span>
+                    <span class="car-spec">⛽ ${v.carburant}</span>
+                    <span class="car-spec">⚙️ ${v.boite}</span>
+                    <span class="car-spec">🔧 ${v.puissance}</span>
+                </div>
+                <div class="car-desc">${v.description}</div>
+                ${v.equipements && v.equipements.length ? `<div class="car-equipements">${v.equipements.slice(0,4).map(e => `<span class="car-equip">${e}</span>`).join('')}${v.equipements.length > 4 ? `<span class="car-equip">+${v.equipements.length-4}</span>` : ''}</div>` : ''}
+                <div class="car-actions">
+                    ${vendu
+                        ? `<button class="btn-interesse" style="background:#ccc;cursor:default;" disabled>Vendu</button>`
+                        : reserve
+                        ? `<button class="btn-interesse" style="background:#e8a800;cursor:default;" disabled>Réservé</button>`
+                        : `<button class="btn-interesse" onclick="openContact(${v.id})">🤝 Je suis intéressé</button>
+                           <a class="btn-wa" href="${waLink(v)}" target="_blank" title="Contacter via WhatsApp">
+                             <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                           </a>`
+                    }
+                    <button class="btn-detail" onclick="openDetail(${v.id})" title="Voir le détail">🔍</button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function waLink(v) {
+    const msg = encodeURIComponent(`Bonjour Yann, je suis intéressé par le ${v.marque} ${v.modele} ${v.annee} à ${v.prix.toLocaleString('fr-FR')}€ sur votre site. Pouvez-vous me donner plus d'informations ?`);
+    return `https://wa.me/33651550001?text=${msg}`;
+}
+
+// Galerie photos
+const photoIndexes = {};
+function changePhoto(id, idx, e) {
+    e && e.stopPropagation();
+    photoIndexes[id] = idx;
+    const v = vehicules.find(x => x.id === id);
+    if (!v || !v.photos || !v.photos[idx]) return;
+    const card = document.getElementById('card-' + id);
+    if (!card) return;
+    const gallery = card.querySelector('.car-gallery');
+    const img = gallery.querySelector('img');
+    if (img) img.src = v.photos[idx];
+    gallery.querySelectorAll('.gallery-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+}
+function changePhotoDir(id, dir, e) {
+    e && e.stopPropagation();
+    const v = vehicules.find(x => x.id === id);
+    if (!v || !v.photos) return;
+    const cur = photoIndexes[id] || 0;
+    const next = (cur + dir + v.photos.length) % v.photos.length;
+    changePhoto(id, next, null);
+}
+
+// MODAL DÉTAIL
+function openDetail(id) {
+    const v = vehicules.find(x => x.id === id);
+    if (!v) return;
+    const box = document.getElementById('detailModalBox');
+    const hasPhotos = v.photos && v.photos.length > 0;
+    box.innerHTML = `
+        <div class="modal-gallery">
+            ${hasPhotos ? `<img src="${v.photos[0]}" alt="${v.marque} ${v.modele}" style="width:100%;height:100%;object-fit:cover;">` : `<div class="modal-gallery-main">${v.emoji || '🚗'}</div>`}
+            <span class="statut-badge ${getStatutClass(v.statut)}" style="position:absolute;top:14px;left:14px;">${getStatutLabel(v.statut)}</span>
+            <button class="modal-close" onclick="closeDetailModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="modal-title">${v.marque} ${v.modele}</div>
+            <div class="modal-version">${v.version || ''}</div>
+            <div class="modal-prix">${v.prix.toLocaleString('fr-FR')} €</div>
+            <div class="modal-specs-grid">
+                <div class="modal-spec"><div class="modal-spec-label">Année</div><div class="modal-spec-value">${v.annee}</div></div>
+                <div class="modal-spec"><div class="modal-spec-label">Kilométrage</div><div class="modal-spec-value">${v.km.toLocaleString('fr-FR')} km</div></div>
+                <div class="modal-spec"><div class="modal-spec-label">Carburant</div><div class="modal-spec-value">${v.carburant}</div></div>
+                <div class="modal-spec"><div class="modal-spec-label">Boîte</div><div class="modal-spec-value">${v.boite}</div></div>
+                <div class="modal-spec"><div class="modal-spec-label">Puissance</div><div class="modal-spec-value">${v.puissance}</div></div>
+                <div class="modal-spec"><div class="modal-spec-label">Couleur</div><div class="modal-spec-value">${v.couleur}</div></div>
+            </div>
+            <div class="modal-section-title">Description</div>
+            <div class="modal-desc">${v.description}</div>
+            ${v.equipements && v.equipements.length ? `<div class="modal-section-title">Équipements</div><div class="modal-equips">${v.equipements.map(e => `<span class="modal-equip">${e}</span>`).join('')}</div>` : ''}
+            <div class="modal-garanties">
+                ${v.ct ? `<div class="modal-garantie-item">✅ Contrôle technique OK — ${v.ct_date || ''}</div>` : ''}
+                <div class="modal-garantie-item">✅ ${v.garantie || 'Garantie 3 mois pièces et main d\'œuvre'}</div>
+                <div class="modal-garantie-item">✅ Révisé par Yann — Mécanique 17 Jarnac-Champagne</div>
+                <div class="modal-garantie-item">✅ Essai possible sur rendez-vous</div>
+            </div>
+            ${v.statut !== 'vendu' && v.statut !== 'reserve' ? `
+            <div class="modal-actions">
+                <button class="modal-btn-interesse" onclick="closeDetailModal();openContact(${v.id})">🤝 Je suis intéressé</button>
+                <a class="modal-btn-wa" href="${waLink(v)}" target="_blank">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                    WhatsApp
+                </a>
+            </div>` : ''}
+        </div>`;
+    document.getElementById('detailModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeDetailModal() { document.getElementById('detailModal').classList.remove('open'); document.body.style.overflow = ''; }
+function closeDetailIfOverlay(e) { if (e.target === document.getElementById('detailModal')) closeDetailModal(); }
+
+// MODAL CONTACT
+function openContact(id) {
+    const v = vehicules.find(x => x.id === id);
+    if (!v) return;
+    document.getElementById('contactCarRef').textContent = `${v.marque} ${v.modele} ${v.annee} — ${v.prix.toLocaleString('fr-FR')} €`;
+    document.getElementById('contactCarId').value = id;
+    document.getElementById('contactCarName').value = `${v.marque} ${v.modele} ${v.annee}`;
+    document.getElementById('contactFormContent').innerHTML = document.getElementById('contactFormContent').innerHTML;
+    document.getElementById('contactModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeContactModal() { document.getElementById('contactModal').classList.remove('open'); document.body.style.overflow = ''; }
+function closeContactIfOverlay(e) { if (e.target === document.getElementById('contactModal')) closeContactModal(); }
+
+function submitInterest(e) {
+    e.preventDefault();
+    const nom = document.getElementById('ci_nom').value.trim();
+    const tel = document.getElementById('ci_tel').value.trim();
+    const email = document.getElementById('ci_email').value.trim();
+    const msg = document.getElementById('ci_message').value.trim();
+    const carName = document.getElementById('contactCarName').value;
+
+    // Créer iframe caché
+    let iframe = document.getElementById('vo-form-iframe');
+    if (!iframe) { iframe = document.createElement('iframe'); iframe.id = 'vo-form-iframe'; iframe.name = 'vo-form-iframe'; iframe.style.display = 'none'; document.body.appendChild(iframe); }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://formsubmit.co/mecanique017@gmail.com';
+    form.target = 'vo-form-iframe';
+    form.style.display = 'none';
+    const fields = {
+        '_subject': `🚗 Intérêt véhicule VO : ${carName}`,
+        '_captcha': 'false',
+        '_template': 'table',
+        'Véhicule': carName,
+        'Nom': nom,
+        'Téléphone': tel,
+        'Email': email || 'Non renseigné',
+        'Message': msg || 'Pas de message',
+        'Source': 'Page Véhicules Occasion — ' + new Date().toLocaleString('fr-FR')
+    };
+    Object.entries(fields).forEach(([n, v]) => { const i = document.createElement('input'); i.type = 'hidden'; i.name = n; i.value = v; form.appendChild(i); });
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(() => form.parentNode && form.parentNode.removeChild(form), 3000);
+
+    document.getElementById('contactFormContent').innerHTML = `
+        <div class="contact-success">
+            <div class="success-icon">✅</div>
+            <h4>Demande envoyée !</h4>
+            <p>Yann vous recontactera très prochainement.<br>En cas d'urgence : <a href="tel:+33651550001" style="color:#e8a800;font-weight:700;">06 51 55 00 01</a></p>
+        </div>`;
+    setTimeout(closeContactModal, 3000);
+}
+
+function submitAlerte(e) {
+    e.preventDefault();
+    const email = document.getElementById('alerteEmail').value;
+    try {
+        const alertes = JSON.parse(localStorage.getItem('vo_alertes') || '[]');
+        if (!alertes.includes(email)) { alertes.push(email); localStorage.setItem('vo_alertes', JSON.stringify(alertes)); }
+    } catch(err) {}
+    document.getElementById('alerteMsg').style.display = 'block';
+    document.getElementById('alerteEmail').value = '';
+}
+
+loadVehicules();
+</script>
+</body>
+</html>

@@ -774,6 +774,7 @@
         <!-- NAV -->
         <div class="admin-nav" id="adminNav">
             <button class="active" data-tab="dashboard">Dashboard</button>
+            <button data-tab="vo" style="color:#e8a800;font-weight:700;">🚗 Véhicules VO</button>
             <button data-tab="galerie">Galerie</button>
             <button data-tab="actualites">Actualit&eacute;s</button>
             <button data-tab="avis">Avis</button>
@@ -793,6 +794,15 @@
         <div class="admin-content">
 
             <!-- DASHBOARD -->
+            <!-- ===== ONGLET VÉHICULES VO ===== -->
+            <div class="admin-section" id="tab-vo">
+                <div class="section-header">
+                    <h2>🚗 Véhicules d'Occasion</h2>
+                    <button class="btn btn-gold" onclick="voOpenAddModal()">+ Ajouter un véhicule</button>
+                </div>
+                <div id="voList" style="display:grid;gap:16px;"></div>
+            </div>
+
             <div class="admin-section active" id="tab-dashboard">
                 <div class="section-header">
                     <h2>Tableau de bord</h2>
@@ -1142,6 +1152,52 @@
         </div>
     </div>
 
+    <!-- MODAL VÉHICULE VO -->
+    <div class="modal-overlay" id="voModal">
+        <div class="modal" style="max-width:560px;">
+            <h2 id="voModalTitle">Ajouter un véhicule</h2>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div class="form-group"><label>Marque *</label><input type="text" id="voMarque" placeholder="Renault, VW, Peugeot..."></div>
+                <div class="form-group"><label>Modèle *</label><input type="text" id="voModele" placeholder="Clio, Golf, 208..."></div>
+                <div class="form-group"><label>Version</label><input type="text" id="voVersion" placeholder="1.5 dCi 90ch Zen"></div>
+                <div class="form-group"><label>Année *</label><input type="number" id="voAnnee" placeholder="2018" min="1990" max="2030"></div>
+                <div class="form-group"><label>Kilométrage *</label><input type="number" id="voKm" placeholder="68000"></div>
+                <div class="form-group"><label>Prix (€) *</label><input type="number" id="voPrix" placeholder="7500"></div>
+                <div class="form-group"><label>Carburant</label>
+                    <select id="voCarburant" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);">
+                        <option>Diesel</option><option>Essence</option><option>Hybride</option><option>Électrique</option><option>GPL</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Boîte</label>
+                    <select id="voBoite" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);">
+                        <option>Manuelle</option><option>Automatique</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Puissance</label><input type="text" id="voPuissance" placeholder="90 ch"></div>
+                <div class="form-group"><label>Couleur</label><input type="text" id="voCouleur" placeholder="Blanc Glacier"></div>
+                <div class="form-group"><label>CT</label>
+                    <select id="voCT" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);">
+                        <option value="true">CT OK</option><option value="false">Sans CT</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Date CT</label><input type="text" id="voCTDate" placeholder="Octobre 2025"></div>
+            </div>
+            <div class="form-group" style="margin-top:12px;"><label>Description</label><textarea id="voDescription" style="height:80px;" placeholder="État général, historique, particularités..."></textarea></div>
+            <div class="form-group"><label>Équipements (séparés par des virgules)</label><input type="text" id="voEquipements" placeholder="Climatisation, Bluetooth, Régulateur, GPS..."></div>
+            <div class="form-group"><label>URLs des photos (une par ligne)</label><textarea id="voPhotos" style="height:70px;" placeholder="https://example.com/photo1.jpg&#10;https://example.com/photo2.jpg"></textarea></div>
+            <div class="form-group"><label>Statut</label>
+                <select id="voStatut" style="width:100%;padding:10px;border:2px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-family:var(--font-body);">
+                    <option value="disponible">Disponible</option><option value="reserve">Réservé</option><option value="vendu">Vendu</option>
+                </select>
+            </div>
+            <input type="hidden" id="voEditId">
+            <div style="display:flex;gap:10px;margin-top:20px;">
+                <button class="btn btn-outline" onclick="closeModal('voModal')">Annuler</button>
+                <button class="btn btn-gold" onclick="voSave()" style="flex:1;">💾 Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL AJOUT ACTUALITE -->
     <div class="modal-overlay" id="actuModal">
         <div class="modal">
@@ -1352,5 +1408,159 @@
     <div class="toast" id="toast"></div>
 
     <script src="js/admin.js"></script>
+    <script>
+    // ===== GESTION VÉHICULES VO =====
+    let voData = [];
+
+    async function voLoad() {
+        try {
+            const r = await fetch('data/vehicules.json?t=' + Date.now());
+            voData = await r.json();
+        } catch(e) { voData = []; }
+        voRender();
+    }
+
+    function voRender() {
+        const list = document.getElementById('voList');
+        if (!list) return;
+        if (!voData.length) {
+            list.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px;">Aucun véhicule pour le moment. Cliquez sur "+ Ajouter un véhicule".</p>';
+            return;
+        }
+        const statutColors = { disponible: '#2ecc71', reserve: '#e8a800', vendu: '#888' };
+        const statutLabels = { disponible: 'Disponible', reserve: 'Réservé', vendu: 'Vendu' };
+        list.innerHTML = voData.map(v => `
+            <div class="admin-card">
+                <div class="card-header">
+                    <div>
+                        <span class="card-badge" style="background:${statutColors[v.statut]}22;color:${statutColors[v.statut]}">${statutLabels[v.statut]}</span>
+                        <h3 style="margin-top:8px">${v.emoji || '🚗'} ${v.marque} ${v.modele} ${v.annee}</h3>
+                    </div>
+                    <div class="card-actions">
+                        <span style="font-family:'Montserrat',sans-serif;font-weight:800;color:#e8a800;font-size:1.1rem;">${v.prix.toLocaleString('fr-FR')} €</span>
+                        <button class="btn btn-gold btn-sm" onclick="voEdit(${v.id})">Modifier</button>
+                        <button class="btn btn-danger btn-sm" onclick="voDelete(${v.id})">Supprimer</button>
+                    </div>
+                </div>
+                <p class="card-text" style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.85rem;color:var(--text-muted);">
+                    <span>📍 ${v.km.toLocaleString('fr-FR')} km</span>
+                    <span>⛽ ${v.carburant}</span>
+                    <span>⚙️ ${v.boite}</span>
+                    <span>🔧 ${v.puissance}</span>
+                    ${v.ct ? '<span style="color:#2ecc71;">✓ CT OK</span>' : ''}
+                </p>
+            </div>`).join('');
+    }
+
+    function voOpenAddModal() {
+        document.getElementById('voModalTitle').textContent = 'Ajouter un véhicule';
+        ['voMarque','voModele','voVersion','voAnnee','voKm','voPrix','voPuissance','voCouleur','voCTDate','voDescription','voEquipements','voPhotos'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('voStatut').value = 'disponible';
+        document.getElementById('voCT').value = 'true';
+        document.getElementById('voEditId').value = '';
+        openModal('voModal');
+    }
+
+    function voEdit(id) {
+        const v = voData.find(x => x.id === id);
+        if (!v) return;
+        document.getElementById('voModalTitle').textContent = 'Modifier le véhicule';
+        document.getElementById('voMarque').value = v.marque || '';
+        document.getElementById('voModele').value = v.modele || '';
+        document.getElementById('voVersion').value = v.version || '';
+        document.getElementById('voAnnee').value = v.annee || '';
+        document.getElementById('voKm').value = v.km || '';
+        document.getElementById('voPrix').value = v.prix || '';
+        document.getElementById('voCarburant').value = v.carburant || 'Diesel';
+        document.getElementById('voBoite').value = v.boite || 'Manuelle';
+        document.getElementById('voPuissance').value = v.puissance || '';
+        document.getElementById('voCouleur').value = v.couleur || '';
+        document.getElementById('voCT').value = v.ct ? 'true' : 'false';
+        document.getElementById('voCTDate').value = v.ct_date || '';
+        document.getElementById('voDescription').value = v.description || '';
+        document.getElementById('voEquipements').value = (v.equipements || []).join(', ');
+        document.getElementById('voPhotos').value = (v.photos || []).join('\n');
+        document.getElementById('voStatut').value = v.statut || 'disponible';
+        document.getElementById('voEditId').value = id;
+        openModal('voModal');
+    }
+
+    function voSave() {
+        const marque = document.getElementById('voMarque').value.trim();
+        const modele = document.getElementById('voModele').value.trim();
+        const annee = parseInt(document.getElementById('voAnnee').value);
+        const km = parseInt(document.getElementById('voKm').value);
+        const prix = parseInt(document.getElementById('voPrix').value);
+        if (!marque || !modele || !annee || !km || !prix) {
+            showToast('Remplissez au minimum : marque, modèle, année, km et prix', 'error');
+            return;
+        }
+        const emojis = { Renault: '🚗', Volkswagen: '🚙', Peugeot: '🚘', Citroën: '🚖', Ford: '🚗', Toyota: '🚙', BMW: '🏎️', Mercedes: '🚀', Skoda: '🚗', Opel: '🚗' };
+        const photos = document.getElementById('voPhotos').value.trim().split('\n').map(s => s.trim()).filter(Boolean);
+        const equipements = document.getElementById('voEquipements').value.split(',').map(s => s.trim()).filter(Boolean);
+        const editId = document.getElementById('voEditId').value;
+        const vehicule = {
+            id: editId ? parseInt(editId) : (voData.length ? Math.max(...voData.map(v => v.id)) + 1 : 1),
+            marque, modele,
+            version: document.getElementById('voVersion').value.trim(),
+            annee, km, prix,
+            carburant: document.getElementById('voCarburant').value,
+            boite: document.getElementById('voBoite').value,
+            puissance: document.getElementById('voPuissance').value.trim(),
+            couleur: document.getElementById('voCouleur').value.trim(),
+            ct: document.getElementById('voCT').value === 'true',
+            ct_date: document.getElementById('voCTDate').value.trim(),
+            garantie: '3 mois pièces et main d\'œuvre',
+            description: document.getElementById('voDescription').value.trim(),
+            equipements, photos,
+            statut: document.getElementById('voStatut').value,
+            date_ajout: editId ? (voData.find(v => v.id === parseInt(editId))?.date_ajout || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
+            emoji: emojis[marque] || '🚗'
+        };
+        if (editId) {
+            const idx = voData.findIndex(v => v.id === parseInt(editId));
+            if (idx >= 0) voData[idx] = vehicule;
+        } else {
+            voData.unshift(vehicule);
+        }
+        voPublish();
+        closeModal('voModal');
+        voRender();
+        showToast(editId ? 'Véhicule modifié !' : 'Véhicule ajouté !');
+    }
+
+    function voDelete(id) {
+        if (!confirm('Supprimer ce véhicule ?')) return;
+        voData = voData.filter(v => v.id !== id);
+        voPublish();
+        voRender();
+        showToast('Véhicule supprimé');
+    }
+
+    async function voPublish() {
+        const token = getGithubToken();
+        if (!token) { showToast('⚠️ Configurez le token GitHub pour sauvegarder', 'error'); return; }
+        try {
+            const getR = await fetch('https://api.github.com/repos/mecanique017/mecanique017/contents/data/vehicules.json', { headers: { Authorization: 'token ' + token } });
+            const fileData = getR.ok ? await getR.json() : {};
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(voData, null, 2))));
+            await fetch('https://api.github.com/repos/mecanique017/mecanique017/contents/data/vehicules.json', {
+                method: 'PUT',
+                headers: { Authorization: 'token ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: '🚗 VO : mise à jour catalogue véhicules', content, sha: fileData.sha || undefined })
+            });
+            showToast('✅ Catalogue VO publié sur le site !');
+        } catch(e) { showToast('Erreur publication : ' + e.message, 'error'); }
+    }
+
+    // Charger les VO quand l'onglet est ouvert
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.admin-nav button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.dataset.tab === 'vo') voLoad();
+            });
+        });
+    });
+    </script>
 </body>
 </html>
