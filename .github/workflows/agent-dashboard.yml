@@ -53,8 +53,12 @@ jobs:
               </tr>
             </table>
             <div style='background:#fff;border-radius:8px;padding:20px;margin-top:24px;border-left:4px solid #e8a800'>
+              <h3 style='margin:0 0 8px;color:#1a1a2e'>💬 Amélie — Assistante virtuelle</h3>
+              <p style='margin:0;color:#555'>Chaque demande RDV via Amélie vous est envoyée directement sur <a href='mailto:mecanique017@gmail.com' style='color:#e8a800'>mecanique017@gmail.com</a> avec le sujet <strong>🔧 Nouvelle demande RDV via Amélie</strong>.</p>
+            </div>
+            <div style='background:#fff;border-radius:8px;padding:20px;margin-top:16px;border-left:4px solid #2ecc71'>
               <h3 style='margin:0 0 8px;color:#1a1a2e'>💡 Action du jour</h3>
-              <p style='margin:0;color:#555'>Pensez à répondre aux nouvelles demandes de RDV reçues sur <a href='mailto:mecanique017@gmail.com' style='color:#e8a800'>mecanique017@gmail.com</a></p>
+              <p style='margin:0;color:#555'>Vérifiez votre boîte mail pour les nouvelles demandes RDV. Répondez dans les 2h pour maximiser la conversion client.</p>
             </div>
             <div style='text-align:center;margin-top:32px'>
               <a href='https://mecanique017.github.io/mecanique017/' style='background:#e8a800;color:#1a1a2e;font-weight:700;padding:14px 32px;border-radius:8px;text-decoration:none;display:inline-block'>Voir le site →</a>

@@ -337,6 +337,7 @@ function amelieProcessInput(userText) {
             amelieStartRdv();
         } else {
             amelieReply(match.answer, match.quickReplies);
+            amelieNotifyQuestion(userText, match.answer);
         }
         return;
     }
@@ -472,25 +473,37 @@ function amelieRdvFinalize() {
 }
 
 function amelieSendRdvEmail(data) {
+    // Créer un iframe caché pour recevoir la réponse formsubmit (évite popup bloqué)
+    const iframeId = 'amelie-form-iframe';
+    let iframe = document.getElementById(iframeId);
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = iframeId;
+        iframe.name = iframeId;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+    }
+
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'https://formsubmit.co/mecanique17@gmail.com';
-    form.target = '_blank';
+    form.action = 'https://formsubmit.co/mecanique017@gmail.com';
+    form.target = iframeId;
     form.style.display = 'none';
 
     const fields = {
-        '_subject': 'Nouvelle demande RDV via Amélie',
+        '_subject': '🔧 Nouvelle demande RDV via Amélie — Mécanique 17',
         '_captcha': 'false',
         '_template': 'table',
+        '_next': 'https://mecanique017.github.io/mecanique017/',
         'Prénom': data.prenom,
         'Nom': data.nom,
         'Téléphone': data.telephone,
-        'Email': data.email && data.email !== '-' ? data.email : '',
-        'Adresse': data.adresse || '',
+        'Email': data.email && data.email !== '-' ? data.email : 'Non renseigné',
+        'Adresse': data.adresse || 'Non renseignée',
         'Immatriculation': data.immatriculation,
         'Service souhaité': data.service,
         'Disponibilités': data.disponibilite,
-        'Source': 'Assistante virtuelle Amélie'
+        'Source': 'Assistante virtuelle Amélie — ' + new Date().toLocaleString('fr-FR')
     };
 
     Object.entries(fields).forEach(([name, value]) => {
@@ -504,6 +517,27 @@ function amelieSendRdvEmail(data) {
     document.body.appendChild(form);
     form.submit();
     setTimeout(() => { if (form.parentNode) form.parentNode.removeChild(form); }, 3000);
+
+    // Sauvegarder aussi en localStorage pour historique
+    try {
+        const historique = JSON.parse(localStorage.getItem('amelie_rdv_history') || '[]');
+        historique.unshift({ ...data, date: new Date().toISOString() });
+        localStorage.setItem('amelie_rdv_history', JSON.stringify(historique.slice(0, 50)));
+    } catch(e) {}
+}
+
+// Notifier Yann quand un client pose une question sans prendre RDV
+function amelieNotifyQuestion(question, reponse) {
+    try {
+        const historique = JSON.parse(localStorage.getItem('amelie_questions_history') || '[]');
+        historique.unshift({
+            question: question,
+            reponse: reponse ? reponse.substring(0, 100) + '...' : '',
+            date: new Date().toISOString(),
+            page: window.location.href
+        });
+        localStorage.setItem('amelie_questions_history', JSON.stringify(historique.slice(0, 100)));
+    } catch(e) {}
 }
 
 // ---- Toggle ----
