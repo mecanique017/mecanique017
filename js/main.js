@@ -51,17 +51,14 @@ async function adminLogin() {
     const storedPassHash = localStorage.getItem('m17_admin_hash');
     const storedEmailHash = localStorage.getItem('m17_admin_email_hash');
 
-    const defaultPassHash = await sha256('Melvynsidibe@225');
-    const defaultEmailHash = await sha256('mecanique017@gmail.com');
-
-    // Stocker les hash par defaut si pas encore fait
+    // Pas encore de mot de passe choisi sur ce navigateur : la page
+    // d'administration le fait choisir (aucun mot de passe dans le code).
     if (!storedPassHash) {
-        localStorage.setItem('m17_admin_hash', defaultPassHash);
-        localStorage.setItem('m17_admin_email_hash', defaultEmailHash);
+        window.location.href = 'admin.html';
+        return;
     }
-
-    const targetPassHash = storedPassHash || defaultPassHash;
-    const targetEmailHash = storedEmailHash || defaultEmailHash;
+    const targetPassHash = storedPassHash;
+    const targetEmailHash = storedEmailHash;
 
     if (emailHash === targetEmailHash && passHash === targetPassHash) {
         // Connexion reussie -> redirection vers admin

@@ -4,7 +4,7 @@ const REPO_NAME = 'mecanique017';
 const CONTENT_PATH = 'data/content.json';
 
 // Hash SHA-256 des identifiants admin (ne pas stocker en clair)
-// Email: mecanique017@gmail.com / Password: hashed
+// Identifiants : choisis a la premiere connexion (empreinte gardee dans le navigateur)
 const ADMIN_EMAIL_HASH = '5f4dcc3b5aa765d61d8327deb882cf99'; // placeholder
 const ADMIN_PASS_HASH = 'a1b2c3'; // placeholder - sera verifie cote client
 
@@ -34,22 +34,25 @@ async function attemptLogin() {
     const passHash = await sha256(password);
     const emailHash = await sha256(email);
 
-    // Premiere connexion : on stocke les hash
+    // Premiere connexion sur ce navigateur : l'administrateur CHOISIT son mot de
+    // passe (10 caracteres minimum). Seule son empreinte SHA-256 est gardee dans
+    // ce navigateur ; aucun mot de passe n'est ecrit dans le code du site.
+    // (Cette page n'est qu'une barriere d'affichage : la vraie cle est le jeton
+    // GitHub, demande ensuite et garde uniquement dans ce navigateur.)
     if (!storedHash) {
-        // Hash par defaut
-        const defaultPassHash = await sha256('Melvynsidibe@225');
-        const defaultEmailHash = await sha256('mecanique017@gmail.com');
-        localStorage.setItem('m17_admin_hash', defaultPassHash);
-        localStorage.setItem('m17_admin_email_hash', defaultEmailHash);
-
-        if (passHash === defaultPassHash && emailHash === defaultEmailHash) {
-            loginSuccess();
+        if (!email || password.length < 10) {
+            error.textContent = 'Premiere connexion : indiquez votre email et choisissez un mot de passe de 10 caracteres minimum.';
+            error.style.display = 'block';
             return;
         }
+        localStorage.setItem('m17_admin_hash', passHash);
+        localStorage.setItem('m17_admin_email_hash', emailHash);
+        loginSuccess();
+        return;
     }
 
-    const targetPassHash = storedHash || await sha256('Melvynsidibe@225');
-    const targetEmailHash = storedEmailHash || await sha256('mecanique017@gmail.com');
+    const targetPassHash = storedHash;
+    const targetEmailHash = storedEmailHash;
 
     if (passHash === targetPassHash && emailHash === targetEmailHash) {
         loginSuccess();

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devis et nouveau client - MECANIQUE 17 | Garage Jarnac-Champagne (17)</title>
+    <meta name="description" content="Enregistrez vos coordonn&eacute;es et celles de votre v&eacute;hicule aupr&egrave;s du garage MECANIQUE 17 &agrave; Jarnac-Champagne.">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="canonical" href="https://mecanique017.github.io/mecanique017/ajout-client.html">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/jpeg" href="images/LOGO.jpg">
+    <link rel="apple-touch-icon" href="images/LOGO.jpg">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .page-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0a0a0a 100%);
+            padding: 120px 0 60px;
+            text-align: center;
+            color: #fff;
+        }
+        .page-hero h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+        .page-hero h1 span { color: #e8a800; }
+        .page-hero p { font-family: 'Open Sans', sans-serif; color: rgba(255,255,255,0.7); font-size: 1.1rem; }
+        .client-section { padding: 50px 0; background: #f5f5f5; }
+        .client-container { max-width: 720px; margin: 0 auto; padding: 0 20px; }
+        .client-card {
+            background: #fff; border-radius: 12px; padding: 28px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .client-card h2 {
+            font-family: 'Montserrat', sans-serif; font-size: 1.1rem; color: #1a1a2e;
+            margin: 22px 0 12px; padding-bottom: 6px; border-bottom: 2px solid #e8a800;
+        }
+        .client-card h2:first-child { margin-top: 0; }
+        .grille { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .grille .pleine { grid-column: 1 / -1; }
+        .champ label {
+            display: block; font-family: 'Open Sans', sans-serif; font-weight: 600;
+            font-size: 0.85rem; color: #333; margin-bottom: 4px;
+        }
+        .champ input[type=text], .champ input[type=tel], .champ input[type=email],
+        .champ input[type=number], .champ textarea {
+            width: 100%; box-sizing: border-box; padding: 10px 12px;
+            border: 1px solid #ccc; border-radius: 8px;
+            font-family: 'Open Sans', sans-serif; font-size: 1rem;
+        }
+        .champ select { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #ccc;
+                        border-radius: 8px; font-family: 'Open Sans', sans-serif; font-size: 1rem; background: #fff; }
+        .champ select:focus { outline: 2px solid #e8a800; border-color: #e8a800; }
+        .champ input:focus, .champ textarea:focus { outline: 2px solid #e8a800; border-color: #e8a800; }
+        .case { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px;
+                font-family: 'Open Sans', sans-serif; font-size: 0.85rem; color: #444; }
+        .case input { margin-top: 3px; flex: none; }
+        .piege { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+        .btn-envoyer {
+            width: 100%; margin-top: 22px; padding: 14px; border: 0; border-radius: 10px;
+            background: #e8a800; color: #1a1a2e; font-family: 'Montserrat', sans-serif;
+            font-weight: 700; font-size: 1.05rem; cursor: pointer;
+        }
+        .btn-envoyer:hover { background: #f5c518; }
+        .btn-envoyer:disabled { opacity: .6; cursor: wait; }
+        .form-statut { display: none; margin-top: 16px; padding: 12px 14px; border-radius: 8px;
+                       font-family: 'Open Sans', sans-serif; }
+        .form-statut.ok { background: #e8f5e9; color: #1b5e20; }
+        .form-statut.erreur { background: #ffebee; color: #b71c1c; }
+        .rgpd { margin-top: 18px; font-size: 0.78rem; color: #777; font-family: 'Open Sans', sans-serif; line-height: 1.5; }
+        .sub-header-nav {
+            background: #1a1a2e; border-bottom: 2px solid #e8a800; padding: 12px 0;
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .sub-header-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .sub-header-logo { display: flex; align-items: center; text-decoration: none; gap: 10px; }
+        .sub-header-logo img { width: 40px; height: 40px; border-radius: 50%; }
+        .sub-header-logo span { font-family: 'Montserrat', sans-serif; color: #fff; font-weight: 700; font-size: 1.1rem; }
+        .sub-header-logo strong { color: #e8a800; }
+        .sub-header-links { display: flex; align-items: center; gap: 20px; }
+        .sub-header-links a { color: rgba(255,255,255,0.8); text-decoration: none; font-family: 'Open Sans', sans-serif; font-size: 0.9rem; transition: color 0.2s; }
+        .sub-header-links a:hover { color: #e8a800; }
+        .sub-header-links .btn-back { background: #e8a800; color: #000; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+        .sub-header-links .btn-back:hover { background: #F0A500; color: #000; }
+        @media (max-width: 600px) {
+            .grille { grid-template-columns: 1fr; }
+            .client-card { padding: 20px; }
+            .page-hero h1 { font-size: 1.8rem; }
+            .sub-header-links { gap: 10px; }
+            .sub-header-links a:not(.btn-back) { display: none; }
+        }
+    </style>
+</head>
+<body class="light-mode">
+
+    <nav class="sub-header-nav">
+        <div class="sub-header-inner">
+            <a href="index.html" class="sub-header-logo">
+                <img src="images/LOGO.jpg" alt="MECANIQUE 17">
+                <span>MECANIQUE <strong>17</strong></span>
+            </a>
+            <div class="sub-header-links">
+                <a href="tarifs.html">Tarifs</a>
+                <a href="index.html#rdv">Prendre RDV</a>
+                <a href="tel:+33651550001">&#128222; 06 51 55 00 01</a>
+                <a href="index.html" class="btn-back">&#8592; Retour au site</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="page-hero">
+        <h1 id="titrePage">Demander un <span>devis</span></h1>
+        <p id="sousTitrePage">Dites-nous ce dont vous avez besoin : nous vous envoyons un devis d&eacute;taill&eacute;.</p>
+    </section>
+
+    <section class="client-section">
+        <div class="client-container">
+            <form id="clientForm" class="client-card" novalidate autocomplete="on">
+
+                <h2>Votre demande</h2>
+                <div class="grille">
+                    <div class="champ pleine">
+                        <label class="case" style="margin-top:0"><input type="radio" name="type_demande" value="devis" id="type_devis" checked>
+                            <span><strong>Demander un devis</strong> (gratuit, sans engagement)</span></label>
+                        <label class="case"><input type="radio" name="type_demande" value="rdv" id="type_rdv">
+                            <span><strong>Prendre rendez-vous</strong> (nous vous rappelons pour confirmer)</span></label>
+                        <label class="case"><input type="radio" name="type_demande" value="client" id="type_client">
+                            <span><strong>Devenir client</strong> (enregistrer mes coordonn&eacute;es)</span></label>
+                    </div>
+                    <div class="champ pleine" id="blocPrestation">
+                        <label for="prestation">Prestation souhait&eacute;e</label>
+                        <select id="prestation">
+                            <option value="">-- Choisir une prestation --</option>
+                            <option>Vidange compl&egrave;te</option>
+                            <option>Plaquettes de frein</option>
+                            <option>Disques + plaquettes de frein</option>
+                            <option>Courroie de distribution</option>
+                            <option>Embrayage</option>
+                            <option>Amortisseurs (paire)</option>
+                            <option>Diagnostic &eacute;lectronique</option>
+                            <option>Recharge climatisation</option>
+                            <option>Remplacement batterie</option>
+                            <option>D&eacute;marreur</option>
+                            <option>Alternateur</option>
+                            <option>Pr&eacute;-contr&ocirc;le technique</option>
+                            <option>Autre (pr&eacute;cisez ci-dessous)</option>
+                        </select>
+                    </div>
+                    <div class="champ" id="blocDate" style="display:none">
+                        <label for="date_rdv">Date souhait&eacute;e *</label>
+                        <input type="date" id="date_rdv">
+                    </div>
+                    <div class="champ" id="blocCreneau" style="display:none">
+                        <label for="creneau">Cr&eacute;neau *</label>
+                        <select id="creneau">
+                            <option value="">-- Choisir --</option>
+                            <option value="matin">Matin</option>
+                            <option value="apres-midi">Apr&egrave;s-midi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h2>Vos coordonn&eacute;es</h2>
+                <div class="grille">
+                    <div class="champ pleine">
+                        <label for="nom">Nom et pr&eacute;nom *</label>
+                        <input type="text" id="nom" maxlength="120" autocomplete="name" required>
+                    </div>
+                    <div class="champ">
+                        <label for="telephone">T&eacute;l&eacute;phone</label>
+                        <input type="tel" id="telephone" maxlength="30" autocomplete="tel">
+                    </div>
+                    <div class="champ">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" maxlength="160" autocomplete="email">
+                    </div>
+                    <div class="champ pleine">
+                        <label for="adresse">Adresse</label>
+                        <input type="text" id="adresse" maxlength="200" autocomplete="street-address">
+                    </div>
+                    <div class="champ">
+                        <label for="code_postal">Code postal</label>
+                        <input type="text" id="code_postal" maxlength="10" autocomplete="postal-code">
+                    </div>
+                    <div class="champ">
+                        <label for="ville">Ville</label>
+                        <input type="text" id="ville" maxlength="80" autocomplete="address-level2">
+                    </div>
+                </div>
+
+                <h2>Votre v&eacute;hicule (facultatif)</h2>
+                <div class="grille">
+                    <div class="champ">
+                        <label for="immatriculation">Immatriculation</label>
+                        <input type="text" id="immatriculation" maxlength="20" placeholder="AB-123-CD">
+                    </div>
+                    <div class="champ">
+                        <label for="kilometrage">Kilom&eacute;trage</label>
+                        <input type="text" id="kilometrage" maxlength="12" inputmode="numeric">
+                    </div>
+                    <div class="champ">
+                        <label for="marque">Marque</label>
+                        <input type="text" id="marque" maxlength="60" placeholder="Renault">
+                    </div>
+                    <div class="champ">
+                        <label for="modele">Mod&egrave;le</label>
+                        <input type="text" id="modele" maxlength="80" placeholder="Clio">
+                    </div>
+                    <div class="champ pleine">
+                        <label for="message">Pr&eacute;cisions sur votre besoin (facultatif)</label>
+                        <textarea id="message" rows="4" maxlength="1000" placeholder="Ex : vidange + contr&ocirc;le des freins"></textarea>
+                    </div>
+                </div>
+
+                <!-- Champ pi&egrave;ge anti-robots : ne pas remplir -->
+                <div class="piege" aria-hidden="true">
+                    <label for="site_web">Ne pas remplir</label>
+                    <input type="text" id="site_web" tabindex="-1" autocomplete="off">
+                </div>
+
+                <label class="case">
+                    <input type="checkbox" id="consentement">
+                    <span>J&rsquo;accepte que MECANIQUE 17 enregistre ces informations pour me recontacter et g&eacute;rer mon dossier client. *</span>
+                </label>
+                <label class="case">
+                    <input type="checkbox" id="accepte_marketing">
+                    <span>J&rsquo;accepte de recevoir les offres et promotions du garage (email / SMS). Je peux me d&eacute;sinscrire &agrave; tout moment.</span>
+                </label>
+
+                <button type="submit" id="btnEnvoyer" class="btn-envoyer">Envoyer ma demande</button>
+                <div id="formStatut" class="form-statut" role="status" aria-live="polite"></div>
+
+                <p class="rgpd">
+                    Vos informations sont transmises uniquement au garage MECANIQUE 17 (Jarnac-Champagne), qui est seul
+                    &agrave; y avoir acc&egrave;s. Elles ne sont ni revendues ni partag&eacute;es. Vous pouvez demander
+                    leur consultation, rectification ou suppression en appelant le 06 51 55 00 01.
+                </p>
+            </form>
+        </div>
+    </section>
+
+    <script src="js/ajout-client.js"></script>
+</body>
+</html>
