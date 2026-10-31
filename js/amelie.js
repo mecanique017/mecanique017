@@ -494,7 +494,7 @@ function amelieSendRdvEmail(data) {
         '_subject': '🔧 Nouvelle demande RDV via Amélie — Mécanique 17',
         '_captcha': 'false',
         '_template': 'table',
-        '_next': 'https://mecanique017.github.io/mecanique017/',
+        '_next': 'https://garage-mecanique17.fr/',
         'Prénom': data.prenom,
         'Nom': data.nom,
         'Téléphone': data.telephone,

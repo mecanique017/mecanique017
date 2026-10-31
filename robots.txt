@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /js/admin.js
-Sitemap: https://mecanique017.github.io/mecanique017/sitemap.xml
+Sitemap: https://garage-mecanique17.fr/sitemap.xml

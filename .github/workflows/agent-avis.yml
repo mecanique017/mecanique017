@@ -107,7 +107,7 @@ jobs:
                 \"from\": \"Agent Avis <agents@ouliecalio.resend.app>\",
                 \"to\": [\"mecanique017@gmail.com\"],
                 \"subject\": \"⭐ Vos avis Google : $NOTE/5 ($NB avis) — Mécanique 17\",
-                \"html\": \"<p>Bonjour Yann,</p><p>Votre note Google actuelle est de <strong>$NOTE/5</strong> avec <strong>$NB avis</strong>.</p><p>Consultez <a href='https://mecanique017.github.io/mecanique017/'>votre site</a> pour plus de détails.</p>\"
+                \"html\": \"<p>Bonjour Yann,</p><p>Votre note Google actuelle est de <strong>$NOTE/5</strong> avec <strong>$NB avis</strong>.</p><p>Consultez <a href='https://garage-mecanique17.fr/'>votre site</a> pour plus de détails.</p>\"
               }" || true
           fi
 

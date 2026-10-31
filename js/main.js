@@ -1144,7 +1144,7 @@ function toggleChatbot() {
     }
 
     if (whatsappBtn) {
-        const msg = encodeURIComponent('Salut ! Utilise mon code parrain ' + code + ' chez MECANIQUE 17 (garage auto a Jarnac-Champagne) et beneficie de -15% sur ta premiere visite ! https://mecanique017.github.io/mecanique017/');
+        const msg = encodeURIComponent('Salut ! Utilise mon code parrain ' + code + ' chez MECANIQUE 17 (garage auto a Jarnac-Champagne) et beneficie de -15% sur ta premiere visite ! https://garage-mecanique17.fr/');
         whatsappBtn.href = 'https://wa.me/?text=' + msg;
         whatsappBtn.target = '_blank';
         whatsappBtn.rel = 'noopener';
