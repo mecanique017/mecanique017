@@ -382,10 +382,35 @@ if (backToTop) {
     });
 }
 
+// ========== STATISTIQUES (PostHog, serveur UE) ==========
+// Chargees uniquement apres acceptation des cookies (RGPD / CNIL).
+// Le jeton "phc_" est public par conception : il ne permet que d'envoyer des evenements.
+const POSTHOG_PROJECT_TOKEN = 'phc_zkFuTeioNFvGbQdRvhLGsgTL7htDWAWFF5CztswRAxD9';
+const POSTHOG_MODULE_URL = 'https://cdn.jsdelivr.net/npm/posthog-js@1.444.0/dist/module.js';
+let analyticsLoaded = false;
+
+async function loadAnalytics() {
+    if (analyticsLoaded || localStorage.getItem('m17_cookies') !== 'accepted') return;
+    analyticsLoaded = true;
+    try {
+        const { default: posthog } = await import(POSTHOG_MODULE_URL);
+        posthog.init(POSTHOG_PROJECT_TOKEN, {
+            api_host: 'https://eu.i.posthog.com',
+            person_profiles: 'identified_only'
+        });
+    } catch (error) {
+        analyticsLoaded = false;
+        console.warn('Statistiques indisponibles :', error);
+    }
+}
+
+loadAnalytics();
+
 // ========== BANNIERE COOKIE RGPD ==========
 function acceptCookies() {
     localStorage.setItem('m17_cookies', 'accepted');
     document.getElementById('cookieBanner').classList.remove('show');
+    loadAnalytics();
 }
 
 function refuseCookies() {
