@@ -359,7 +359,7 @@
     <!-- VIDEO DE PRESENTATION -->
     <section class="section garage-video" id="video">
         <div class="container">
-            <h2 class="section-title">MECANIQUE 17 en 20 secondes</h2>
+            <h2 class="section-title">Prenez rendez-vous en 1 minute</h2>
             <video class="garage-video-player" controls playsinline preload="none"
                    poster="images/pub-mecanique17-poster.jpg" width="1080" height="1920">
                 <source src="videos/pub-mecanique17.mp4" type="video/mp4">
@@ -467,43 +467,55 @@
             <h2 class="section-title">Avis Clients</h2>
             <p class="section-subtitle">Ce que nos clients pensent de notre travail</p>
             <div class="google-rating" data-animate>
-                <div class="google-rating-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <div class="google-rating-stars">&#9733;&#9733;&#9733;&#9733;<span class="star-partial">&#9733;</span></div>
                 <div class="google-rating-text">
-                    <strong>5.0</strong> / 5 &mdash; Avis Google
+                    <strong>4,7</strong> / 5 &mdash; 13 avis Google
                 </div>
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/24px-Google_%22G%22_logo.svg.png" alt="Google" class="google-logo" loading="lazy">
             </div>
             <div class="avis-grid" id="avisGrid">
+                <!-- Vrais avis Google 5 étoiles, cités mot pour mot (relevés le 31/10/2026) -->
                 <div class="avis-card" data-animate>
                     <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p class="avis-text">&laquo; Tr&egrave;s bon m&eacute;canicien, travail soign&eacute; et tarifs honn&ecirc;tes. Je recommande sans h&eacute;siter ! &raquo;</p>
-                    <div class="avis-author">
-                        <div class="avis-avatar">J</div>
-                        <div>
-                            <strong>Jean-Pierre M.</strong>
-                            <span>via Google</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="avis-card" data-animate>
-                    <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p class="avis-text">&laquo; Diagnostic rapide, r&eacute;paration efficace et explications claires. Un garage s&eacute;rieux et professionnel. &raquo;</p>
-                    <div class="avis-author">
-                        <div class="avis-avatar">M</div>
-                        <div>
-                            <strong>Marc D.</strong>
-                            <span>via Google</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="avis-card" data-animate>
-                    <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
-                    <p class="avis-text">&laquo; M&eacute;canicien &agrave; l'&eacute;coute, de bon conseil et tr&egrave;s r&eacute;actif. Rapport qualit&eacute;/prix excellent. Je reviendrai ! &raquo;</p>
+                    <p class="avis-text">&laquo; Franchement top ! D&eacute;pos&eacute; &agrave; 19h pour les amortisseurs, r&eacute;cup&eacute;r&eacute; le soir m&ecirc;me. Le m&eacute;cano m&rsquo;a tout montr&eacute; par SMS avec photos. Accueillant, pro, efficace. Je reviendrai les yeux ferm&eacute;s ! &raquo;</p>
                     <div class="avis-author">
                         <div class="avis-avatar">S</div>
                         <div>
-                            <strong>Sophie L.</strong>
+                            <strong>S3nSay</strong>
+                            <span>via Google &middot; juin 2025</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="avis-card" data-animate>
+                    <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="avis-text">&laquo; Du bon travail, s&eacute;rieux, je recommande ! &raquo;</p>
+                    <div class="avis-author">
+                        <div class="avis-avatar">A</div>
+                        <div>
+                            <strong>Alexandra B.</strong>
                             <span>via Google</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="avis-card" data-animate>
+                    <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="avis-text">&laquo; Tr&egrave;s belle exp&eacute;rience avec M&eacute;canique 17 Je recommande cette entreprise. &raquo;</p>
+                    <div class="avis-author">
+                        <div class="avis-avatar">P</div>
+                        <div>
+                            <strong>Prisca N.</strong>
+                            <span>via Google &middot; octobre 2024</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="avis-card" data-animate>
+                    <div class="avis-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p class="avis-text">&laquo; Je recommande vivement se m&eacute;canicien, s&eacute;rieux, rapide rien &agrave; dire. &raquo;</p>
+                    <div class="avis-author">
+                        <div class="avis-avatar">R</div>
+                        <div>
+                            <strong>Redskin XxX</strong>
+                            <span>via Google &middot; juin 2024</span>
                         </div>
                     </div>
                 </div>
@@ -1134,12 +1146,6 @@
             <a href="#rdv" class="btn btn-primary exit-popup-cta" onclick="document.getElementById('exitPopup').classList.remove('show');sessionStorage.setItem('m17_exit_shown','1');">J'en profite !</a>
             <a href="#" class="exit-popup-dismiss" onclick="event.preventDefault();document.getElementById('exitPopup').classList.remove('show');sessionStorage.setItem('m17_exit_shown','1');">Non merci</a>
         </div>
-    </div>
-
-    <!-- Social Proof Toast -->
-    <div class="social-proof-toast" id="socialProofToast">
-        <button class="social-proof-close" id="socialProofClose">&times;</button>
-        <p class="social-proof-text" id="socialProofText"></p>
     </div>
 
     <!-- Amélie - Assistante Virtuelle -->

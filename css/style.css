@@ -1845,6 +1845,14 @@ body.light-mode .star-rating .star:hover {
     letter-spacing: 2px;
 }
 
+/* Last star filled at 70 % to match the real 4.7 rating */
+.star-partial {
+    background: linear-gradient(90deg, #fbbc04 70%, rgba(128, 128, 128, 0.35) 70%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .google-rating-text {
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.95rem;
@@ -2926,53 +2934,6 @@ body.light-mode .devis .section-subtitle {
     color: #fff;
 }
 
-/* ========== SOCIAL PROOF TOAST ========== */
-.social-proof-toast {
-    position: fixed;
-    bottom: 24px;
-    left: 24px;
-    background: #1a1a2e;
-    color: #fff;
-    padding: 14px 40px 14px 18px;
-    border-radius: 10px;
-    border-left: 4px solid #e8a800;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    font-family: 'Open Sans', sans-serif;
-    font-size: 0.88rem;
-    z-index: 9996;
-    transform: translateX(-120%);
-    opacity: 0;
-    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
-    max-width: 340px;
-}
-
-.social-proof-toast.show {
-    transform: translateX(0);
-    opacity: 1;
-}
-
-.social-proof-close {
-    position: absolute;
-    top: 6px;
-    right: 10px;
-    background: none;
-    border: none;
-    color: rgba(255,255,255,0.5);
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 2px 6px;
-    line-height: 1;
-}
-
-.social-proof-close:hover {
-    color: #fff;
-}
-
-.social-proof-text {
-    margin: 0;
-    line-height: 1.4;
-}
-
 /* ========== EXIT INTENT POPUP ========== */
 .exit-popup-overlay {
     position: fixed;
@@ -3213,14 +3174,6 @@ body.light-mode .devis .section-subtitle {
 
 /* ========== RESPONSIVE ADJUSTMENTS FOR NEW FEATURES ========== */
 @media (max-width: 768px) {
-    .social-proof-toast {
-        bottom: 100px;
-        left: 12px;
-        right: 12px;
-        max-width: none;
-        font-size: 0.82rem;
-    }
-
     .chatbot-bubble {
         bottom: 100px;
         left: 16px;

@@ -773,50 +773,6 @@ document.querySelectorAll('.section-title').forEach(title => {
     titleObserver.observe(title);
 });
 
-// ========== SOCIAL PROOF TOAST ==========
-(function() {
-    const messages = [
-        "Marc vient de laisser un avis \u2605\u2605\u2605\u2605\u2605",
-        "Sophie a pris rendez-vous pour une vidange",
-        "Julien a demand\u00e9 un devis pour ses freins",
-        "Emma vient de laisser un avis \u2605\u2605\u2605\u2605\u2605",
-        "Lucas a pris rendez-vous pour un diagnostic"
-    ];
-    let currentIndex = 0;
-    let dismissed = false;
-    const toast = document.getElementById('socialProofToast');
-    const toastText = document.getElementById('socialProofText');
-    const closeBtn = document.getElementById('socialProofClose');
-
-    if (!toast || !toastText) return;
-
-    if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-            toast.classList.remove('show');
-            dismissed = true;
-            sessionStorage.setItem('m17_toast_dismissed', '1');
-        });
-    }
-
-    if (sessionStorage.getItem('m17_toast_dismissed')) return;
-
-    function showToast() {
-        if (dismissed) return;
-        toastText.textContent = messages[currentIndex];
-        toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 4000);
-        currentIndex = (currentIndex + 1) % messages.length;
-    }
-
-    // First show after 5 seconds, then every 15 seconds
-    setTimeout(() => {
-        showToast();
-        setInterval(showToast, 15000);
-    }, 5000);
-})();
-
 // ========== EXIT INTENT POPUP ==========
 (function() {
     const exitPopup = document.getElementById('exitPopup');
