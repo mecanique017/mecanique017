@@ -1,4 +1,4 @@
-const CACHE_NAME = 'm17-cache-v1';
+const CACHE_NAME = 'm17-cache-v2';
 const ASSETS = [
     './',
     './index.html',
@@ -66,10 +66,12 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
         fetch(e.request)
             .then((response) => {
-                const clone = response.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(e.request, clone);
-                });
+                // Video plays through partial (206) responses, which the cache rejects;
+                // only complete GET responses are kept for offline use.
+                if (e.request.method === 'GET' && response.status === 200) {
+                    const clone = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                }
                 return response;
             })
             .catch(() => {

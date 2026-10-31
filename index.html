@@ -189,37 +189,6 @@
         </div>
     </div>
 
-    <!-- SPLASH SCREEN : Choix Client / Administrateur -->
-    <div class="splash-screen" id="splashScreen">
-        <div class="splash-container">
-            <img src="images/LOGO.jpg" alt="MECANIQUE 17 garage automobile Charente-Maritime" class="splash-logo">
-            <h1 class="splash-title">MECANIQUE <span>17</span></h1>
-            <p class="splash-subtitle">Garage Automobile &mdash; Jarnac-Champagne</p>
-            <p class="splash-text">Bienvenue ! Comment souhaitez-vous acc&eacute;der au site ?</p>
-            <div class="splash-buttons">
-                <button class="splash-btn splash-btn-client" onclick="enterAsClient()">
-                    <span class="splash-btn-icon">&#128100;</span>
-                    <span class="splash-btn-label">Client</span>
-                    <span class="splash-btn-desc">Voir le site, prendre RDV</span>
-                </button>
-                <button class="splash-btn splash-btn-admin" onclick="showAdminLogin()">
-                    <span class="splash-btn-icon">&#128274;</span>
-                    <span class="splash-btn-label">Administrateur</span>
-                    <span class="splash-btn-desc">G&eacute;rer le site</span>
-                </button>
-            </div>
-
-            <!-- Formulaire admin (cach&eacute;) -->
-            <div class="splash-admin-login" id="splashAdminLogin">
-                <div class="splash-login-error" id="splashLoginError">Identifiants incorrects</div>
-                <input type="email" id="splashEmail" placeholder="Adresse email" autocomplete="email">
-                <input type="password" id="splashPassword" placeholder="Mot de passe" autocomplete="current-password">
-                <button class="splash-btn-connect" onclick="adminLogin()">Se connecter</button>
-                <button class="splash-btn-back" onclick="hideAdminLogin()">Retour</button>
-            </div>
-        </div>
-    </div>
-
     <!-- BANDEAU PROMO DEFILANT -->
     <div class="promo-banner" id="promoBanner">
         <div class="promo-track">
@@ -305,22 +274,22 @@
         <div class="container">
             <div class="counters-grid">
                 <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="120">0</span>
+                    <span class="counter-number" data-target="120">120</span>
                     <span class="counter-plus">+</span>
                     <p class="counter-label">Clients satisfaits</p>
                 </div>
                 <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="15">0</span>
+                    <span class="counter-number" data-target="15">15</span>
                     <span class="counter-plus">+</span>
                     <p class="counter-label">Ann&eacute;es d'exp&eacute;rience</p>
                 </div>
                 <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="8">0</span>
+                    <span class="counter-number" data-target="8">8</span>
                     <span class="counter-plus"></span>
                     <p class="counter-label">Services propos&eacute;s</p>
                 </div>
                 <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="100">0</span>
+                    <span class="counter-number" data-target="100">100</span>
                     <span class="counter-plus">%</span>
                     <p class="counter-label">Engagement qualit&eacute;</p>
                 </div>
@@ -387,31 +356,16 @@
         </div>
     </section>
 
-    <!-- COMPTEURS ANIMES -->
-    <section class="section counters" id="counters">
+    <!-- VIDEO DE PRESENTATION -->
+    <section class="section garage-video" id="video">
         <div class="container">
-            <div class="counters-grid">
-                <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="120">0</span>
-                    <span class="counter-plus">+</span>
-                    <p class="counter-label">Clients satisfaits</p>
-                </div>
-                <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="15">0</span>
-                    <span class="counter-plus">+</span>
-                    <p class="counter-label">Ann&eacute;es d'exp&eacute;rience</p>
-                </div>
-                <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="6">0</span>
-                    <span class="counter-plus"></span>
-                    <p class="counter-label">Services propos&eacute;s</p>
-                </div>
-                <div class="counter-item" data-animate>
-                    <span class="counter-number" data-target="100">0</span>
-                    <span class="counter-plus">%</span>
-                    <p class="counter-label">Engagement qualit&eacute;</p>
-                </div>
-            </div>
+            <h2 class="section-title">MECANIQUE 17 en 20 secondes</h2>
+            <video class="garage-video-player" controls playsinline preload="none"
+                   poster="images/pub-mecanique17-poster.jpg" width="1080" height="1920">
+                <source src="videos/pub-mecanique17.mp4" type="video/mp4">
+                Votre navigateur ne lit pas cette vid&eacute;o :
+                <a href="videos/pub-mecanique17.mp4">t&eacute;l&eacute;chargez-la ici</a>.
+            </video>
         </div>
     </section>
 
@@ -917,8 +871,6 @@
     <section class="section rdv" id="rdv">
         <div class="container">
             <h2 class="section-title">Prendre Rendez-vous</h2>
-            <div class="urgency-badge">&#128293; Plus que quelques cr&eacute;neaux disponibles cette semaine</div>
-            <div class="visitor-counter" id="visitorCounter">&#128101; <span id="visitorCount">14</span> personnes consultent cette page</div>
             <p class="section-subtitle">Remplissez le formulaire ci-dessous et nous vous recontacterons rapidement</p>
             <form class="rdv-form" action="https://formsubmit.co/mecanique017@gmail.com" method="POST" id="rdvForm">
                 <input type="hidden" name="_subject" value="&#128197; Nouvelle demande de RDV - MECANIQUE 17">

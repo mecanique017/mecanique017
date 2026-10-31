@@ -120,37 +120,6 @@
         </div>
     </div>
 
-    <!-- SPLASH SCREEN: Client / Administrator choice -->
-    <div class="splash-screen" id="splashScreen">
-        <div class="splash-container">
-            <img src="images/LOGO.jpg" alt="MECANIQUE 17 mechanic Charente-Maritime France" class="splash-logo">
-            <h1 class="splash-title">MECANIQUE <span>17</span></h1>
-            <p class="splash-subtitle">Auto Repair Shop &mdash; Jarnac-Champagne</p>
-            <p class="splash-text">Welcome! How would you like to access the site?</p>
-            <div class="splash-buttons">
-                <button class="splash-btn splash-btn-client" onclick="enterAsClient()">
-                    <span class="splash-btn-icon">&#128100;</span>
-                    <span class="splash-btn-label">Client</span>
-                    <span class="splash-btn-desc">Browse the site, book an appointment</span>
-                </button>
-                <button class="splash-btn splash-btn-admin" onclick="showAdminLogin()">
-                    <span class="splash-btn-icon">&#128274;</span>
-                    <span class="splash-btn-label">Administrator</span>
-                    <span class="splash-btn-desc">Manage the site</span>
-                </button>
-            </div>
-
-            <!-- Admin form (hidden) -->
-            <div class="splash-admin-login" id="splashAdminLogin">
-                <div class="splash-login-error" id="splashLoginError">Incorrect credentials</div>
-                <input type="email" id="splashEmail" placeholder="Email address" autocomplete="email">
-                <input type="password" id="splashPassword" placeholder="Password" autocomplete="current-password">
-                <button class="splash-btn-connect" onclick="adminLogin()">Log in</button>
-                <button class="splash-btn-back" onclick="hideAdminLogin()">Back</button>
-            </div>
-        </div>
-    </div>
-
     <!-- SCROLLING PROMO BANNER -->
     <div class="promo-banner" id="promoBanner">
         <div class="promo-track">

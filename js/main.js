@@ -8,81 +8,9 @@ window.addEventListener('load', () => {
     }
 });
 
-// ========== SPLASH SCREEN ==========
-const splashScreen = document.getElementById('splashScreen');
-
-function enterAsClient() {
-    splashScreen.classList.add('hidden');
-    document.body.style.overflow = '';
-    // Charger le contenu dynamique depuis content.json
-    loadDynamicContent();
-}
-
-function showAdminLogin() {
-    document.querySelector('.splash-buttons').style.display = 'none';
-    document.querySelector('.splash-text').style.display = 'none';
-    document.getElementById('splashAdminLogin').classList.add('show');
-    document.getElementById('splashEmail').focus();
-}
-
-function hideAdminLogin() {
-    document.querySelector('.splash-buttons').style.display = 'flex';
-    document.querySelector('.splash-text').style.display = 'block';
-    document.getElementById('splashAdminLogin').classList.remove('show');
-    document.getElementById('splashLoginError').classList.remove('show');
-}
-
-async function sha256(message) {
-    const msgBuffer = new TextEncoder().encode(message);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
-async function adminLogin() {
-    const email = document.getElementById('splashEmail').value.trim();
-    const password = document.getElementById('splashPassword').value;
-    const error = document.getElementById('splashLoginError');
-
-    const emailHash = await sha256(email);
-    const passHash = await sha256(password);
-
-    // Verifier les identifiants (hash stocke ou par defaut)
-    const storedPassHash = localStorage.getItem('m17_admin_hash');
-    const storedEmailHash = localStorage.getItem('m17_admin_email_hash');
-
-    // Pas encore de mot de passe choisi sur ce navigateur : la page
-    // d'administration le fait choisir (aucun mot de passe dans le code).
-    if (!storedPassHash) {
-        window.location.href = 'admin.html';
-        return;
-    }
-    const targetPassHash = storedPassHash;
-    const targetEmailHash = storedEmailHash;
-
-    if (emailHash === targetEmailHash && passHash === targetPassHash) {
-        // Connexion reussie -> redirection vers admin
-        sessionStorage.setItem('m17_admin_logged', 'true');
-        window.location.href = 'admin.html';
-    } else {
-        error.classList.add('show');
-        document.getElementById('splashPassword').value = '';
-        document.getElementById('splashPassword').focus();
-    }
-}
-
-// Enter key pour les champs login
-document.getElementById('splashPassword')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') adminLogin();
-});
-document.getElementById('splashEmail')?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') document.getElementById('splashPassword').focus();
-});
-
-// Empecher le scroll quand le splash est visible
-if (splashScreen && !splashScreen.classList.contains('hidden')) {
-    document.body.style.overflow = 'hidden';
-}
+// Le contenu dynamique (content.json) se charge pour tous les visiteurs, des que
+// tout ce fichier a ete evalue. L'administration se fait directement sur admin.html.
+document.addEventListener('DOMContentLoaded', () => loadDynamicContent());
 
 // ========== CONTENU DYNAMIQUE ==========
 async function loadDynamicContent() {
@@ -1020,23 +948,6 @@ function launchConfetti() {
     });
 
     successObserver.observe(origSuccess, { attributes: true });
-})();
-
-// ========== LIVE VISITOR COUNTER ==========
-(function() {
-    const countEl = document.getElementById('visitorCount');
-    if (!countEl) return;
-
-    function updateCount() {
-        const newCount = Math.floor(Math.random() * (22 - 8 + 1)) + 8;
-        countEl.style.opacity = '0';
-        setTimeout(() => {
-            countEl.textContent = newCount;
-            countEl.style.opacity = '1';
-        }, 400);
-    }
-
-    setInterval(updateCount, 30000);
 })();
 
 // ========== CHATBOT ==========
