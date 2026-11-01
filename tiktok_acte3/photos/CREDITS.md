@@ -22,3 +22,17 @@ Les photos marquées **17/10** viennent de l'acte I. Elles sont datées à l'éc
 | aix17.jpg | Aix-en-Provence, 31/10/2026 | Gabriel from92 | CC0 | https://commons.wikimedia.org/wiki/File:Manifestation_du_31_octobre_2026_sur_la_place_de_la_Rotonde_%C3%A0_Aix-en-Provence_17.jpg |
 
 **Obligation CC BY-SA 4.0 :** les photos ont été recadrées, assombries et teintées. La vidéo qui les contient doit donc être partagée sous la même licence (CC BY-SA 4.0), en citant les auteurs. Le plus simple est d'ajouter cette ligne dans la description TikTok : « Photos : Wikimedia Commons (Jules*, Gabriel from92, F. Goglins, F. Cuny, Guallendra, CiDiBi), licences CC BY-SA 4.0 / CC0 ».
+
+## Photos personnelles (non versionnées)
+
+Il y a 5 photos fournies par l'utilisateur dans `photos/perso/`. Elles sont exclues du dépôt par `.gitignore`, car il s'agit probablement de photos de presse (l'une porte le logo TF1 Info).
+
+| Fichier | Séquence | Crédit affiché |
+|---|---|---|
+| foule_porte.jpg | Parcours imposé | Paris · DR |
+| foule_paris.jpg | 320 000 | Paris · DR |
+| soldes_halloween.jpg | Halloween | DR |
+| clown_lacrymo.jpg | Heurts | DR |
+| molotov_tf1.jpg | Molotov | TF1 Info |
+
+« DR » signifie « droits réservés » : l'auteur n'est pas identifié.

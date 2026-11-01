@@ -142,10 +142,17 @@ PHOTOS = {
     "sens22":           ("Sens (Yonne) · 31/10", "François Goglins", "CC BY-SA 4.0"),
     "aix10":            ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
     "aix17":            ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
+    # Photos fournies par l'utilisateur (auteur non identifié -> « DR » = droits réservés)
+    "perso/foule_paris":      ("Paris · DR", None, None),
+    "perso/foule_porte":      ("Paris · DR", None, None),
+    "perso/soldes_halloween": ("DR", None, None),
+    "perso/molotov_tf1":      ("TF1 Info", None, None),
+    "perso/clown_lacrymo":    ("DR", None, None),
 }
 # Une photo par segment, dans l'ordre de SEGMENTS
-PHOTO_ORDER = ["paris17_0131", "aix01", "paris17_0039", "aix03", "sens02", "sens27", "nancy",
-               "paris17_portrait", "paris17_0101", "grenoble", "banque", "sens22", "aix10", "aix17"]
+PHOTO_ORDER = ["paris17_0131", "aix01", "perso/foule_porte", "perso/foule_paris", "sens02", "sens27",
+               "perso/soldes_halloween", "perso/clown_lacrymo", "perso/molotov_tf1", "grenoble", "banque",
+               "sens22", "aix10", "aix17"]
 for _seg, _key in zip(SEGMENTS, PHOTO_ORDER):
     _seg["photo"] = _key
 
@@ -635,7 +642,8 @@ def render_frame(t, total, bgs, stripes):
     # --- Crédit photo (obligatoire pour les licences CC BY-SA)
     if seg.get("photo"):
         lieu, auteur, lic = PHOTOS[seg["photo"]]
-        credit = f"Photo : {lieu} — {auteur} · {lic} · Wikimedia Commons"
+        credit = (f"Photo : {lieu} — {auteur} · {lic} · Wikimedia Commons" if lic
+                  else f"Photo : {lieu}")
         size = 28
         while size > 18 and d.textlength(credit, font=font(FONT_BOLD, size)) > W - 140:
             size -= 1
