@@ -43,7 +43,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 W, H = 1080, 1920
 FPS = 30
 SR = 44100                      # fréquence d'échantillonnage audio
-GAP = 0.30                      # silence entre deux phrases (s)
+GAP = 0.28                      # silence entre deux phrases (s)
 INTRO_PAD = 0.15                # silence au tout début (s)
 OUTRO_PAD = 0.9                 # temps de lecture après la dernière phrase (s)
 
@@ -88,24 +88,24 @@ SEGMENTS = [
     dict(voice="Près de cinq cent mille, selon l'intersyndicale.",
          sub="Près de 500 000 selon l'intersyndicale.",
          big="≈ 500 000", small="SELON L'INTERSYNDICALE", pal="chiffre", tag="LES FAITS"),
-    dict(voice="Une mobilisation en baisse, par rapport au dix-sept et au vingt-quatre octobre.",
+    dict(voice="Une mobilisation en baisse, par rapport aux dix-sept et vingt-quatre octobre.",
          sub="Une mobilisation en baisse par rapport aux 17 et 24 octobre.",
          big="EN BAISSE", small="VS 17 & 24 OCTOBRE", pal="chiffre", tag="LES FAITS", arrow=True),
     dict(voice="Dans les cortèges, une ambiance calme et festive, avec des déguisements d'Halloween.",
          sub="Dans les cortèges, une ambiance calme et festive, avec des déguisements d'Halloween.",
          big="HALLOWEEN", small="AMBIANCE BON ENFANT", pal="fete", tag="LES FAITS"),
     # --- LES TENSIONS ------------------------------------------------------
-    dict(voice="Mais en fin de journée, la tension monte. Des heurts à Paris, Lyon, Marseille.",
+    dict(voice="Mais en fin de journée, la tension monte. Heurts à Paris, Lyon, Marseille.",
          sub="Mais en fin de journée, la tension monte. Heurts à Paris, Lyon, Marseille.",
          big="HEURTS", small="PARIS · LYON · MARSEILLE", pal="tension", tag="TENSIONS"),
-    dict(voice="À Paris, un cocktail Molotov est lancé sur un gendarme.",
-         sub="À Paris, un cocktail Molotov est lancé sur un gendarme.",
+    dict(voice="À Paris, un cocktail Molotov lancé sur un gendarme.",
+         sub="À Paris, un cocktail Molotov lancé sur un gendarme.",
          big="MOLOTOV", small="SUR UN GENDARME", pal="tension", tag="TENSIONS"),
     dict(voice="Bilan : entre cinq cent dix et cinq cent soixante interpellations. Et des blessés, notamment parmi les forces de l'ordre.",
          sub="Bilan : 510 à 560 interpellations. Et des blessés, notamment parmi les forces de l'ordre.",
          big="510 – 560", small="INTERPELLATIONS", pal="tension", tag="BILAN"),
-    dict(voice="Des centres-villes sous très haute protection.",
-         sub="Des centres-villes sous très haute protection.",
+    dict(voice="Des centres-villes sous haute protection.",
+         sub="Des centres-villes sous haute protection.",
          big="CENTRES-\nVILLES", small="SOUS HAUTE PROTECTION", pal="police", tag="BILAN"),
     # --- CONCLUSION / APPEL --------------------------------------------------
     dict(voice="Mais la colère, elle, reste intacte.",
@@ -176,15 +176,94 @@ def synth_sentence(text, path, tts):
         run(["espeak-ng", "-v", "mb-fr1", "-s", "155", "-p", "40", "-w", path, text])
 
 
-def build_voiceover(tts):
-    """Synthétise chaque phrase, mesure sa durée, assemble la piste complète."""
+def split_external(path):
+    """Découpe une voix off externe (script complet lu d'une traite) en une pièce par segment.
+
+    On repère les silences entre phrases (RMS par tranches de 20 ms) et on garde les
+    N-1 silences les plus longs comme points de coupe -> une pièce audio par SEGMENT.
+    """
+    x = read_wav_mono(path)
+    hop = int(0.02 * SR)
+    rms = np.array([np.sqrt(np.mean(x[i:i + hop] ** 2)) for i in range(0, len(x) - hop, hop)])
+    silent = rms < max(rms) * 0.03            # ≈ -30 dB sous le pic
+    runs, start = [], None
+    for i, s in enumerate(silent):
+        if s and start is None:
+            start = i
+        elif not s and start is not None:
+            runs.append((i - start, start, i))
+            start = None
+    speech = np.where(~silent)[0]
+    runs = [r for r in runs if r[1] > speech[0] and r[2] < speech[-1] and r[0] * 0.02 >= 0.2]
+    n = len(SEGMENTS)
+    if len(runs) < n - 1:
+        sys.exit(f"[ERREUR] {len(runs)} pauses trouvées, {n - 1} nécessaires")
+
+    # Position attendue de chaque coupure, proportionnelle au nombre de caractères lus
+    lens = np.array([len(s["voice"]) for s in SEGMENTS], float)
+    s0, s1 = speech[0], speech[-1]
+    expected = s0 + (s1 - s0) * np.cumsum(lens)[:-1] / lens.sum()
+
+    # Programmation dynamique : choisir n-1 pauses ordonnées qui collent aux positions
+    # attendues tout en privilégiant les pauses longues (fin de phrase / paragraphe).
+    mids = np.array([r[1] + r[0] / 2 for r in runs])
+    durs = np.array([r[0] * 0.02 for r in runs])
+    scale = (s1 - s0) / n * 0.6
+    cost = lambda k, j: ((mids[j] - expected[k]) / scale) ** 2 - 4.0 * durs[j]
+    INF = 1e18
+    m = len(runs)
+    dp = np.full((n - 1, m), INF)
+    back = np.zeros((n - 1, m), int)
+    for j in range(m):
+        dp[0, j] = cost(0, j)
+    for k in range(1, n - 1):
+        best, arg = INF, -1
+        for j in range(m):
+            if j > 0 and dp[k - 1, j - 1] < best:
+                best, arg = dp[k - 1, j - 1], j - 1
+            if arg >= 0:
+                dp[k, j] = best + cost(k, j)
+                back[k, j] = arg
+    j = int(np.argmin(dp[n - 2]))
+    chosen = [j]
+    for k in range(n - 2, 0, -1):
+        j = back[k, j]
+        chosen.append(j)
+    cuts = sorted(int(mids[j]) for j in chosen)
+    bounds = [0] + [c * hop for c in cuts] + [len(x)]
+    return [shrink_pauses(trim_silence(x[a:b])) for a, b in zip(bounds[:-1], bounds[1:])]
+
+
+def shrink_pauses(x, max_pause=0.22, thr_ratio=0.03):
+    """Raccourcit les pauses internes trop longues (rythme TikTok plus serré)."""
+    hop = int(0.01 * SR)
+    peak = np.max(np.abs(x)) + 1e-9
+    frames = [x[i:i + hop] for i in range(0, len(x), hop)]
+    out, quiet = [], 0
+    for f in frames:
+        if np.sqrt(np.mean(f ** 2)) < peak * thr_ratio:
+            quiet += 1
+            if quiet * 0.01 > max_pause:
+                continue
+        else:
+            quiet = 0
+        out.append(f)
+    return np.concatenate(out)
+
+
+def build_voiceover(tts, voice_file=None):
+    """Synthétise chaque phrase (ou découpe la voix externe), mesure sa durée, assemble la piste."""
     os.makedirs(BUILD, exist_ok=True)
     pieces, t = [], INTRO_PAD
     pieces.append(np.zeros(int(INTRO_PAD * SR), np.float32))
+    ext = split_external(voice_file) if voice_file else None
     for i, seg in enumerate(SEGMENTS):
-        p = os.path.join(BUILD, f"seg_{i:02d}.wav")
-        synth_sentence(seg["voice"], p, tts)
-        x = trim_silence(read_wav_mono(p))
+        if ext:
+            x = ext[i]
+        else:
+            p = os.path.join(BUILD, f"seg_{i:02d}.wav")
+            synth_sentence(seg["voice"], p, tts)
+            x = trim_silence(read_wav_mono(p))
         seg["t0"], seg["t1"] = t, t + len(x) / SR
         pieces += [x, np.zeros(int(GAP * SR), np.float32)]
         t = seg["t1"] + GAP
@@ -524,12 +603,12 @@ def render_video(voice_wav, total):
            "-i", voice_wav, "-i", music_wav,
            # Voix au premier plan, musique à -20 dB avec « ducking » (sidechain) sous la voix
            "-filter_complex",
-           "[2:a]volume=0.22[m];[m][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=300[md];"
-           "[1:a][md]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]",
+           "[2:a]volume=0.10[m];[m][1:a]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=300[md];"
+           "[1:a][md]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95,pan=stereo|c0=c0|c1=c0[a]",
            "-map", "0:v", "-map", "[a]",
            "-c:v", "libx264", "-preset", "medium", "-crf", "23", "-maxrate", "6M", "-bufsize", "12M", "-pix_fmt", "yuv420p",
            "-profile:v", "high", "-movflags", "+faststart",
-           "-c:a", "aac", "-b:a", "192k", "-shortest", OUT_VIDEO]
+           "-c:a", "aac", "-b:a", "192k", "-ac", "2", "-shortest", OUT_VIDEO]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for f in range(nframes):
         t = f / FPS
@@ -544,12 +623,13 @@ def render_video(voice_wav, total):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--tts", choices=["espeak", "edge"], default="espeak")
+    ap.add_argument("--voice-file", help="voix off externe (script complet lu d'une traite, ex. ElevenLabs)")
     ap.add_argument("--preview", type=float, nargs="*", help="rend seulement des PNG aux instants donnés")
     args = ap.parse_args()
 
     ensure_tools(args.tts)
     print("1/3 Voix off…")
-    voice_wav, total = build_voiceover(args.tts)
+    voice_wav, total = build_voiceover(args.tts, args.voice_file)
     print(f"    durée totale : {total:.1f} s  ->  {OUT_AUDIO}")
     with open(os.path.join(HERE, "timings.txt"), "w", encoding="utf-8") as fh:
         for s in SEGMENTS:
