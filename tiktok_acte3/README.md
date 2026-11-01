@@ -1,6 +1,6 @@
 # TikTok : Acte III contre la vie chère (31/10/2026)
 
-Vidéo verticale 1080×1920, 30 fps, 58,6 s, générée entièrement par script. La voix off est une voix neuronale ElevenLabs (« Daniel », générée via vidIQ).
+Vidéo verticale 1080×1920, 30 fps, 58,6 s, générée entièrement par script. La voix off est une voix neuronale ElevenLabs (« Daniel », générée via vidIQ). Les fonds sont 14 photos réelles sous licence libre (Wikimedia Commons), avec un panoramique animé ; les crédits sont dans `photos/CREDITS.md` et s'affichent à l'écran.
 
 | Fichier | Rôle |
 |---|---|
@@ -9,6 +9,7 @@ Vidéo verticale 1080×1920, 30 fps, 58,6 s, générée entièrement par script.
 | `tiktok_acte3.mp4` | Vidéo finale (H.264 + AAC) |
 | `script_voix_off.txt` | Texte exact lu par la voix |
 | `timings.txt` | Minutage de chaque phrase (pour vérifier la synchronisation) |
+| `photos/` | Photos de fond et `CREDITS.md` (auteur, licence, lien) |
 
 ## Relancer
 
@@ -29,7 +30,8 @@ Pour modifier le texte, éditez la liste `SEGMENTS` :
 - `voice` : ce qui est lu, avec les nombres en toutes lettres ;
 - `sub` : le sous-titre ;
 - `big` et `small` : le chiffre clé et le bandeau ;
-- `pal` : la couleur de la séquence.
+- `pal` : la couleur de la séquence ;
+- `PHOTO_ORDER` / `PHOTOS` : la photo de fond de chaque séquence et son crédit. Pour ajouter tes propres photos, dépose un `.jpg` dans `photos/` et ajoute une entrée.
 
 ## Choix techniques
 

@@ -120,6 +120,36 @@ SEGMENTS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# 1 bis. PHOTOS (Wikimedia Commons, licences libres — crédit affiché à l'écran)
+#         clé -> (fichier, légende lieu/date, auteur, licence)
+#         Les photos du 17/10 sont explicitement datées pour ne pas les faire passer
+#         pour des images du 31/10.
+# ---------------------------------------------------------------------------
+PHOTO_DIR = os.path.join(HERE, "photos")
+PHOTOS = {
+    "paris17_0131":     ("Paris, place de l'Opéra · 17/10", "Jules*", "CC BY-SA 4.0"),
+    "aix01":            ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
+    "paris17_0039":     ("Paris, bd Saint-Martin · 17/10", "Jules*", "CC BY-SA 4.0"),
+    "aix03":            ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
+    "sens02":           ("Sens (Yonne) · 31/10", "François Goglins", "CC BY-SA 4.0"),
+    "sens27":           ("Sens (Yonne) · 31/10", "François Goglins", "CC BY-SA 4.0"),
+    "nancy":            ("Nancy · 31/10", "Florian Cuny", "CC BY-SA 4.0"),
+    "paris17_portrait": ("Paris · 17/10", "Guallendra", "CC0"),
+    "paris17_0101":     ("Paris, bd Sébastopol · 17/10", "Jules*", "CC BY-SA 4.0"),
+    "grenoble":         ("Grenoble · 31/10", "CiDiBi", "CC BY-SA 4.0"),
+    "banque":           ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
+    "sens22":           ("Sens (Yonne) · 31/10", "François Goglins", "CC BY-SA 4.0"),
+    "aix10":            ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
+    "aix17":            ("Aix-en-Provence · 31/10", "Gabriel from92", "CC0"),
+}
+# Une photo par segment, dans l'ordre de SEGMENTS
+PHOTO_ORDER = ["paris17_0131", "aix01", "paris17_0039", "aix03", "sens02", "sens27", "nancy",
+               "paris17_portrait", "paris17_0101", "grenoble", "banque", "sens22", "aix10", "aix17"]
+for _seg, _key in zip(SEGMENTS, PHOTO_ORDER):
+    _seg["photo"] = _key
+
+
 def run(cmd, **kw):
     """Exécute une commande système et lève une erreur claire si elle échoue."""
     res = subprocess.run(cmd, capture_output=True, text=True, **kw)
@@ -440,10 +470,51 @@ def subtitle_chunks(sub, max_words=4):
     return out
 
 
+PHOTO_CACHE = {}
+
+
+def load_photo(key):
+    """Charge une photo et la redimensionne pour couvrir 1080x1920 (+ marge pour pan/zoom)."""
+    im = Image.open(os.path.join(PHOTO_DIR, key + ".jpg")).convert("RGB")
+    # rogne 2 % sur chaque bord (restes éventuels d'interface)
+    mx, my = int(im.width * 0.02), int(im.height * 0.02)
+    im = im.crop((mx, my, im.width - mx, im.height - my))
+    scale = max(W * 1.12 / im.width, H * 1.10 / im.height)
+    return im.resize((int(im.width * scale), int(im.height * scale)), Image.LANCZOS)
+
+
+def photo_background(seg, i, local, dur):
+    """Fond photo animé : panoramique lent (sens alterné) + léger zoom + assombrissement teinté."""
+    ph = PHOTO_CACHE[seg["photo"]]
+    top = PAL[seg["pal"]][0]
+    k = min(max(local / max(dur, 0.1), 0), 1)
+    zoom = 1.0 + 0.06 * k
+    cw, ch = int(W / zoom * 1.0), int(H / zoom * 1.0)
+    rng_x = ph.width - cw
+    rng_y = ph.height - ch
+    span = min(rng_x, 520)                       # amplitude du panoramique limitée
+    cx = rng_x / 2 + (k - 0.5) * span * (1 if i % 2 == 0 else -1)
+    cy = rng_y / 2
+    box = (int(cx), int(cy), int(cx) + cw, int(cy) + ch)
+    frame = ph.crop(box).resize((W, H), Image.BILINEAR)
+    arr = np.asarray(frame).astype(np.float32)
+    arr = arr * PHOTO_SHADE + np.array(top, np.float32) * (1 - PHOTO_SHADE)
+    return arr
+
+
+# Courbe d'assombrissement verticale : lisibilité du titre (haut), du chiffre (centre) et des sous-titres (bas)
+_y = np.linspace(0, 1, H)[:, None, None]
+PHOTO_SHADE = (0.62 - 0.22 * np.exp(-((_y - 0.05) / 0.12) ** 2)
+               - 0.10 * np.exp(-((_y - 0.42) / 0.12) ** 2)
+               - 0.25 * np.exp(-((_y - 0.80) / 0.14) ** 2)).astype(np.float32)
+
+
 def prepare_segments():
     """Pré-calcule fonds, blocs de sous-titres et timings mot à mot."""
     bgs, stripes = {}, {}
     for seg in SEGMENTS:
+        if seg.get("photo") and seg["photo"] not in PHOTO_CACHE:
+            PHOTO_CACHE[seg["photo"]] = load_photo(seg["photo"])
         k = seg["pal"]
         if k not in bgs:
             bgs[k] = make_background(k)
@@ -480,20 +551,29 @@ def render_frame(t, total, bgs, stripes):
     top, bot, acc = PAL[seg["pal"]]
     local = t - seg["t0"]
 
+    if seg.get("photo"):
+        # --- Fond PHOTO : panoramique + zoom + assombrissement teinté + grain léger
+        nxt = SEGMENTS[i + 1]["t0"] if i + 1 < len(SEGMENTS) else total
+        arr = photo_background(seg, i, local, nxt - seg["t0"])
+        g = GRAIN[int(t * FPS) % len(GRAIN)].repeat(4, 0).repeat(4, 1) * 0.5
+        arr = np.clip(arr + g, 0, 255).astype(np.uint8)
+    else:
+        arr = None
     # --- Fond : dégradé + léger zoom « Ken Burns » + bandes qui défilent + grain
     base = Image.fromarray(bgs[seg["pal"]])
     zoom = 1 + 0.04 * min(local / 4, 1)
-    if zoom > 1.001:
+    if arr is None and zoom > 1.001:
         zw, zh = int(W * zoom), int(H * zoom)
         base = base.resize((zw, zh), Image.BILINEAR).crop(((zw - W) // 2, (zh - H) // 2,
                                                             (zw - W) // 2 + W, (zh - H) // 2 + H))
-    off = int((t * 60) % 140)
-    st = stripes[seg["pal"]].crop((off, off, off + W, off + H))
-    base = base.convert("RGBA")
-    base.alpha_composite(st)
-    arr = np.asarray(base.convert("RGB")).astype(np.int16)
-    g = GRAIN[int(t * FPS) % len(GRAIN)].repeat(4, 0).repeat(4, 1)
-    arr = np.clip(arr + g, 0, 255).astype(np.uint8)
+    if arr is None:
+        off = int((t * 60) % 140)
+        st = stripes[seg["pal"]].crop((off, off, off + W, off + H))
+        base = base.convert("RGBA")
+        base.alpha_composite(st)
+        arr = np.asarray(base.convert("RGB")).astype(np.int16)
+        g = GRAIN[int(t * FPS) % len(GRAIN)].repeat(4, 0).repeat(4, 1)
+        arr = np.clip(arr + g, 0, 255).astype(np.uint8)
 
     # Flash blanc bref à chaque changement de segment (cut dynamique)
     if local < 0.08:
@@ -551,6 +631,18 @@ def render_frame(t, total, bgs, stripes):
     d.rounded_rectangle([60, 150, 60 + lw + 50, 220], radius=35, fill=(0, 0, 0, 170), outline=acc, width=3)
     d.text((85, 185), label, font=head_f, fill=acc, anchor="lm")
     d.text((W - 60, 185), "ACTE III · 31/10", font=font(FONT_BOLD, 38), fill=(255, 255, 255, 200), anchor="rm")
+
+    # --- Crédit photo (obligatoire pour les licences CC BY-SA)
+    if seg.get("photo"):
+        lieu, auteur, lic = PHOTOS[seg["photo"]]
+        credit = f"Photo : {lieu} — {auteur} · {lic} · Wikimedia Commons"
+        size = 28
+        while size > 18 and d.textlength(credit, font=font(FONT_BOLD, size)) > W - 140:
+            size -= 1
+        cf = font(FONT_BOLD, size)
+        cw_ = d.textlength(credit, font=cf)
+        d.rounded_rectangle([50, 296, 50 + cw_ + 30, 340], radius=12, fill=(0, 0, 0, 150))
+        d.text((65, 318), credit, font=cf, fill=(255, 255, 255, 220), anchor="lm")
 
     # --- Barre de progression en haut
     d.rectangle([0, 0, W, 14], fill=(255, 255, 255, 40))
