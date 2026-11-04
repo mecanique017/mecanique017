@@ -6,7 +6,7 @@ Objectif : l'application en ligne en HTTPS (indispensable pour l'installer sur u
 
 ## 1. Base de données : Supabase
 1. Créez un projet sur https://supabase.com/dashboard. Région **Europe (Paris ou Francfort)**, notez le mot de passe de la base.
-2. **SQL Editor** → exécutez les fichiers de `supabase/migrations/` **dans l'ordre**, un par un (copier-coller puis *Run*) :
+2. **SQL Editor** → collez le contenu de **`supabase/setup-complet.sql`** puis *Run* (tout en une fois, idéal depuis un téléphone). Ou bien exécutez les fichiers de `supabase/migrations/` **dans l'ordre**, un par un :
    1. `20261104000000_initial_schema.sql`
    2. `20261104010000_phase6.sql`
    3. `20261104020000_phase7.sql`
