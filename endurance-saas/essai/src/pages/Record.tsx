@@ -13,7 +13,7 @@ import {
   addFix, addHeartRate, tick, currentLap, currentSpeed, defaultAutoPause, GOOD_ACCURACY_M, heartRateStats, loadSession, manualLap, movingSeconds, newSession,
   parseHeartRate, pause, resume, saveSession, toTelemetry, type Lap, type LiveSession,
 } from '@/lib/live/recorder'
-import { elevationFromProfile, fetchIgnElevations, refineDistance, resample, smoothedRoute, smoothTrack, withIgnAltitude } from '@/lib/live/refine'
+import { elevationFromProfile, fetchIgnElevations, refineDistance, resample, smoothedRoute, smoothedRouteTimes, smoothTrack, withIgnAltitude } from '@/lib/live/refine'
 import { cn } from '@/lib/utils'
 import { TrackMap, type BaseLayer } from '../components/TrackMap'
 import { supabase } from '../supabase'
@@ -751,6 +751,7 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
     const telemetry = {
       ...base,
       route: route.length > 1 ? route : base.route,
+      route_t: route.length > 1 ? smoothedRouteTimes(smoothed) : undefined,
       points: ign.state === 'ok' ? withIgnAltitude(base.points, ign.profile!) : base.points,
       elevation_source: ign.state === 'ok' ? 'ign' : 'gps',
     }

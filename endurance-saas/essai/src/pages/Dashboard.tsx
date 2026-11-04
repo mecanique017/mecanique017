@@ -7,7 +7,9 @@ import { KpiTiles } from '@/components/dashboard/kpi-tiles'
 import { LoadChart } from '@/components/dashboard/load-chart'
 import { ActivityList } from '@/components/dashboard/activity-list'
 import { getTrainingLoad, localDate } from '@/lib/training/load'
-import { getWellnessContext } from '@/lib/training/wellness'
+import { getWellness, getWellnessContext } from '@/lib/training/wellness'
+import { addDays } from '@/lib/dates'
+import { ReadinessCard } from '../components/ReadinessCard'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -17,14 +19,15 @@ export function DashboardPage() {
   const user = useUser()
   const { data, error } = useData(async () => {
     const today = localDate(new Date())
-    const [series, profile, activities, planned, wellness] = await Promise.all([
+    const [series, profile, activities, planned, wellness, history] = await Promise.all([
       getTrainingLoad(supabase, user.id),
       supabase.from('profiles').select('full_name, subscription_tier, subscription_status, trial_ends_at').eq('id', user.id).single(),
       supabase.from('activities').select('id, title, sport_type, start_time, duration_seconds, distance_meters, tss').eq('user_id', user.id).order('start_time', { ascending: false }).limit(8),
       supabase.from('planned_workouts').select('id, title, is_completed').eq('user_id', user.id).eq('scheduled_date', today),
       getWellnessContext(supabase, user.id, today),
+      getWellness(supabase, user.id, addDays(today, -29), today),
     ])
-    return { series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness }
+    return { today, series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness, history }
   }, [user.id])
 
   const live = loadSession()
@@ -74,6 +77,17 @@ export function DashboardPage() {
               <span>Essai Premium jusqu’au {longDate.format(new Date(data.profile.trial_ends_at))}.</span>
             </p>
           )}
+          <ReadinessCard series={data.series} wellness={data.history} today={data.today} />
+          <nav className="grid grid-cols-2 gap-3" aria-label="Analyses">
+            <Link to="/dashboard/performance" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Records & prédictions</p>
+              <p className="text-xs text-muted-foreground">Meilleurs efforts, temps prévus, zones</p>
+            </Link>
+            <Link to="/dashboard/stats" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Statistiques</p>
+              <p className="text-xs text-muted-foreground">Bilan annuel, carte de mes passages</p>
+            </Link>
+          </nav>
           <KpiTiles series={data.series} />
           <div className="grid gap-6 lg:grid-cols-3">
             <div className="lg:col-span-2 rounded-xl border bg-card p-4 md:p-6">

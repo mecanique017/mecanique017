@@ -214,6 +214,13 @@ export function smoothedRoute(smoothed: RefinedTrack | null): [number, number][]
     .map((p) => [Math.round(p.lat * 1e5) / 1e5, Math.round(p.lng * 1e5) / 1e5])
 }
 
+/** Temps (s en mouvement) de chaque point du tracé lissé (même échantillonnage que smoothedRoute). */
+export function smoothedRouteTimes(smoothed: RefinedTrack | null): number[] {
+  if (!smoothed) return []
+  const k = Math.max(1, Math.ceil(smoothed.points.length / 1000))
+  return smoothed.points.filter((_, i) => i % k === 0 || i === smoothed.points.length - 1).map((p) => p.t)
+}
+
 /** Remplace l'altitude GPS des points de courbe par l'altitude IGN la plus proche dans le temps. */
 export function withIgnAltitude<T extends { t: number; alt?: number }>(points: T[], profile: { t: number; z: number }[]): T[] {
   if (!profile.length) return points
