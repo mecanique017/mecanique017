@@ -12,7 +12,7 @@ import type { GeoJSONSource, Map as MlMap, Marker } from 'maplibre-gl'
  * MapLibre (BSD) est chargé à la demande. Sans WebGL ou hors ligne : repli sur le tracé SVG.
  */
 const STYLE = 'https://tiles.openfreemap.org/styles/liberty'
-const ORANGE = '#fc5200'
+const ORANGE = '#e10600'
 const IGN = (layer: string, format: string) =>
   `https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=${layer}&STYLE=normal&TILEMATRIXSET=PM&FORMAT=${format}&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}`
 

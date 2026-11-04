@@ -46,7 +46,7 @@ function Protected() {
       <header className="border-b">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <NavLink to="/dashboard" className="flex items-center gap-2 font-bold">
-            <Activity className="size-5 text-emerald-500" aria-hidden />
+            <Activity className="size-5 text-red-600" aria-hidden />
             Endurance
             <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">ESSAI</span>
           </NavLink>
@@ -110,7 +110,7 @@ function TabBar() {
               className={({ isActive }) => cn('flex flex-col items-center gap-0.5 py-2 text-[11px]', isActive ? 'text-foreground' : 'text-muted-foreground')}
             >
               {t.main ? (
-                <span className="-mt-5 flex size-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg ring-4 ring-background">
+                <span className="-mt-5 flex size-12 items-center justify-center rounded-full bg-red-600 text-white shadow-lg ring-4 ring-background">
                   <t.icon className="size-5 fill-current" aria-hidden />
                 </span>
               ) : (

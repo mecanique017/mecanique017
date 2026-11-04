@@ -451,7 +451,7 @@ export function RecordPage() {
               <>
                 <div className="grid grid-cols-3 gap-2">
                   {LAYERS.map((l) => (
-                    <button key={l.key} onClick={() => savePrefs({ ...prefs, layer: l.key })} className={cn('rounded-xl border p-3 text-left', prefs.layer === l.key && 'border-orange-500 bg-orange-500/10')}>
+                    <button key={l.key} onClick={() => savePrefs({ ...prefs, layer: l.key })} className={cn('rounded-xl border p-3 text-left', prefs.layer === l.key && 'border-red-600 bg-red-600/10')}>
                       <span className="block text-sm font-semibold">{l.label}</span>
                       <span className="block text-[11px] leading-tight text-muted-foreground">{l.hint}</span>
                     </button>
@@ -519,20 +519,20 @@ export function RecordPage() {
               className="flex h-14 w-full items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900 px-4 text-left active:scale-[.99]"
               aria-label={`Sport : ${sportInfo(sport).label}. Changer de sport`}
             >
-              {(() => { const Icon = sportInfo(sport).icon; return <Icon className="size-6 text-[#fc5200]" aria-hidden /> })()}
+              {(() => { const Icon = sportInfo(sport).icon; return <Icon className="size-6 text-[#e10600]" aria-hidden /> })()}
               <span className="flex-1">
                 <span className="block text-[11px] uppercase tracking-wide text-neutral-400">Sport</span>
                 <span className="block text-base font-semibold">{sportInfo(sport).label}</span>
               </span>
-              <span className="text-sm font-medium text-[#fc5200]">Changer</span>
+              <span className="text-sm font-medium text-[#e10600]">Changer</span>
             </button>
-            <button onClick={start} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold active:scale-[.98]">
+            <button onClick={start} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#e10600] text-lg font-semibold active:scale-[.98]">
               <Play className="size-6 fill-current" /> {useGps && !gpsReady ? 'Démarrer (GPS en recherche)' : 'Démarrer'}
             </button>
           </div>
         ) : session.status === 'paused' ? (
           <div className="grid grid-cols-2 gap-3">
-            <button onClick={() => apply(resume(session))} className="flex h-14 items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold">
+            <button onClick={() => apply(resume(session))} className="flex h-14 items-center justify-center gap-2 rounded-full bg-[#e10600] text-lg font-semibold">
               <Play className="size-6 fill-current" /> Reprendre
             </button>
             <button onClick={() => setFinishing(true)} className="flex h-14 items-center justify-center gap-2 rounded-full bg-white text-lg font-semibold text-neutral-950">
@@ -544,7 +544,7 @@ export function RecordPage() {
             <button onClick={lap} disabled={session.status !== 'running'} className="flex size-14 shrink-0 items-center justify-center rounded-full bg-neutral-800 disabled:opacity-40" aria-label="Tour">
               <Flag className="size-5" />
             </button>
-            <button onClick={() => apply(pause(session))} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold active:scale-[.98]">
+            <button onClick={() => apply(pause(session))} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[#e10600] text-lg font-semibold active:scale-[.98]">
               <Pause className="size-6 fill-current" /> Pause
             </button>
           </div>
@@ -575,9 +575,9 @@ function SportPicker({ value, onPick, onClose }: { value: SportKey; onPick: (k: 
                     key={sp.key}
                     onClick={() => onPick(sp.key)}
                     aria-pressed={selected}
-                    className={cn('flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center text-xs font-medium active:scale-95', selected ? 'border-[#fc5200] bg-[#fc5200]/10 text-foreground' : 'bg-card')}
+                    className={cn('flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center text-xs font-medium active:scale-95', selected ? 'border-[#e10600] bg-[#e10600]/10 text-foreground' : 'bg-card')}
                   >
-                    <Icon className={cn('size-6', selected ? 'text-[#fc5200]' : 'text-muted-foreground')} aria-hidden />
+                    <Icon className={cn('size-6', selected ? 'text-[#e10600]' : 'text-muted-foreground')} aria-hidden />
                     <span className="leading-tight">{sp.label}</span>
                     {!sp.gps && <span className="text-[10px] font-normal text-muted-foreground">sans GPS</span>}
                   </button>

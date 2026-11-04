@@ -95,7 +95,7 @@ export function ActivityPage() {
         </div>
       )}
       <p className="flex items-center gap-2 rounded-xl border bg-card p-4 text-sm text-muted-foreground">
-        <Sparkles className="size-4 shrink-0 text-emerald-500" aria-hidden /> L’analyse par le coach IA est disponible dans la version complète.
+        <Sparkles className="size-4 shrink-0 text-red-600" aria-hidden /> L’analyse par le coach IA est disponible dans la version complète.
       </p>
     </div>
   )
