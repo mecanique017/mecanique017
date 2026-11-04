@@ -9,11 +9,13 @@ import { localDate } from './load'
  */
 export async function linkPlannedWorkout(
   supabase: SupabaseClient<Database>,
-  activity: { id: string; sport_type: SportType; start_time: string }
+  activity: { id: string; sport_type: SportType; start_time: string },
+  /** Obligatoire avec le client service role (pas de RLS) ; facultatif avec le client utilisateur */
+  userId?: string
 ): Promise<string | null> {
-  const { data: planned } = await supabase
-    .from('planned_workouts')
-    .select('id')
+  let query = supabase.from('planned_workouts').select('id')
+  if (userId) query = query.eq('user_id', userId)
+  const { data: planned } = await query
     .eq('scheduled_date', localDate(activity.start_time))
     .eq('sport_type', activity.sport_type)
     .eq('is_completed', false)

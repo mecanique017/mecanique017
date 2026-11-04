@@ -10,6 +10,7 @@ const NAV = [
   { href: '/dashboard/activities/new', label: 'Nouvelle séance' },
   { href: '/dashboard/activities/import', label: 'Importer' },
   { href: '/dashboard/wellness', label: 'Bien-être' },
+  { href: '/dashboard/integrations', label: 'Connexions' },
   { href: '/dashboard/profile', label: 'Profil' },
   { href: '/pricing', label: 'Offres' },
 ]

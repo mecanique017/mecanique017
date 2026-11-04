@@ -14,7 +14,7 @@ export type Json =
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon'
 export type SportType = 'run' | 'ride' | 'swim'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
-export type ActivitySource = 'manual' | 'fit'
+export type ActivitySource = 'manual' | 'fit' | 'polar'
 export type PlannedSource = 'manual' | 'ai'
 export type AiUsageKind = 'coach_analysis' | 'training_plan'
 
@@ -39,6 +39,9 @@ export type Database = {
           stripe_customer_id: string | null
           subscription_tier: SubscriptionTier
           subscription_status: string
+          notify_weekly: boolean
+          notify_fatigue: boolean
+          last_fatigue_alert_at: string | null
         }
         Insert: {
           id: string
@@ -57,6 +60,9 @@ export type Database = {
           stripe_customer_id?: string | null
           subscription_tier?: SubscriptionTier
           subscription_status?: string
+          notify_weekly?: boolean
+          notify_fatigue?: boolean
+          last_fatigue_alert_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
         Relationships: []
@@ -113,6 +119,7 @@ export type Database = {
           athlete_notes: string | null
           normalized_power: number | null
           source: ActivitySource
+          external_id: string | null
           created_at: string
         }
         Insert: {
@@ -136,6 +143,7 @@ export type Database = {
           athlete_notes?: string | null
           normalized_power?: number | null
           source?: ActivitySource
+          external_id?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['activities']['Insert']>
@@ -195,6 +203,28 @@ export type Database = {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['coach_insights']['Insert']>
+        Relationships: []
+      }
+      polar_connections: {
+        Row: {
+          user_id: string
+          polar_user_id: number
+          access_token: string
+          ai_consent_at: string
+          connected_at: string
+          last_sync_at: string | null
+          last_sync_error: string | null
+        }
+        Insert: {
+          user_id: string
+          polar_user_id: number
+          access_token: string
+          ai_consent_at: string
+          connected_at?: string
+          last_sync_at?: string | null
+          last_sync_error?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['polar_connections']['Insert']>
         Relationships: []
       }
       ai_usage: {

@@ -29,7 +29,7 @@ async function ProfileLoader() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, sport_discipline, age, weight, height, hr_max, hr_rest, lactate_threshold_hr, ftp, vma')
+    .select('full_name, sport_discipline, age, weight, height, hr_max, hr_rest, lactate_threshold_hr, ftp, vma, notify_weekly, notify_fatigue')
     .eq('id', user.id)
     .single()
   if (!profile) return <p className="text-sm text-muted-foreground">Profil introuvable.</p>

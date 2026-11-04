@@ -26,7 +26,10 @@ src/
 │   ├── (dashboard)/     layout (menu) + dashboard/ protégé :
 │   │                      page (indicateurs + courbes), activities/new (saisie),
 │   │                      activities/[id] (détail + courbes + coach IA), activities/import (.fit),
-│   │                      calendar (séances prévues), plan (plan IA), wellness (VFC, sommeil), profile
+│   │                      calendar (séances prévues), plan (plan IA), wellness (VFC, sommeil),
+│   │                      integrations (Polar), profile (paramètres + notifications)
+│   ├── offline/         page hors-ligne (service worker)
+│   ├── manifest.ts      manifeste PWA (installation, raccourcis)
 │   ├── pricing/         page Tarifs (prix lus dans Stripe)
 │   ├── auth/callback/   échange du code (confirmation email / OAuth)
 │   ├── api/activities/[id]/analyze/  analyse IA d'une séance (POST)
@@ -34,6 +37,9 @@ src/
 │   ├── api/stripe/checkout/          création d'une session de paiement (POST)
 │   ├── api/stripe/webhook/           synchronisation de l'abonnement (Stripe → Supabase)
 │   ├── api/stripe/portal/            portail client Stripe (changer d'offre, résilier)
+│   ├── api/polar/                    connect, callback (OAuth), sync, disconnect
+│   ├── api/cron/daily | weekly       tâches planifiées (Vercel Cron, vercel.json)
+│   ├── api/email/unsubscribe/        désinscription signée (lien + un clic RFC 8058)
 │   └── layout.tsx, page.tsx, globals.css (tokens shadcn)
 ├── components/
 │   ├── ui/              composants shadcn → npx shadcn@latest add <composant>
@@ -53,6 +59,12 @@ src/
 │   ├── training/wellness.ts relevés de bien-être, référence de VFC sur 7 jours
 │   ├── fit/parse-fit.ts     lecture des fichiers .fit + tracé GPS (serveur uniquement)
 │   ├── fit/archive.ts       extraction .zip / .fit.gz dans le navigateur (fflate)
+│   ├── fit/import.ts        enregistrement d'une séance .fit (import manuel et Polar)
+│   ├── polar/client.ts      API Polar AccessLink v3
+│   ├── polar/sync.ts        synchronisation séances + VFC nocturne
+│   ├── email/               envoi (Resend), modèles, liens de désinscription
+│   ├── training/fatigue.ts  règles d'alerte fatigue
+│   ├── cron.ts              authentification des tâches planifiées
 │   ├── training/recalc.ts   recalcul du TSS après changement de FTP / seuil
 │   ├── ai/plan.ts           génération et contrôle d'un plan d'entraînement
 │   ├── dates.ts         opérations sur les jours (semaines, lundi…)
@@ -83,6 +95,7 @@ supabase/migrations/     schéma SQL (tables, RLS, triggers)
 Exécuter les migrations **dans l'ordre** dans le SQL Editor Supabase (ou `supabase db push`) :
 1. `supabase/migrations/20261104000000_initial_schema.sql`
 2. `supabase/migrations/20261104010000_phase6.sql` (journal `ai_usage`, puissance normalisée, origine des séances)
+3. `supabase/migrations/20261104020000_phase7.sql` (connexion Polar, préférences de notification)
 
 Tables : `profiles`, `daily_metrics`, `activities`, `planned_workouts`, `coach_insights`, toutes avec la RLS activée (chaque utilisateur ne voit et ne modifie que ses lignes). Un profil est créé automatiquement à l'inscription.
 
@@ -126,6 +139,27 @@ La [Politique API Strava](https://www.strava.com/legal/api_policy) (en vigueur a
 
 L'import de l'export **fait par l'utilisateur lui-même** (sans l'API) reste possible et est pris en charge. Pour une synchronisation automatique, étudier les API constructeurs (Garmin Connect Developer Program, Wahoo, Polar AccessLink, Coros) et **vérifier leurs conditions sur l'IA avant intégration**.
 
+## Phase 7 : Polar, e-mails, application installable
+### Synchronisation Polar
+- **Configuration** : créer un client sur https://admin.polaraccesslink.com, déclarer l'URL de redirection `https://<domaine>/api/polar/callback`, puis renseigner `POLAR_CLIENT_ID` et `POLAR_CLIENT_SECRET`.
+- **Connexion** (`/dashboard/integrations`) : OAuth avec `state` anti-CSRF, puis enregistrement de l'utilisateur auprès d'AccessLink. **Consentement explicite obligatoire** à l'envoi des données au coach IA (licence Polar § 3.1.1 : pas de transmission à un tiers sans permission du membre).
+- **Ce qui est synchronisé** : les séances des 30 derniers jours, téléchargées en `.fit` et analysées comme un import (NP, tracé, TSS) ; la **VFC nocturne** (Nightly Recharge) des 3 derniers jours, sans écraser une saisie manuelle. Chaque nuit (tâche planifiée) et à la demande.
+- **Jeton d'accès** dans `polar_connections` : **aucun accès utilisateur** (RLS sans politique, privilèges retirés), lecture par le serveur uniquement.
+- **Déconnexion** : désenregistrement chez Polar et suppression du jeton (§ 3.3) ; suppression des séances Polar en option.
+- **Pas de webhooks Polar** : la documentation ne précise pas sur quelles données porte la signature. À ajouter quand ce point sera vérifié auprès de Polar.
+
+### Notifications par e-mail (Resend)
+- **Désactivées par défaut** (consentement RGPD), à activer dans le profil : **résumé hebdomadaire** le lundi (bilan, CTL, séances prévues) et **alerte fatigue**.
+- **Règles d'alerte** (`lib/training/fatigue.ts`) : TSB < −40 seul, ou au moins deux signaux parmi TSB < −30, VFC 15 % sous la référence, fatigue ressentie ≥ 8. Au plus une alerte tous les 3 jours.
+- **Désinscription** : lien signé (HMAC) dans chaque e-mail, plus l'en-tête `List-Unsubscribe` en un clic (RFC 8058, exigé par Gmail et Yahoo).
+- **Tâches planifiées** (`vercel.json`) : `/api/cron/daily` à 5 h UTC (synchronisation Polar puis alertes) et `/api/cron/weekly` le lundi à 5 h 30 UTC, protégées par `CRON_SECRET`.
+- **Domaine d'envoi** : à vérifier dans Resend (SPF, DKIM) pour `EMAIL_FROM`.
+
+### Application installable (PWA)
+- **Manifeste** avec icônes (dont « maskable ») et raccourcis « Bien-être du matin », « Nouvelle séance », « Calendrier ». Installation depuis le navigateur ; sur iOS : Partager → « Sur l'écran d'accueil ».
+- **Service worker** minimal : page hors-ligne et fichiers statiques. **Aucune page authentifiée n'est mise en cache**, pour ne pas laisser de données personnelles sur un appareil partagé.
+- **En-têtes de sécurité** : `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, CSP sur `sw.js`.
+
 ## Offres et quotas (`lib/plans.ts`)
 | Offre | Analyses de séance du coach IA / mois |
 |---|---|
@@ -148,4 +182,4 @@ Quotas à ajuster dans `lib/plans.ts`. Le quota est vérifié par l'API, pas seu
 ## Notes
 - Next.js 16 renomme `middleware.ts` en `proxy.ts`. Sans variables Supabase définies, le proxy laisse passer (dev local sans compte).
 - Avec Cache Components, toute lecture de session (`cookies()`) doit être placée derrière un `<Suspense>` (voir `dashboard/page.tsx`).
-- `ANTHROPIC_API_KEY`, `STRIPE_SECRET_KEY` et `SUPABASE_SERVICE_ROLE_KEY` : **serveur uniquement**, jamais préfixées `NEXT_PUBLIC_`.
+- `ANTHROPIC_API_KEY`, `STRIPE_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `POLAR_CLIENT_SECRET`, `RESEND_API_KEY`, `CRON_SECRET` : **serveur uniquement**, jamais préfixées `NEXT_PUBLIC_`.

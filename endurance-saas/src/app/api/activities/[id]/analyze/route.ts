@@ -49,8 +49,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   // État de charge le jour de la séance, calculé à partir des séances (séance du jour incluse)
   const activityDay = localDate(activity.start_time)
   const [series, wellness] = await Promise.all([
-    getTrainingLoad(supabase, new Date(activity.start_time)),
-    getWellnessContext(supabase, activityDay),
+    getTrainingLoad(supabase, user.id, new Date(activity.start_time)),
+    getWellnessContext(supabase, user.id, activityDay),
   ])
   const metrics = series.findLast((d) => d.date <= activityDay)
 

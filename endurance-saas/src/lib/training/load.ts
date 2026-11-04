@@ -16,11 +16,12 @@ export function localDate(iso: string | Date, timeZone = APP_TIMEZONE): string {
 const HISTORY_DAYS = 365
 
 /**
- * Série CTL / ATL / TSB de l'utilisateur connecté, calculée à partir de ses séances.
+ * Série CTL / ATL / TSB d'un utilisateur, calculée à partir de ses séances.
  * Les séances sont la source de vérité : rien à resynchroniser quand une séance change.
  */
 export async function getTrainingLoad(
   supabase: SupabaseClient<Database>,
+  userId: string,
   until: Date = new Date()
 ): Promise<DailyLoad[]> {
   const to = localDate(until)
@@ -30,6 +31,8 @@ export async function getTrainingLoad(
   const { data, error } = await supabase
     .from('activities')
     .select('start_time, tss')
+    // Filtre explicite : la RLS ne s'applique pas avec le client service role (tâches planifiées)
+    .eq('user_id', userId)
     .gte('start_time', fromDate.toISOString())
     .lte('start_time', until.toISOString())
   if (error) throw error

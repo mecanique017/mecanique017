@@ -88,12 +88,12 @@ async function generate(formData: FormData): Promise<Omit<PlanState, 'values'>> 
 
   // Contexte : charge actuelle, volume des 4 dernières semaines, bien-être du jour
   const [series, { data: recent }, wellness] = await Promise.all([
-    getTrainingLoad(supabase),
+    getTrainingLoad(supabase, user.id),
     supabase
       .from('activities')
       .select('sport_type, duration_seconds, tss')
       .gte('start_time', new Date(Date.now() - 28 * 86_400_000).toISOString()),
-    getWellnessContext(supabase, today),
+    getWellnessContext(supabase, user.id, today),
   ])
   const load = series.at(-1) ?? { ctl: 0, atl: 0, tsb: 0 }
   const bySport = new Map<SportType, { sessions: number; seconds: number; tss: number }>()

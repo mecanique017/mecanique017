@@ -56,6 +56,9 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
       lactate_threshold_hr: p.lactate_threshold_hr,
       ftp: p.ftp,
       vma: p.vma,
+      // Cases à cocher : absentes du formulaire = décochées
+      notify_weekly: formData.get('notify_weekly') === 'on',
+      notify_fatigue: formData.get('notify_fatigue') === 'on',
     })
     .eq('id', user.id)
 

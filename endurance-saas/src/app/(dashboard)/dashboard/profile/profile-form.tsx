@@ -10,7 +10,18 @@ import { updateProfile } from './actions'
 
 type Profile = Pick<
   Tables<'profiles'>,
-  'full_name' | 'sport_discipline' | 'age' | 'weight' | 'height' | 'hr_max' | 'hr_rest' | 'lactate_threshold_hr' | 'ftp' | 'vma'
+  | 'full_name'
+  | 'sport_discipline'
+  | 'age'
+  | 'weight'
+  | 'height'
+  | 'hr_max'
+  | 'hr_rest'
+  | 'lactate_threshold_hr'
+  | 'ftp'
+  | 'vma'
+  | 'notify_weekly'
+  | 'notify_fatigue'
 >
 
 export function ProfileForm({ profile }: { profile: Profile }) {
@@ -55,6 +66,26 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <Field id="hr_max" label="FC max (bpm)" type="number" inputMode="numeric" required defaultValue={value(profile.hr_max)} error={e.hr_max} />
         <Field id="ftp" label="FTP (W)" type="number" inputMode="numeric" required defaultValue={value(profile.ftp)} error={e.ftp} hint="Base du TSS puissance" />
         <Field id="vma" label="VMA (km/h)" type="number" inputMode="decimal" step="0.1" required defaultValue={value(profile.vma)} error={e.vma} />
+      </fieldset>
+
+      <fieldset className="space-y-3">
+        <legend className="mb-1 text-sm font-semibold">Notifications par e-mail</legend>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" name="notify_weekly" defaultChecked={profile.notify_weekly} className="mt-0.5 size-4 accent-primary" />
+          <span>
+            Résumé hebdomadaire le lundi matin
+            <span className="block text-xs text-muted-foreground">Bilan de la semaine passée et séances prévues.</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" name="notify_fatigue" defaultChecked={profile.notify_fatigue} className="mt-0.5 size-4 accent-primary" />
+          <span>
+            Alerte fatigue
+            <span className="block text-xs text-muted-foreground">
+              TSB très bas, VFC nettement sous votre référence ou fatigue ressentie élevée ; au plus une alerte tous les 3 jours.
+            </span>
+          </span>
+        </label>
       </fieldset>
 
       <label className="flex items-start gap-2 text-sm">

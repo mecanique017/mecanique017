@@ -12,10 +12,16 @@ export interface WellnessDay {
 }
 
 /** Relevés de bien-être sur [from, to], triés par date. */
-export async function getWellness(supabase: SupabaseClient<Database>, from: string, to: string): Promise<WellnessDay[]> {
+export async function getWellness(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  from: string,
+  to: string
+): Promise<WellnessDay[]> {
   const { data, error } = await supabase
     .from('daily_metrics')
     .select('date, hrv, resting_hr, sleep_score, perceived_fatigue')
+    .eq('user_id', userId)
     .gte('date', from)
     .lte('date', to)
     .order('date', { ascending: true })
@@ -34,8 +40,8 @@ export function hrvBaseline(history: WellnessDay[], day: string): number | null 
 }
 
 /** Contexte bien-être d'un jour, pour le coach IA et le tableau de bord. */
-export async function getWellnessContext(supabase: SupabaseClient<Database>, day: string) {
-  const history = await getWellness(supabase, addDays(day, -7), day)
+export async function getWellnessContext(supabase: SupabaseClient<Database>, userId: string, day: string) {
+  const history = await getWellness(supabase, userId, addDays(day, -7), day)
   const today = history.find((d) => d.date === day) ?? null
   return { today, hrvBaseline: hrvBaseline(history, day) }
 }

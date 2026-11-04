@@ -57,7 +57,7 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
   const today = localDate(new Date())
   const [{ subscription }, series, { data: profile }, { data: activities }, { data: todayPlanned }, wellness] = await Promise.all([
     searchParams,
-    getTrainingLoad(supabase),
+    getTrainingLoad(supabase, user.id),
     supabase.from('profiles').select('full_name, subscription_tier').eq('id', user.id).single(),
     supabase
       .from('activities')
@@ -65,7 +65,7 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
       .order('start_time', { ascending: false })
       .limit(8),
     supabase.from('planned_workouts').select('id, title, is_completed').eq('scheduled_date', today),
-    getWellnessContext(supabase, today),
+    getWellnessContext(supabase, user.id, today),
   ])
   const tier = profile?.subscription_tier ?? 'free'
   const usage = await getCoachUsage(supabase, user.id, tier)

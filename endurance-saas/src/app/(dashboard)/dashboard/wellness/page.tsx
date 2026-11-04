@@ -39,7 +39,7 @@ async function WellnessContent({ searchParams }: { searchParams: PageProps<'/das
   const today = localDate(new Date())
   const selected = isDay(date) && date <= today ? date : today
   const from = addDays(today, -(HISTORY_DAYS + 7))
-  const history = await getWellness(supabase, selected < from ? selected : from, today)
+  const history = await getWellness(supabase, user.id, selected < from ? selected : from, today)
   const selectedValues = history.find((d) => d.date === selected) ?? null
 
   // Série 30 jours : VFC + moyenne glissante 7 jours (référence personnelle)
