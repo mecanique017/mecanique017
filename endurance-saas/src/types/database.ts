@@ -44,6 +44,10 @@ export type Database = {
           notify_fatigue: boolean
           last_fatigue_alert_at: string | null
           trial_ends_at: string | null
+          username: string | null
+          bio: string | null
+          city: string | null
+          default_visibility: 'public' | 'followers' | 'private'
         }
         Insert: {
           id: string
@@ -66,6 +70,10 @@ export type Database = {
           notify_fatigue?: boolean
           last_fatigue_alert_at?: string | null
           trial_ends_at?: string | null
+          username?: string | null
+          bio?: string | null
+          city?: string | null
+          default_visibility?: 'public' | 'followers' | 'private'
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
         Relationships: []
@@ -121,6 +129,8 @@ export type Database = {
           fit_file_path: string | null
           raw_telemetry: Json | null
           best_efforts: Json | null
+          visibility: 'public' | 'followers' | 'private'
+          public_route: Json | null
           rpe_score: number | null
           athlete_notes: string | null
           normalized_power: number | null
@@ -146,6 +156,8 @@ export type Database = {
           fit_file_path?: string | null
           raw_telemetry?: Json | null
           best_efforts?: Json | null
+          visibility?: 'public' | 'followers' | 'private'
+          public_route?: Json | null
           rpe_score?: number | null
           athlete_notes?: string | null
           normalized_power?: number | null
@@ -154,6 +166,122 @@ export type Database = {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['activities']['Insert']>
+        Relationships: []
+      }
+      follows: {
+        Row: {
+          follower_id: string
+          followee_id: string
+          created_at: string
+        }
+        Insert: {
+          follower_id: string
+          followee_id: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['follows']['Insert']>
+        Relationships: []
+      }
+      kudos: {
+        Row: {
+          activity_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          activity_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['kudos']['Insert']>
+        Relationships: []
+      }
+      comments: {
+        Row: {
+          id: string
+          activity_id: string
+          user_id: string
+          body: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          activity_id: string
+          user_id: string
+          body: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['comments']['Insert']>
+        Relationships: []
+      }
+      activity_photos: {
+        Row: {
+          id: string
+          activity_id: string
+          user_id: string
+          path: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          activity_id: string
+          user_id: string
+          path: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['activity_photos']['Insert']>
+        Relationships: []
+      }
+      clubs: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          sport_family: string | null
+          city: string | null
+          owner_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          sport_family?: string | null
+          city?: string | null
+          owner_id: string
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['clubs']['Insert']>
+        Relationships: []
+      }
+      club_members: {
+        Row: {
+          club_id: string
+          user_id: string
+          role: string
+          joined_at: string
+        }
+        Insert: {
+          club_id: string
+          user_id: string
+          role?: string
+          joined_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['club_members']['Insert']>
+        Relationships: []
+      }
+      challenge_participants: {
+        Row: {
+          challenge_id: string
+          user_id: string
+          joined_at: string
+        }
+        Insert: {
+          challenge_id: string
+          user_id: string
+          joined_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['challenge_participants']['Insert']>
         Relationships: []
       }
       live_shares: {
@@ -305,6 +433,13 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      get_feed: { Args: { p_before?: string | null; p_limit?: number }; Returns: Json }
+      get_shared_activity: { Args: { p_activity: string }; Returns: Json }
+      search_athletes: { Args: { p_query: string }; Returns: Json }
+      get_athlete: { Args: { p_user: string }; Returns: Json }
+      club_leaderboard: { Args: { p_club: string; p_from: string }; Returns: Json }
+      list_clubs: { Args: Record<string, never>; Returns: Json }
+      challenge_board: { Args: { p_month: string }; Returns: Json }
       get_live_share: { Args: { p_token: string }; Returns: Json }
       is_coach_of: { Args: { athlete: string }; Returns: boolean }
       expire_premium_trials: { Args: Record<string, never>; Returns: number }
