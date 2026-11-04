@@ -17,6 +17,7 @@ import { elevationFromProfile, fetchIgnElevations, refineDistance, resample, smo
 import { cn } from '@/lib/utils'
 import { TrackMap, type BaseLayer } from '../components/TrackMap'
 import { endShare, loadShare, pushShare, saveShare, shareUrl, type ShareState } from '../liveShare'
+import { publicRoute, VISIBILITY_LABEL, type Visibility } from '../social'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -799,7 +800,11 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
 }) {
   const info = sportInfo(session.sport)
   const stats = heartRateStats(session)
-  const [f, setF] = useState({ title: `${info.short} ${partOfDay(new Date(session.startedAt))}`, sport: session.sport as SportKey, rpe: '', hr: stats.avg ? String(stats.avg) : '', notes: '' })
+  const [f, setF] = useState({ title: `${info.short} ${partOfDay(new Date(session.startedAt))}`, sport: session.sport as SportKey, rpe: '', hr: stats.avg ? String(stats.avg) : '', notes: '', visibility: 'followers' as Visibility })
+  // Visibilité par défaut choisie dans le profil public
+  useEffect(() => {
+    supabase.from('profiles').select('default_visibility').eq('id', userId).single().then(({ data }) => data && setF((x) => ({ ...x, visibility: data.default_visibility })))
+  }, [userId])
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const seconds = Math.round(movingSeconds(session))
@@ -854,6 +859,8 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
         tss: tss.tss,
         intensity_factor: tss.intensityFactor,
         source: 'live',
+        visibility: f.visibility,
+        public_route: publicRoute(telemetry.route),
         raw_telemetry: telemetry.points.length || telemetry.laps.length ? telemetry : null,
       })
       .select('id, sport_type, start_time')
@@ -895,6 +902,9 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
       </div>
       <Field id="hr" label="FC moyenne (facultatif)" type="number" inputMode="numeric" value={f.hr} onChange={(e) => setF({ ...f, hr: e.target.value })} readOnly={!!stats.avg} />
       <TextareaField id="notes" label="Notes" value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} maxLength={2000} />
+      <SelectField id="visibility" label="Visible par" value={f.visibility} onChange={(e) => setF({ ...f, visibility: e.target.value as Visibility })}>
+        {(Object.keys(VISIBILITY_LABEL) as Visibility[]).map((v) => <option key={v} value={v}>{VISIBILITY_LABEL[v]}</option>)}
+      </SelectField>
       <div className="rounded-lg border bg-card p-4 flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           TSS estimé{' '}

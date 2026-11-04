@@ -41,7 +41,7 @@ export function RouteMap({ route }: { route: [number, number][] }) {
   return (
     <figure className="space-y-2">
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full h-auto rounded-lg bg-muted/40" role="img" aria-label="Tracé GPS de la séance">
-        <path d={path} fill="none" stroke="var(--viz-ctl)" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
+        <path d={path} fill="none" stroke="var(--brand, var(--viz-ctl))" strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />
         {/* Départ / arrivée : anneau couleur de fond pour rester lisibles sur le tracé */}
         {isLoop ? (
           <>

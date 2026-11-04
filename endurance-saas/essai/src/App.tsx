@@ -1,5 +1,5 @@
 import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { CalendarDays, Circle, HeartPulse, LayoutDashboard, LogOut, User } from 'lucide-react'
+import { Circle, LayoutDashboard, LogOut, Newspaper, User, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { supabase } from './supabase'
@@ -16,10 +16,17 @@ import { RecordPage } from './pages/Record'
 import { PerformancePage } from './pages/Performance'
 import { StatsPage } from './pages/Stats'
 import { LiveViewPage } from './pages/LiveView'
+import { FeedPage } from './pages/Feed'
+import { AthletePage } from './pages/Athlete'
+import { ClubPage, ClubsPage } from './pages/Clubs'
+import { ChallengesPage } from './pages/Challenges'
 
 const NAV = [
   { to: '/dashboard', label: 'Tableau de bord', end: true },
   { to: '/dashboard/record', label: 'Enregistrer' },
+  { to: '/dashboard/feed', label: 'Fil' },
+  { to: '/dashboard/clubs', label: 'Clubs' },
+  { to: '/dashboard/challenges', label: 'Défis' },
   { to: '/dashboard/calendar', label: 'Calendrier' },
   { to: '/dashboard/activities/import', label: 'Importer' },
   { to: '/dashboard/wellness', label: 'Bien-être' },
@@ -85,6 +92,11 @@ function Protected() {
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="wellness" element={<WellnessPage />} />
           <Route path="performance" element={<PerformancePage />} />
+          <Route path="feed" element={<FeedPage />} />
+          <Route path="athletes/:id" element={<AthletePage />} />
+          <Route path="clubs" element={<ClubsPage />} />
+          <Route path="clubs/:id" element={<ClubPage />} />
+          <Route path="challenges" element={<ChallengesPage />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
@@ -98,9 +110,9 @@ function Protected() {
 /** Barre d'onglets en bas d'écran sur téléphone, bouton central « Enregistrer ». */
 const TABS = [
   { to: '/dashboard', label: 'Accueil', icon: LayoutDashboard, end: true },
-  { to: '/dashboard/calendar', label: 'Calendrier', icon: CalendarDays },
+  { to: '/dashboard/feed', label: 'Fil', icon: Newspaper },
   { to: '/dashboard/record', label: 'Enregistrer', icon: Circle, main: true },
-  { to: '/dashboard/wellness', label: 'Bien-être', icon: HeartPulse },
+  { to: '/dashboard/clubs', label: 'Groupes', icon: Users },
   { to: '/dashboard/profile', label: 'Profil', icon: User },
 ]
 

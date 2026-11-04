@@ -87,6 +87,14 @@ export function DashboardPage() {
               <p className="font-semibold">Statistiques</p>
               <p className="text-xs text-muted-foreground">Bilan annuel, carte de mes passages</p>
             </Link>
+            <Link to="/dashboard/calendar" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Calendrier</p>
+              <p className="text-xs text-muted-foreground">Programme de la semaine</p>
+            </Link>
+            <Link to="/dashboard/wellness" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Bien-être</p>
+              <p className="text-xs text-muted-foreground">VFC, sommeil, fatigue du matin</p>
+            </Link>
           </nav>
           <KpiTiles series={data.series} />
           <div className="grid gap-6 lg:grid-cols-3">

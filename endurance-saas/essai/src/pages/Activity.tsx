@@ -15,17 +15,21 @@ import { sportFamily } from '@/lib/sports'
 const paceOf = (secPerKm: number) => `${Math.floor(secPerKm / 60)}:${String(Math.round(secPerKm % 60)).padStart(2, '0')}`
 import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 import { supabase } from '../supabase'
-import { useData } from '../session'
+import { useData, useUser } from '../session'
+import { SharedActivityView } from './SharedActivity'
+import { SocialPanel } from '../components/Social'
+import type { Visibility } from '../social'
 
 const dateTime = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Europe/Paris' })
 
 export function ActivityPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const user = useUser()
   // Juste après l'enregistrement d'une séance (?partager=1), le partage s'ouvre directement
   const [params] = useSearchParams()
   const [sharing, setSharing] = useState(params.get('partager') === '1')
-  const { data, error } = useData(async () => {
+  const { data, error, reload } = useData(async () => {
     const { data } = await supabase.from('activities').select('*').eq('id', id!).maybeSingle()
     return { activity: data } // enveloppe : distingue « en chargement » (null) de « introuvable »
   }, [id])
@@ -33,7 +37,12 @@ export function ActivityPage() {
   if (error) return <p className="text-sm text-destructive">{error}</p>
   if (!data) return <div className="h-96 rounded-xl border bg-card animate-pulse" aria-hidden />
   const a = data.activity
-  if (!a) return <p className="text-sm text-muted-foreground">Séance introuvable.</p>
+  // Séance d'un autre athlète : vue partagée (tracé public, bravos, commentaires)
+  if (!a) return <SharedActivityView id={id!} />
+  const setVisibility = async (v: Visibility) => {
+    await supabase.from('activities').update({ visibility: v }).eq('id', a.id)
+    reload()
+  }
 
   const telemetry = a.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][]; route_t?: number[]; laps?: LapRow[] } | null
   const laps = Array.isArray(telemetry?.laps) ? telemetry.laps : []
@@ -161,6 +170,7 @@ export function ActivityPage() {
           <p className="whitespace-pre-line">{a.athlete_notes}</p>
         </div>
       )}
+      <SocialPanel activityId={a.id} userId={user.id} mine visibility={a.visibility} onVisibility={setVisibility} />
       <p className="flex items-center gap-2 rounded-xl border bg-card p-4 text-sm text-muted-foreground">
         <Sparkles className="size-4 shrink-0 text-red-600" aria-hidden /> L’analyse par le coach IA est disponible dans la version complète.
       </p>

@@ -6,6 +6,7 @@ import { FormAlert } from '@/components/auth/form-alert'
 import { clearDemoData, seedDemoData } from '@/lib/demo'
 import { recalculateRecentTss } from '@/lib/training/recalc'
 import type { SportDiscipline } from '@/types/database'
+import type { Visibility } from '../social'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -13,7 +14,7 @@ export function ProfilePage() {
   const user = useUser()
   const { data, reload } = useData(async () => {
     const [profile, demo] = await Promise.all([
-      supabase.from('profiles').select('full_name, sport_discipline, hr_max, hr_rest, lactate_threshold_hr, ftp, vma, subscription_tier, subscription_status, trial_ends_at').eq('id', user.id).single(),
+      supabase.from('profiles').select('full_name, username, bio, city, default_visibility, sport_discipline, hr_max, hr_rest, lactate_threshold_hr, ftp, vma, subscription_tier, subscription_status, trial_ends_at').eq('id', user.id).single(),
       supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('source', 'demo'),
     ])
     return { profile: profile.data, demoCount: demo.count ?? 0 }
@@ -96,6 +97,7 @@ export function ProfilePage() {
           {busy === 'save' && <Loader2 className="h-4 w-4 animate-spin" />} Enregistrer
         </Button>
       </form>
+      {p && <PublicProfileForm userId={user.id} initial={p} onSaved={reload} />}
       <section className="rounded-xl border bg-card p-4 md:p-6 space-y-3">
         <h2 className="font-semibold">Données de démonstration</h2>
         <p className="text-sm text-muted-foreground">12 semaines de séances, de bien-être et le programme de la semaine, supprimables sans toucher à vos vraies données.</p>
@@ -110,5 +112,36 @@ export function ProfilePage() {
         )}
       </section>
     </div>
+  )
+}
+
+function PublicProfileForm({ userId, initial, onSaved }: { userId: string; initial: { username: string | null; bio: string | null; city: string | null; default_visibility: Visibility }; onSaved: () => void }) {
+  const [f, setF] = useState({ username: initial.username ?? '', bio: initial.bio ?? '', city: initial.city ?? '', default_visibility: initial.default_visibility })
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const username = f.username.trim().toLowerCase() || null
+    if (username && !/^[a-z0-9_.]{3,20}$/.test(username)) return setMsg({ ok: false, text: 'Pseudo : 3 à 20 caractères (lettres minuscules, chiffres, point, tiret bas).' })
+    const { error } = await supabase.from('profiles').update({ username, bio: f.bio.trim() || null, city: f.city.trim() || null, default_visibility: f.default_visibility }).eq('id', userId)
+    setMsg(error ? { ok: false, text: error.code === '23505' ? 'Ce pseudo est déjà pris.' : 'Enregistrement impossible.' } : { ok: true, text: 'Profil public enregistré.' })
+    if (!error) onSaved()
+  }
+  return (
+    <form onSubmit={save} className="space-y-4 rounded-xl border bg-card p-4 md:p-6">
+      <h2 className="font-semibold">Profil public</h2>
+      <p className="text-sm text-muted-foreground">Ce que les autres athlètes voient de vous dans le fil, les clubs et les défis.</p>
+      {msg && <p role="status" className={msg.ok ? 'text-sm' : 'text-sm text-destructive'}>{msg.text}</p>}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Field id="username" label="Pseudo" placeholder="ex. sidi.runner" value={f.username} onChange={(e) => setF({ ...f, username: e.target.value })} maxLength={20} />
+        <Field id="city" label="Ville" value={f.city} onChange={(e) => setF({ ...f, city: e.target.value })} maxLength={60} />
+      </div>
+      <Field id="bio" label="Présentation" value={f.bio} onChange={(e) => setF({ ...f, bio: e.target.value })} maxLength={280} />
+      <SelectField id="default_visibility" label="Visibilité par défaut de mes séances" value={f.default_visibility} onChange={(e) => setF({ ...f, default_visibility: e.target.value as Visibility })}>
+        <option value="public">Tout le monde</option>
+        <option value="followers">Mes abonnés</option>
+        <option value="private">Moi seul</option>
+      </SelectField>
+      <Button type="submit">Enregistrer le profil public</Button>
+    </form>
   )
 }
