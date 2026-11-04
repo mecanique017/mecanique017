@@ -164,7 +164,7 @@ export function renderShareImage(canvas: HTMLCanvasElement, data: ShareData, for
   // Signature
   ctx.fillStyle = RED
   ctx.font = `900 40px ${FONT}`
-  const brand = 'ENDURANCE'
+  const brand = 'KRONOFIT'
   ctx.fillText(brand, W - pad - ctx.measureText(brand).width, format === 'story' ? H - 80 : H - 70)
   shadow(false)
 }
