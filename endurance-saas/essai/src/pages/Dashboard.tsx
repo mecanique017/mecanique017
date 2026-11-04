@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom'
+import { loadSession } from '@/lib/live/recorder'
+import { sportInfo } from '@/lib/sports'
 import { CalendarDays, Circle, HeartPulse, Plus, Sparkles, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { KpiTiles } from '@/components/dashboard/kpi-tiles'
@@ -25,8 +27,18 @@ export function DashboardPage() {
     return { series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness }
   }, [user.id])
 
+  const live = loadSession()
   return (
     <div className="space-y-6">
+      {live && (
+        <Link to="/dashboard/record" className="flex items-center gap-3 rounded-xl border border-primary/50 bg-primary/10 p-4">
+          <Circle className="size-4 shrink-0 fill-current text-primary" aria-hidden />
+          <span className="flex-1 text-sm">
+            <strong>Séance de {sportInfo(live.sport).label.toLowerCase()} en cours</strong>
+            <span className="block text-muted-foreground">Touchez pour la reprendre, la terminer ou la supprimer.</span>
+          </span>
+        </Link>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Tableau de bord</h1>

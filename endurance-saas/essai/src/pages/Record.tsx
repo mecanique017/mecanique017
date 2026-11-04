@@ -124,7 +124,17 @@ export function RecordPage() {
     const { data } = await supabase.from('activities').select('route:raw_telemetry->route').eq('user_id', user.id).not('raw_telemetry', 'is', null).order('start_time', { ascending: false }).limit(150)
     return (data ?? []).map((r) => r.route).filter((r): r is [number, number][] => Array.isArray(r) && r.length > 1) as [number, number][][]
   }, [user.id])
-  const [session, setSession] = useState<LiveSession | null>(() => loadSession())
+  const [session, setSession] = useState<LiveSession | null>(() => {
+    // Séance oubliée depuis plus de 15 min : mise en pause à sa dernière position (le temps écoulé depuis n'est pas compté)
+    const s = loadSession()
+    const last = s ? (s.lastFix?.at ?? s.startedAt) : 0
+    if (s && s.status !== 'paused' && Date.now() - last > 15 * 60_000) {
+      const paused = pause(s, last)
+      saveSession(paused)
+      return paused
+    }
+    return s
+  })
   const sessionRef = useRef<LiveSession | null>(session)
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs)
   const prefsRef = useRef(prefs)
@@ -139,6 +149,8 @@ export function RecordPage() {
   const [follow, setFollow] = useState(true)
   const [panel, setPanel] = useState<'none' | 'settings' | 'layers'>('none')
   const [pickSport, setPickSport] = useState(false)
+  // Séance restée ouverte (appli quittée sans « Terminer ») : on demande quoi en faire
+  const [leftover, setLeftover] = useState(() => !!session && Date.now() - (session.lastFix?.at ?? session.startedAt) > 15 * 60_000)
   const [dataView, setDataView] = useState(false)
   const compass = useCompass()
   const hrRef = useRef<number | null>(null)
@@ -316,6 +328,30 @@ export function RecordPage() {
     [gps, heading],
   )
 
+  if (leftover && session) {
+    const started = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'full', timeStyle: 'short' }).format(new Date(session.startedAt))
+    return (
+      <FullScreen>
+        <div className="flex flex-1 flex-col justify-center gap-4 bg-background px-6">
+          <h1 className="text-2xl font-bold">Séance non terminée</h1>
+          <p className="text-muted-foreground">
+            Une séance de <strong className="text-foreground">{sportInfo(session.sport).label.toLowerCase()}</strong> commencée le {started} n’a pas été terminée
+            ({(session.distance / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} km, {clock(movingSeconds(session, session.lastFix?.at ?? session.startedAt))}).
+          </p>
+          <Button size="lg" className="h-14 rounded-full text-base" onClick={() => { apply(pause(session)); setLeftover(false); setFinishing(true) }}>
+            <Square className="size-5 fill-current" /> Terminer et enregistrer
+          </Button>
+          <Button size="lg" variant="outline" className="h-14 rounded-full text-base" onClick={() => { apply(pause(session)); setLeftover(false) }}>
+            <Play className="size-5" /> Reprendre cette séance
+          </Button>
+          <Button size="lg" variant="ghost" className="h-14 rounded-full text-base text-destructive" onClick={() => { if (confirm('Supprimer cette séance sans l’enregistrer ?')) { apply(null); setLeftover(false) } }}>
+            <Trash2 className="size-5" /> Supprimer et en commencer une nouvelle
+          </Button>
+        </div>
+      </FullScreen>
+    )
+  }
+
   if (finishing && session && profile) {
     return (
       <FullScreen>
@@ -429,7 +465,10 @@ export function RecordPage() {
         {showMap && session && (
           <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-neutral-950/95 p-3 text-white shadow-xl">
             <div className="flex items-center justify-between text-xs text-neutral-400">
-              <span>{sportInfo(session.sport).label}{hrDevice && hr ? ` · ♥ ${hr} bpm` : ''}</span>
+              <button onClick={() => setPickSport(true)} className="flex items-center gap-1 rounded-full bg-neutral-800 px-2.5 py-1 font-medium text-white" aria-label={`Sport : ${sportInfo(session.sport).label}. Changer de sport`}>
+                {sportInfo(session.sport).label} <ChevronDown className="size-3.5" />
+              </button>
+              {hrDevice && hr ? <span>♥ {hr} bpm</span> : null}
               <button onClick={() => setDataView(true)} aria-label="Agrandir les données"><Maximize2 className="size-4" /></button>
             </div>
             <div className="mt-1 grid grid-cols-3 items-end text-center">
@@ -503,6 +542,8 @@ export function RecordPage() {
           onPick={(k) => {
             setSport(k)
             savePrefs({ ...prefs, lastSport: k })
+            // Séance en cours : on change seulement le sport, les données enregistrées sont conservées
+            if (sessionRef.current) apply({ ...sessionRef.current, sport: k })
             setPickSport(false)
           }}
           onClose={() => setPickSport(false)}
