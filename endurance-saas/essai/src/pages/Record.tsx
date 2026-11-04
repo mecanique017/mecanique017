@@ -8,7 +8,7 @@ import { FormAlert } from '@/components/auth/form-alert'
 import { LapTable } from '@/components/dashboard/lap-table'
 import { calculateTSS } from '@/lib/training/metrics'
 import { linkPlannedWorkout } from '@/lib/training/planned'
-import { sportFamily, sportInfo, type SportKey } from '@/lib/sports'
+import { SPORT_GROUPS, sportFamily, sportInfo, type SportKey } from '@/lib/sports'
 import {
   addFix, addHeartRate, tick, currentLap, currentSpeed, defaultAutoPause, GOOD_ACCURACY_M, heartRateStats, loadSession, manualLap, movingSeconds, newSession,
   parseHeartRate, pause, resume, saveSession, toTelemetry, type Lap, type LiveSession,
@@ -39,7 +39,7 @@ const partOfDay = (d: Date) => { const h = d.getHours(); return h < 11 ? 'du mat
 
 // Réglages mémorisés sur le téléphone
 const PREFS_KEY = 'endurance-live-prefs'
-type Prefs = { voice: boolean; lapKm: string; autoPause: Record<string, boolean>; layer: BaseLayer; heat: boolean; threeD: boolean; headingUp: boolean }
+type Prefs = { voice: boolean; lapKm: string; autoPause: Record<string, boolean>; layer: BaseLayer; heat: boolean; threeD: boolean; headingUp: boolean; lastSport?: string }
 const DEFAULT_PREFS: Prefs = { voice: true, lapKm: 'auto', autoPause: {}, layer: 'plan', heat: true, threeD: false, headingUp: false }
 const loadPrefs = (): Prefs => {
   try {
@@ -128,7 +128,8 @@ export function RecordPage() {
   const sessionRef = useRef<LiveSession | null>(session)
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs)
   const prefsRef = useRef(prefs)
-  const [sport, setSport] = useState<SportKey>((session?.sport as SportKey) ?? 'run')
+  // Sport : celui de la séance en cours, sinon le dernier choisi (mémorisé sur le téléphone)
+  const [sport, setSport] = useState<SportKey>((session?.sport ?? prefs.lastSport ?? 'run') as SportKey)
   const [now, setNow] = useState(() => Date.now())
   const [gps, setGps] = useState<{ accuracy: number; at: number; lat: number; lng: number; heading: number | null; speed: number | null } | { error: string } | null>(null)
   const [gap, setGap] = useState<number | null>(null)
@@ -137,6 +138,7 @@ export function RecordPage() {
   const [finishing, setFinishing] = useState(false)
   const [follow, setFollow] = useState(true)
   const [panel, setPanel] = useState<'none' | 'settings' | 'layers'>('none')
+  const [pickSport, setPickSport] = useState(false)
   const [dataView, setDataView] = useState(false)
   const compass = useCompass()
   const hrRef = useRef<number | null>(null)
@@ -495,19 +497,35 @@ export function RecordPage() {
         )}
       </div>
 
+      {pickSport && (
+        <SportPicker
+          value={sport}
+          onPick={(k) => {
+            setSport(k)
+            savePrefs({ ...prefs, lastSport: k })
+            setPickSport(false)
+          }}
+          onClose={() => setPickSport(false)}
+        />
+      )}
+
       {/* ---------- Bas : commandes ---------- */}
       <div className="shrink-0 rounded-t-2xl bg-neutral-950 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] text-white">
         <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-700" aria-hidden />
         {!session ? (
           <div className="space-y-3">
-            <select
-              aria-label="Sport"
-              value={sport}
-              onChange={(e) => setSport(e.target.value as SportKey)}
-              className="h-11 w-full rounded-xl border border-neutral-800 bg-neutral-900 px-3 text-base text-white"
+            <button
+              onClick={() => setPickSport(true)}
+              className="flex h-14 w-full items-center gap-3 rounded-2xl border border-neutral-800 bg-neutral-900 px-4 text-left active:scale-[.99]"
+              aria-label={`Sport : ${sportInfo(sport).label}. Changer de sport`}
             >
-              <SportOptions />
-            </select>
+              {(() => { const Icon = sportInfo(sport).icon; return <Icon className="size-6 text-[#fc5200]" aria-hidden /> })()}
+              <span className="flex-1">
+                <span className="block text-[11px] uppercase tracking-wide text-neutral-400">Sport</span>
+                <span className="block text-base font-semibold">{sportInfo(sport).label}</span>
+              </span>
+              <span className="text-sm font-medium text-[#fc5200]">Changer</span>
+            </button>
             <button onClick={start} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold active:scale-[.98]">
               <Play className="size-6 fill-current" /> {useGps && !gpsReady ? 'Démarrer (GPS en recherche)' : 'Démarrer'}
             </button>
@@ -533,6 +551,43 @@ export function RecordPage() {
         )}
       </div>
     </FullScreen>
+  )
+}
+
+/** Choix du sport : grille d'icônes par famille, plein écran. */
+function SportPicker({ value, onPick, onClose }: { value: SportKey; onPick: (k: SportKey) => void; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[60] flex flex-col bg-background pt-[env(safe-area-inset-top)]" role="dialog" aria-label="Choisir un sport">
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        <h2 className="text-lg font-semibold">Choisir un sport</h2>
+        <button onClick={onClose} aria-label="Fermer" className="p-1"><X className="size-6" /></button>
+      </div>
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-[calc(env(safe-area-inset-bottom)+16px)] space-y-5">
+        {SPORT_GROUPS.map((g) => (
+          <section key={g.label} className="space-y-2">
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{g.label}</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {g.sports.map((sp) => {
+                const Icon = sp.icon
+                const selected = sp.key === value
+                return (
+                  <button
+                    key={sp.key}
+                    onClick={() => onPick(sp.key)}
+                    aria-pressed={selected}
+                    className={cn('flex flex-col items-center gap-1.5 rounded-xl border p-3 text-center text-xs font-medium active:scale-95', selected ? 'border-[#fc5200] bg-[#fc5200]/10 text-foreground' : 'bg-card')}
+                  >
+                    <Icon className={cn('size-6', selected ? 'text-[#fc5200]' : 'text-muted-foreground')} aria-hidden />
+                    <span className="leading-tight">{sp.label}</span>
+                    {!sp.gps && <span className="text-[10px] font-normal text-muted-foreground">sans GPS</span>}
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
   )
 }
 
