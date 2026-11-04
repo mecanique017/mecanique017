@@ -13,6 +13,8 @@ export interface Plan {
   monthlyCoachAnalyses: number | null
   /** Plans d'entraînement générés par mois (null = illimité) */
   monthlyTrainingPlans: number | null
+  /** Athlètes suivis dans l'espace coach (0 = pas d'espace coach) */
+  maxCoachedAthletes: number
   features: string[]
 }
 
@@ -23,6 +25,7 @@ export const PLANS: Plan[] = [
     tagline: 'Pour suivre sa charge d’entraînement',
     monthlyCoachAnalyses: 3,
     monthlyTrainingPlans: 1,
+    maxCoachedAthletes: 0,
     features: [
       'Saisie illimitée des séances',
       'Calcul automatique du TSS',
@@ -37,6 +40,7 @@ export const PLANS: Plan[] = [
     tagline: 'Pour progresser avec un retour après chaque séance',
     monthlyCoachAnalyses: 30,
     monthlyTrainingPlans: 4,
+    maxCoachedAthletes: 0,
     features: ['Tout le plan Gratuit', '30 analyses du coach IA par mois', '4 plans d’entraînement IA par mois', 'Alertes de fatigue'],
   },
   {
@@ -45,7 +49,8 @@ export const PLANS: Plan[] = [
     tagline: 'Pour les athlètes qui s’entraînent tous les jours',
     monthlyCoachAnalyses: null,
     monthlyTrainingPlans: null,
-    features: ['Tout le plan Pro', 'Analyses et plans d’entraînement IA illimités'],
+    maxCoachedAthletes: 20,
+    features: ['Tout le plan Pro', 'Analyses et plans d’entraînement IA illimités', 'Espace coach : suivez jusqu’à 20 athlètes'],
   },
 ]
 

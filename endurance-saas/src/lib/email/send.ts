@@ -14,7 +14,8 @@ export interface Email {
   subject: string
   html: string
   text: string
-  unsubscribeUrl: string
+  /** Absent pour un e-mail transactionnel (invitation) */
+  unsubscribeUrl?: string
 }
 
 export async function sendEmail(email: Email): Promise<boolean> {
@@ -32,10 +33,9 @@ export async function sendEmail(email: Email): Promise<boolean> {
       html: email.html,
       text: email.text,
       // Désinscription en un clic depuis la messagerie (RFC 8058, exigée par Gmail et Yahoo)
-      headers: {
-        'List-Unsubscribe': `<${email.unsubscribeUrl}>`,
-        'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-      },
+      headers: email.unsubscribeUrl
+        ? { 'List-Unsubscribe': `<${email.unsubscribeUrl}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' }
+        : undefined,
     }),
   })
   if (!res.ok) {

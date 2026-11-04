@@ -9,8 +9,10 @@ export const SPORT_LABELS: Record<SportType, { label: string; icon: typeof Bike 
 }
 
 export function formatDuration(seconds: number) {
-  const h = Math.floor(seconds / 3600)
-  const m = Math.round((seconds % 3600) / 60)
+  // Arrondi à la minute AVANT découpage (sinon 3598 s donnerait « 0 h 60 »)
+  const total = Math.round(seconds / 60)
+  const h = Math.floor(total / 60)
+  const m = total % 60
   return h > 0 ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`
 }
 

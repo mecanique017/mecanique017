@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CheckCircle2, CircleAlert, CopyCheck, Loader2, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { gzipSync } from 'fflate'
 import { extractFitFiles } from '@/lib/fit/archive'
 
 /** Une archive est décompressée en mémoire dans le navigateur : au-delà, découper l'export. */
@@ -39,7 +40,7 @@ export function FitImport() {
     setItems((list) => list.map((item, i) => (i === index ? { ...item, ...patch } : item)))
 
   const importFiles = async (selected: File[]) => {
-    // Archives (.zip, .fit.gz) décompressées dans le navigateur ; chaque .fit est envoyé séparément
+    // Archives (.zip, .gz) décompressées dans le navigateur ; chaque .fit est envoyé séparément
     const fitFiles: File[] = []
     const rejected: File[] = []
     let skipped = 0
@@ -58,7 +59,7 @@ export function FitImport() {
         rejected.push(file)
       }
     }
-    if (skipped > 0) setNotice(`${skipped} fichier(s) de l’archive ignoré(s) : seuls les .fit sont pris en charge (pas les .gpx / .tcx).`)
+    if (skipped > 0) setNotice(`${skipped} fichier(s) de l’archive ignoré(s) : formats pris en charge : .fit, .gpx, .tcx.`)
 
     const offset = items.length
     setItems((list) => [
@@ -67,7 +68,7 @@ export function FitImport() {
       ...rejected.map((f) => ({
         name: f.name,
         status: 'error' as const,
-        message: f.size > MAX_ARCHIVE_BYTES ? 'Archive trop volumineuse (500 Mo max)' : 'Format non pris en charge (.fit, .fit.gz ou .zip)',
+        message: f.size > MAX_ARCHIVE_BYTES ? 'Archive trop volumineuse (500 Mo max)' : 'Format non pris en charge (.fit, .gpx, .tcx, .gz ou .zip)',
       })),
     ])
 
@@ -77,7 +78,13 @@ export function FitImport() {
       update(index, { status: 'uploading' })
       try {
         const body = new FormData()
-        body.append('file', file)
+        // .gpx / .tcx volumineux (XML très verbeux) : compression gzip avant l'envoi
+        if (file.size > 3 * 1024 * 1024 && /\.(gpx|tcx)$/i.test(file.name)) {
+          const gz = gzipSync(new Uint8Array(await file.arrayBuffer()))
+          body.append('file', new File([gz], `${file.name}.gz`))
+        } else {
+          body.append('file', file)
+        }
         const res = await fetch('/api/activities/import', { method: 'POST', body })
         const json = await res.json().catch(() => ({}))
         if (res.status === 201) update(index, { status: 'done', id: json.id, message: json.linkedPlannedWorkout ? 'Séance prévue validée' : undefined })
@@ -110,7 +117,7 @@ export function FitImport() {
       >
         <Upload className="size-8 text-muted-foreground" aria-hidden />
         <div>
-          <p className="font-medium">Déposez vos fichiers .fit ou une archive .zip</p>
+          <p className="font-medium">Déposez vos fichiers .fit, .gpx, .tcx ou une archive .zip</p>
           <p className="text-sm text-muted-foreground">
             Garmin, Wahoo, Coros, Polar, Suunto… Archives acceptées : export Garmin Connect, « Télécharger mes données » de Strava (.fit.gz).
           </p>
@@ -126,7 +133,7 @@ export function FitImport() {
         <input
           ref={inputRef}
           type="file"
-          accept=".fit,.gz,.zip"
+          accept=".fit,.gpx,.tcx,.gz,.zip"
           multiple
           className="sr-only"
           aria-label="Fichiers .fit ou archives .zip à importer"

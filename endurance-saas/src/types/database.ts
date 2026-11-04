@@ -14,7 +14,7 @@ export type Json =
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon'
 export type SportType = 'run' | 'ride' | 'swim'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
-export type ActivitySource = 'manual' | 'fit' | 'polar'
+export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar'
 export type PlannedSource = 'manual' | 'ai'
 export type AiUsageKind = 'coach_analysis' | 'training_plan'
 
@@ -163,6 +163,7 @@ export type Database = {
           is_completed: boolean
           activity_id: string | null
           source: PlannedSource
+          created_by: string | null
           created_at: string
         }
         Insert: {
@@ -178,6 +179,7 @@ export type Database = {
           is_completed?: boolean
           activity_id?: string | null
           source?: PlannedSource
+          created_by?: string | null
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['planned_workouts']['Insert']>
@@ -227,6 +229,32 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['polar_connections']['Insert']>
         Relationships: []
       }
+      coach_athletes: {
+        Row: {
+          id: string
+          coach_id: string
+          athlete_id: string | null
+          invited_email: string
+          invite_token_hash: string | null
+          status: 'pending' | 'active' | 'revoked'
+          created_at: string
+          expires_at: string
+          accepted_at: string | null
+        }
+        Insert: {
+          id?: string
+          coach_id: string
+          athlete_id?: string | null
+          invited_email: string
+          invite_token_hash?: string | null
+          status?: 'pending' | 'active' | 'revoked'
+          created_at?: string
+          expires_at?: string
+          accepted_at?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['coach_athletes']['Insert']>
+        Relationships: []
+      }
       ai_usage: {
         Row: { id: string; user_id: string; kind: AiUsageKind; created_at: string }
         Insert: { id?: string; user_id: string; kind: AiUsageKind; created_at?: string }
@@ -235,7 +263,28 @@ export type Database = {
       }
     }
     Views: { [_ in never]: never }
-    Functions: { [_ in never]: never }
+    Functions: {
+      is_coach_of: { Args: { athlete: string }; Returns: boolean }
+      coached_athletes: {
+        Args: Record<string, never>
+        Returns: {
+          relation_id: string
+          athlete_id: string
+          full_name: string | null
+          sport_discipline: string
+          ftp: number
+          hr_max: number
+          hr_rest: number
+          lactate_threshold_hr: number
+          vma: number
+          accepted_at: string
+        }[]
+      }
+      my_coaches: {
+        Args: Record<string, never>
+        Returns: { relation_id: string; coach_id: string; full_name: string | null; accepted_at: string }[]
+      }
+    }
     Enums: { [_ in never]: never }
     CompositeTypes: { [_ in never]: never }
   }

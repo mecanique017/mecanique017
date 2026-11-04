@@ -39,7 +39,7 @@ export function LoginForm() {
       return
     }
 
-    router.push('/dashboard')
+    router.push(safeNext(searchParams.get('next')))
     router.refresh()
   }
 
@@ -97,4 +97,9 @@ export function LoginForm() {
       </div>
     </div>
   )
+}
+
+/** Chemin interne uniquement (pas de redirection ouverte vers un autre site). */
+function safeNext(next: string | null) {
+  return next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\') ? next : '/dashboard'
 }

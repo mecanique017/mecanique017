@@ -5,10 +5,19 @@ import { CheckCircle2, Loader2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { FormAlert } from '@/components/auth/form-alert'
+import type { FormState } from '@/lib/form-utils'
 import { createPlannedWorkout } from './actions'
 
-export function PlannedForm({ defaultDate }: { defaultDate: string }) {
-  const [state, formAction, pending] = useActionState(createPlannedWorkout, {})
+interface Props {
+  defaultDate: string
+  /** Action serveur (par défaut : programme de l'utilisateur ; espace coach : programme de l'athlète) */
+  action?: (prev: FormState, formData: FormData) => Promise<FormState>
+  /** Champ caché athlete_id pour l'espace coach */
+  athleteId?: string
+}
+
+export function PlannedForm({ defaultDate, action = createPlannedWorkout, athleteId }: Props) {
+  const [state, formAction, pending] = useActionState(action, {})
   const formRef = useRef<HTMLFormElement>(null)
   const e = state.errors ?? {}
 
@@ -22,6 +31,7 @@ export function PlannedForm({ defaultDate }: { defaultDate: string }) {
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
+      {athleteId && <input type="hidden" name="athlete_id" value={athleteId} />}
       {state.message &&
         (state.ok ? (
           <p role="status" className="flex items-center gap-2 text-sm">

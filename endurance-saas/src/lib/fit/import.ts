@@ -1,7 +1,8 @@
 import 'server-only'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ActivitySource, Database } from '@/types/database'
-import { parseFitActivity } from './parse-fit'
+import { parseFitActivity, type ParsedFitActivity } from './parse-fit'
+import { parseTrackActivity } from './parse-track'
 import { calculateTSS } from '@/lib/training/metrics'
 import { linkPlannedWorkout } from '@/lib/training/planned'
 
@@ -11,18 +12,31 @@ export type ImportResult =
 
 const TITLES = { run: 'Course', ride: 'Sortie vélo', swim: 'Natation' } as const
 
+export type ActivityFileFormat = 'fit' | 'gpx' | 'tcx'
+
+/** Format d'après l'extension du nom de fichier, ou null si non pris en charge. */
+export function fileFormat(name: string): ActivityFileFormat | null {
+  const ext = name.toLowerCase().split('.').pop()
+  return ext === 'fit' || ext === 'gpx' || ext === 'tcx' ? ext : null
+}
+
+async function parseFile(buffer: ArrayBuffer, format: ActivityFileFormat): Promise<ParsedFitActivity> {
+  if (format === 'fit') return parseFitActivity(buffer)
+  return parseTrackActivity(new TextDecoder('utf-8').decode(buffer), format)
+}
+
 /**
- * Enregistre une séance à partir d'un fichier .fit (import manuel ou synchronisation Polar).
+ * Enregistre une séance à partir d'un fichier .fit, .gpx ou .tcx (import manuel ou synchronisation Polar).
  * user_id est toujours passé explicitement : la fonction est aussi appelée avec le client
  * service role, qui ne filtre pas par RLS. Lève FitImportError si le fichier est invalide.
  */
-export async function importFitActivity(
+export async function importActivityFile(
   supabase: SupabaseClient<Database>,
   userId: string,
   buffer: ArrayBuffer,
-  options: { source: Extract<ActivitySource, 'fit' | 'polar'>; externalId?: string } = { source: 'fit' }
+  options: { format: ActivityFileFormat; source: Exclude<ActivitySource, 'manual'>; externalId?: string }
 ): Promise<ImportResult> {
-  const parsed = await parseFitActivity(buffer)
+  const parsed = await parseFile(buffer, options.format)
 
   // Doublon : même heure de départ (réimport, ou séance déjà importée via un .fit puis synchronisée)
   const { data: existing } = await supabase

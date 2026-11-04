@@ -46,7 +46,8 @@ export async function updateSession(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (!user && PROTECTED_PREFIXES.some((p) => pathname.startsWith(p))) {
-    return redirectWithCookies(request, response, '/login')
+    // Retour à la page demandée après connexion (ex. lien d'invitation d'un coach)
+    return redirectWithCookies(request, response, '/login', `${pathname}${request.nextUrl.search}`)
   }
 
   if (user && AUTH_ROUTES.includes(pathname)) {
@@ -57,10 +58,11 @@ export async function updateSession(request: NextRequest) {
 }
 
 /** Redirige en conservant les cookies de session éventuellement rafraîchis. */
-function redirectWithCookies(request: NextRequest, from: NextResponse, pathname: string) {
+function redirectWithCookies(request: NextRequest, from: NextResponse, pathname: string, next?: string) {
   const url = request.nextUrl.clone()
   url.pathname = pathname
   url.search = ''
+  if (next && next !== '/dashboard') url.searchParams.set('next', next)
   const redirect = NextResponse.redirect(url)
   from.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie))
   return redirect

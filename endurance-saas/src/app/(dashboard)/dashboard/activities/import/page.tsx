@@ -10,7 +10,7 @@ export default function ImportPage() {
       <div>
         <h1 className="text-2xl font-bold">Importer des séances</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Déposez des fichiers .fit ou une archive complète : export Garmin Connect, ou « Télécharger mes données » de
+          Déposez des fichiers .fit, .gpx ou .tcx, ou une archive complète : export Garmin Connect, ou « Télécharger mes données » de
           Strava (Paramètres → Mon compte). Les archives sont décompressées dans votre navigateur. Le TSS est calculé avec la puissance normalisée
           (vélo) ou la fréquence cardiaque, selon votre{' '}
           <Link href="/dashboard/profile" className="underline underline-offset-4">

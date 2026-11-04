@@ -44,11 +44,13 @@ const SPORTS: Record<string, SportType> = {
 /** Nombre maximal de points conservés (graphiques) : ~1 point / 10 s pour 2 h. */
 const MAX_POINTS = 720
 
-interface FitRecord {
+/** Point de mesure commun (.fit, .gpx, .tcx) */
+export interface FitRecord {
   timestamp?: string | Date
   heart_rate?: number
   power?: number
   speed?: number
+  distance?: number
   enhanced_speed?: number
   altitude?: number
   enhanced_altitude?: number
@@ -69,7 +71,7 @@ interface FitSession {
   max_power?: number
 }
 
-const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)
+export const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined)
 const roundOrNull = (v: number | undefined) => (v === undefined ? null : Math.round(v))
 
 /**
@@ -102,21 +104,7 @@ export async function parseFitActivity(buffer: ArrayBuffer): Promise<ParsedFitAc
   const durationSeconds = Math.round(num(session.total_timer_time) ?? num(session.total_elapsed_time) ?? (lastMs - startMs) / 1000)
   if (!(durationSeconds > 0)) throw new FitImportError('Durée de l’activité nulle.')
 
-  // Série 1 Hz de puissance (enregistrement "intelligent" : on prolonge la dernière valeur)
-  const watts1Hz: number[] = []
-  let lastSecond = -1
-  let lastWatts = 0
-  for (const r of records) {
-    const second = Math.round((new Date(r.timestamp!).getTime() - startMs) / 1000)
-    const w = num(r.power)
-    if (w === undefined || second <= lastSecond) continue
-    // Pause > 10 s : on n'invente pas de puissance pendant l'arrêt
-    const gap = second - lastSecond
-    for (let s = 1; s < gap && gap <= 10; s++) watts1Hz.push(lastWatts)
-    watts1Hz.push(w)
-    lastWatts = w
-    lastSecond = second
-  }
+  const watts1Hz = wattsTo1Hz(records, startMs)
 
   const hrValues = records.map((r) => num(r.heart_rate)).filter((v): v is number => v !== undefined && v > 0)
   const powerValues = records.map((r) => num(r.power)).filter((v): v is number => v !== undefined)
@@ -141,7 +129,7 @@ export async function parseFitActivity(buffer: ArrayBuffer): Promise<ParsedFitAc
 const MAX_ROUTE_POINTS = 500
 
 /** Tracé GPS allégé : un point sur N, coordonnées arrondies à 5 décimales (≈ 1 m). */
-function extractRoute(records: FitRecord[]): [number, number][] {
+export function extractRoute(records: FitRecord[]): [number, number][] {
   const points = records
     .map((r) => [num(r.position_lat), num(r.position_long)] as const)
     .filter((p): p is readonly [number, number] => p[0] !== undefined && p[1] !== undefined && Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180 && !(p[0] === 0 && p[1] === 0))
@@ -155,7 +143,7 @@ function extractRoute(records: FitRecord[]): [number, number][] {
 }
 
 /** Moyenne par tranches de temps pour limiter la taille stockée. */
-function downsample(records: FitRecord[], startMs: number): TelemetryPoint[] {
+export function downsample(records: FitRecord[], startMs: number): TelemetryPoint[] {
   if (records.length === 0) return []
   const totalS = (new Date(records.at(-1)!.timestamp!).getTime() - startMs) / 1000
   const bucket = Math.max(1, Math.ceil(totalS / MAX_POINTS))
@@ -188,4 +176,22 @@ function downsample(records: FitRecord[], startMs: number): TelemetryPoint[] {
       }
       return point
     })
+}
+
+/** Série de puissance à 1 Hz (enregistrement « intelligent » : la dernière valeur est prolongée, pas les pauses > 10 s). */
+export function wattsTo1Hz(records: FitRecord[], startMs: number): number[] {
+  const watts1Hz: number[] = []
+  let lastSecond = -1
+  let lastWatts = 0
+  for (const r of records) {
+    const second = Math.round((new Date(r.timestamp!).getTime() - startMs) / 1000)
+    const w = num(r.power)
+    if (w === undefined || second <= lastSecond) continue
+    const gap = second - lastSecond
+    for (let s = 1; s < gap && gap <= 10; s++) watts1Hz.push(lastWatts)
+    watts1Hz.push(w)
+    lastWatts = w
+    lastSecond = second
+  }
+  return watts1Hz
 }

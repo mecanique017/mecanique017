@@ -51,6 +51,8 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
     supabase.from('profiles').select('subscription_tier').eq('id', user.id).single(),
   ])
   if (!activity) notFound()
+  // Un coach peut consulter la séance de son athlète en lecture seule (RLS « coach »)
+  const isOwner = activity.user_id === user.id
   const usage = await getCoachUsage(supabase, user.id, profile?.subscription_tier ?? 'free')
 
   const sport = SPORT_LABELS[activity.sport_type]
@@ -79,12 +81,16 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
           <h1 className="text-2xl font-bold">{activity.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">{dateTimeFormat.format(new Date(activity.start_time))}</p>
         </div>
-        <form action={deleteActivity}>
-          <input type="hidden" name="id" value={activity.id} />
-          <Button variant="ghost" size="sm" type="submit">
-            <Trash2 className="h-4 w-4" /> Supprimer
-          </Button>
-        </form>
+        {isOwner ? (
+          <form action={deleteActivity}>
+            <input type="hidden" name="id" value={activity.id} />
+            <Button variant="ghost" size="sm" type="submit">
+              <Trash2 className="h-4 w-4" /> Supprimer
+            </Button>
+          </form>
+        ) : (
+          <span className="rounded bg-accent px-2 py-1 text-xs text-muted-foreground">Séance d’un athlète · lecture seule</span>
+        )}
       </div>
 
       {/* Seules les mesures disponibles sont affichées ; séparateurs horizontaux (pas de case vide) */}
@@ -121,9 +127,11 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
       <section className="rounded-xl border bg-card p-4 md:p-6 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold">Retour du coach IA</h2>
-          <p className="text-sm text-muted-foreground">
-            {usage.limit === null ? 'Analyses illimitées' : `${usage.remaining} analyse(s) restante(s) ce mois-ci`}
-          </p>
+          {isOwner && (
+            <p className="text-sm text-muted-foreground">
+              {usage.limit === null ? 'Analyses illimitées' : `${usage.remaining} analyse(s) restante(s) ce mois-ci`}
+            </p>
+          )}
         </div>
 
         {insights && insights.length > 0 ? (
@@ -154,7 +162,7 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
           <p className="text-sm text-muted-foreground">Aucune analyse pour cette séance.</p>
         )}
 
-        {usage.remaining === 0 ? (
+        {!isOwner ? null : usage.remaining === 0 ? (
           <Link href="/pricing" className="text-sm font-medium underline underline-offset-4">
             Quota atteint : voir les offres
           </Link>

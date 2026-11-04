@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileForm } from './profile-form'
@@ -11,7 +12,12 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Profil</h1>
-        <p className="text-sm text-muted-foreground mt-1">Vos paramètres physiologiques servent au calcul de la charge.</p>
+        <p className="text-sm text-muted-foreground mt-1">
+          Vos paramètres physiologiques servent au calcul de la charge.{' '}
+          <Link href="/pricing" className="underline underline-offset-4">
+            Voir les offres
+          </Link>
+        </p>
       </div>
       <Suspense fallback={<div className="h-96 rounded-xl border bg-card animate-pulse" aria-hidden />}>
         <ProfileLoader />

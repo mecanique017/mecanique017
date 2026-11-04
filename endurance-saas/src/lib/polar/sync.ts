@@ -1,6 +1,6 @@
 import 'server-only'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { importFitActivity } from '@/lib/fit/import'
+import { importActivityFile } from '@/lib/fit/import'
 import { FitImportError } from '@/lib/fit/parse-fit'
 import { localDate } from '@/lib/training/load'
 import { addDays } from '@/lib/dates'
@@ -42,7 +42,7 @@ export async function syncPolarUser(userId: string): Promise<SyncResult> {
     for (const id of ids.filter((i) => !knownIds.has(i)).slice(0, MAX_DOWNLOADS)) {
       try {
         const fit = await downloadExerciseFit(connection.access_token, id)
-        const r = await importFitActivity(admin, userId, fit, { source: 'polar', externalId: id })
+        const r = await importActivityFile(admin, userId, fit, { format: 'fit', source: 'polar', externalId: id })
         if (r.status === 'created') result.imported++
         else result.duplicates++
       } catch (error) {

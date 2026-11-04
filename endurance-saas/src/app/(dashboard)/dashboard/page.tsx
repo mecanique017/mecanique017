@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AlertTriangle, CalendarDays, CheckCircle2, HeartPulse, Plus, Sparkles, Upload } from 'lucide-react'
+import { AlertTriangle, CalendarDays, CheckCircle2, FileDown, HeartPulse, Plus, Sparkles, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { getTrainingLoad, localDate } from '@/lib/training/load'
 import { getWellnessContext } from '@/lib/training/wellness'
@@ -143,6 +143,25 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
                 Passer à l’offre supérieure
               </Link>
             )}
+          </div>
+
+          <div className="rounded-xl border bg-card p-4 space-y-2">
+            <h2 className="font-semibold">Bilans mensuels (PDF)</h2>
+            <div className="flex flex-wrap gap-2">
+              {[0, 1].map((back) => {
+                const d = new Date(`${today.slice(0, 7)}-15T12:00:00Z`)
+                d.setUTCMonth(d.getUTCMonth() - back)
+                const month = d.toISOString().slice(0, 7)
+                const label = new Intl.DateTimeFormat('fr-FR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(d)
+                return (
+                  <Button key={month} variant="outline" size="sm" asChild>
+                    <a href={`/api/reports/monthly?month=${month}`}>
+                      <FileDown className="h-4 w-4" /> {label}
+                    </a>
+                  </Button>
+                )
+              })}
+            </div>
           </div>
 
           <div className="rounded-xl border bg-card p-4">

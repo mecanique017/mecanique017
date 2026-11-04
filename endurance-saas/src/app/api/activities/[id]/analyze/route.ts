@@ -33,7 +33,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     supabase.from('activities').select('*').eq('id', id).maybeSingle(),
     supabase.from('profiles').select('*').eq('id', user.id).single(),
   ])
-  if (!activity || !profile) {
+  // Un coach peut LIRE la séance d'un athlète (RLS), mais l'analyse IA reste réservée à son propriétaire
+  if (!activity || !profile || activity.user_id !== user.id) {
     return NextResponse.json({ error: 'Séance introuvable' }, { status: 404 })
   }
 

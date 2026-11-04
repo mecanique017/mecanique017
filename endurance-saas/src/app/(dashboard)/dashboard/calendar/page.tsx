@@ -135,6 +135,11 @@ async function Week({ searchParams }: { searchParams: PageProps<'/dashboard/cale
                     <p className="flex items-start gap-1.5 font-medium">
                       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-label={SPORT_LABELS[p.sport_type].label} />
                       <span className={cn('min-w-0 break-words', p.is_completed && 'line-through')}>{p.title}</span>
+                      {p.created_by && p.created_by !== user.id && (
+                        <span className="ml-auto shrink-0 rounded bg-accent px-1 text-[10px] font-semibold text-muted-foreground" title="Programmée par votre coach">
+                          COACH
+                        </span>
+                      )}
                       {p.source === 'ai' && (
                         <span className="ml-auto shrink-0 rounded bg-accent px-1 text-[10px] font-semibold text-muted-foreground" title="Proposée par le coach IA">
                           IA
