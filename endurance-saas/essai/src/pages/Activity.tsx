@@ -4,6 +4,10 @@ import { Button } from '@/components/ui/button'
 import { formatDuration, SPORT_LABELS } from '@/components/dashboard/activity-list'
 import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
 import { RouteMap } from '@/components/dashboard/route-map'
+import { LapTable, type LapRow } from '@/components/dashboard/lap-table'
+import { sportFamily } from '@/lib/sports'
+
+const paceOf = (secPerKm: number) => `${Math.floor(secPerKm / 60)}:${String(Math.round(secPerKm % 60)).padStart(2, '0')}`
 import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 import { supabase } from '../supabase'
 import { useData } from '../session'
@@ -23,13 +27,15 @@ export function ActivityPage() {
   const a = data.activity
   if (!a) return <p className="text-sm text-muted-foreground">Séance introuvable.</p>
 
-  const telemetry = a.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][] } | null
+  const telemetry = a.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][]; laps?: LapRow[] } | null
+  const laps = Array.isArray(telemetry?.laps) ? telemetry.laps : []
   const points = Array.isArray(telemetry?.points) ? telemetry.points : []
   const route = Array.isArray(telemetry?.route) ? telemetry.route : []
   const km = Number(a.distance_meters) / 1000
   const stats = [
     { label: 'Durée', value: formatDuration(a.duration_seconds) },
     { label: 'Distance', value: km > 0 ? `${km.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} km` : '—' },
+    { label: sportFamily(a.sport_type) === 'run' ? 'Allure moyenne' : 'Vitesse moyenne', value: km > 0 ? (sportFamily(a.sport_type) === 'run' ? `${paceOf(a.duration_seconds / km)} /km` : `${((km / a.duration_seconds) * 3600).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km/h`) : '—' },
     { label: 'TSS', value: Math.round(Number(a.tss)).toString() },
     { label: 'Intensité (IF)', value: Number(a.intensity_factor) > 0 ? Number(a.intensity_factor).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—' },
     { label: 'FC moyenne', value: a.avg_hr ? `${a.avg_hr} bpm` : '—' },
@@ -81,6 +87,7 @@ export function ActivityPage() {
           <SessionProfileChart points={points} sport={a.sport_type} />
         </section>
       )}
+      {laps.length > 0 && <LapTable laps={laps} sport={a.sport_type} />}
       {a.athlete_notes && (
         <div className="rounded-xl border bg-card p-4">
           <h2 className="text-sm text-muted-foreground mb-1">Notes</h2>

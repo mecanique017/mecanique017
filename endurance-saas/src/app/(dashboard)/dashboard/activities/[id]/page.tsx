@@ -12,6 +12,7 @@ import { deleteActivity } from '../actions'
 import { AnalyzeButton } from './analyze-button'
 import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
 import { RouteMap } from '@/components/dashboard/route-map'
+import { LapTable, type LapRow } from '@/components/dashboard/lap-table'
 import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 
 export const metadata: Metadata = { title: 'Séance — Endurance SaaS' }
@@ -56,7 +57,8 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
   const usage = await getCoachUsage(supabase, user.id, profile?.subscription_tier ?? 'free')
 
   const sport = SPORT_LABELS[activity.sport_type]
-  const telemetry = activity.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][] } | null
+  const telemetry = activity.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][]; laps?: LapRow[] } | null
+  const laps = Array.isArray(telemetry?.laps) ? telemetry.laps : []
   const points = Array.isArray(telemetry?.points) ? telemetry.points : []
   const route = Array.isArray(telemetry?.route) ? telemetry.route : []
   const km = Number(activity.distance_meters) / 1000
@@ -117,6 +119,7 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
         </section>
       )}
 
+      {laps.length > 0 && <LapTable laps={laps} sport={activity.sport_type} />}
       {activity.athlete_notes && (
         <div className="rounded-xl border bg-card p-4">
           <h2 className="text-sm text-muted-foreground mb-1">Notes</h2>
