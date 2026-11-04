@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, Share2, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowLeft, Download, Share2, Sparkles, Trash2, Trophy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDuration, SPORT_LABELS } from '@/components/dashboard/activity-list'
 import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
 import { TrackMap } from '../components/TrackMap'
 import { ShareActivity } from '../components/ShareActivity'
 import { sportInfo } from '@/lib/sports'
+import { computeBestEfforts, RIDE_DISTANCES, RUN_DISTANCES, toGpx, type BestEfforts } from '@/lib/training/performance'
+import { hms } from './Performance'
 import { LapTable, type LapRow } from '@/components/dashboard/lap-table'
 import { sportFamily } from '@/lib/sports'
 
@@ -33,7 +35,7 @@ export function ActivityPage() {
   const a = data.activity
   if (!a) return <p className="text-sm text-muted-foreground">Séance introuvable.</p>
 
-  const telemetry = a.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][]; laps?: LapRow[] } | null
+  const telemetry = a.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][]; route_t?: number[]; laps?: LapRow[] } | null
   const laps = Array.isArray(telemetry?.laps) ? telemetry.laps : []
   const points = Array.isArray(telemetry?.points) ? telemetry.points : []
   const route = Array.isArray(telemetry?.route) ? telemetry.route : []
@@ -51,6 +53,23 @@ export function ActivityPage() {
     { label: 'Dénivelé +', value: Number(a.elevation_gain_meters) > 0 ? `${Math.round(Number(a.elevation_gain_meters))} m` : '—' },
     { label: 'Effort ressenti', value: a.rpe_score ? `${a.rpe_score} / 10` : '—' },
   ].filter((s) => s.value !== '—')
+
+  // Meilleurs efforts de cette séance
+  const efforts = (a.best_efforts as unknown as BestEfforts | null) ?? computeBestEfforts({ sport_type: a.sport_type, distance_meters: Number(a.distance_meters), duration_seconds: a.duration_seconds }, points)
+  const effortList = [...RUN_DISTANCES, ...RIDE_DISTANCES]
+    .filter((d, i, all) => all.findIndex((x) => x.m === d.m) === i && efforts.dist[String(d.m)] && !efforts.dist[String(d.m)].est)
+    .map((d) => ({ label: d.label, s: efforts.dist[String(d.m)].s }))
+
+  const exportGpx = () => {
+    const gpx = toGpx(a, route, telemetry?.route_t ?? null)
+    const blob = new Blob([gpx], { type: 'application/gpx+xml' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${a.title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.gpx`
+    link.click()
+    setTimeout(() => URL.revokeObjectURL(url), 2000)
+  }
 
   const remove = async () => {
     if (!confirm('Supprimer cette séance ?')) return
@@ -120,7 +139,22 @@ export function ActivityPage() {
           <SessionProfileChart points={points} sport={a.sport_type} />
         </section>
       )}
+      {effortList.length > 0 && (
+        <section className="rounded-xl border bg-card p-4 space-y-2">
+          <h2 className="flex items-center gap-2 font-semibold"><Trophy className="size-4 text-primary" /> Meilleurs efforts de la séance</h2>
+          <ul className="flex flex-wrap gap-2">
+            {effortList.map((e) => (
+              <li key={e.label} className="rounded-lg border px-3 py-2 text-sm"><span className="text-muted-foreground">{e.label}</span> <strong className="tabular-nums">{hms(e.s)}</strong></li>
+            ))}
+          </ul>
+        </section>
+      )}
       {laps.length > 0 && <LapTable laps={laps} sport={a.sport_type} />}
+      {route.length > 1 && (
+        <Button variant="outline" onClick={exportGpx}>
+          <Download className="h-4 w-4" /> Exporter en GPX (Garmin, Strava, Komoot…)
+        </Button>
+      )}
       {a.athlete_notes && (
         <div className="rounded-xl border bg-card p-4">
           <h2 className="text-sm text-muted-foreground mb-1">Notes</h2>

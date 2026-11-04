@@ -212,13 +212,15 @@ export function TrackMap({
         pitch: threeD ? 60 : 0,
         duration: 700,
       })
-    } else if (!live && route.length > 1 && !fitted.current) {
+    } else if (!live && !fitted.current && (route.length > 1 || (heat?.flat().length ?? 0) > 1)) {
+      // Séance : cadrage sur son tracé ; carte des passages : cadrage sur tous les parcours
       fitted.current = true
-      const lats = route.map((p) => p[0])
-      const lngs = route.map((p) => p[1])
+      const all = route.length > 1 ? route : heat!.flat()
+      const lats = all.map((p) => p[0])
+      const lngs = all.map((p) => p[1])
       m.fitBounds([[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]], { padding: 32, duration: 0 })
     }
-  }, [ready, route, position, live, follow, headingUp, threeD])
+  }, [ready, route, position, live, follow, headingUp, threeD, heat])
 
   // 3D et orientation quand on ne suit pas la position (on regarde la carte librement)
   useEffect(() => {

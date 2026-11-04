@@ -498,3 +498,6 @@ ALTER TABLE public.planned_workouts
 ALTER TABLE public.activities DROP CONSTRAINT activities_source_check;
 ALTER TABLE public.activities
   ADD CONSTRAINT activities_source_check CHECK (source IN ('manual', 'fit', 'gpx', 'tcx', 'polar', 'demo', 'live'));
+
+-- Meilleurs efforts de chaque séance (records, prédictions), calculés par l'application à partir des courbes.
+ALTER TABLE public.activities ADD COLUMN IF NOT EXISTS best_efforts JSONB;

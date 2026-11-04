@@ -13,6 +13,8 @@ import { CalendarPage } from './pages/Calendar'
 import { WellnessPage } from './pages/Wellness'
 import { ProfilePage } from './pages/Profile'
 import { RecordPage } from './pages/Record'
+import { PerformancePage } from './pages/Performance'
+import { StatsPage } from './pages/Stats'
 
 const NAV = [
   { to: '/dashboard', label: 'Tableau de bord', end: true },
@@ -20,6 +22,8 @@ const NAV = [
   { to: '/dashboard/calendar', label: 'Calendrier' },
   { to: '/dashboard/activities/import', label: 'Importer' },
   { to: '/dashboard/wellness', label: 'Bien-être' },
+  { to: '/dashboard/performance', label: 'Records' },
+  { to: '/dashboard/stats', label: 'Statistiques' },
   { to: '/dashboard/profile', label: 'Profil' },
 ]
 
@@ -78,6 +82,8 @@ function Protected() {
           <Route path="activities/:id" element={<ActivityPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="wellness" element={<WellnessPage />} />
+          <Route path="performance" element={<PerformancePage />} />
+          <Route path="stats" element={<StatsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

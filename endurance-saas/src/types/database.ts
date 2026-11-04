@@ -120,6 +120,7 @@ export type Database = {
           intensity_factor: number
           fit_file_path: string | null
           raw_telemetry: Json | null
+          best_efforts: Json | null
           rpe_score: number | null
           athlete_notes: string | null
           normalized_power: number | null
@@ -144,6 +145,7 @@ export type Database = {
           intensity_factor?: number
           fit_file_path?: string | null
           raw_telemetry?: Json | null
+          best_efforts?: Json | null
           rpe_score?: number | null
           athlete_notes?: string | null
           normalized_power?: number | null
