@@ -28,7 +28,7 @@ export function LoginPage() {
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex items-center justify-center gap-2 text-xl font-bold">
-          <Activity className="h-6 w-6 text-emerald-500" /> Endurance
+          <Activity className="h-6 w-6 text-red-600" /> Endurance
         </div>
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold">Se connecter</h1>

@@ -33,7 +33,7 @@ export function DashboardPage() {
           <p className="text-muted-foreground text-sm mt-1">Votre charge d’entraînement sur les 90 derniers jours.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button asChild className="bg-orange-500 text-white hover:bg-orange-500/90">
+          <Button asChild className="bg-red-600 text-white hover:bg-red-600/90">
             <Link to="/dashboard/record">
               <Circle className="h-4 w-4 fill-current" /> Enregistrer
             </Link>
@@ -58,7 +58,7 @@ export function DashboardPage() {
         <>
           {data.profile?.subscription_status === 'trialing' && data.profile.trial_ends_at && (
             <p role="status" className="flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm">
-              <Sparkles className="size-4 shrink-0" style={{ color: 'var(--status-good)' }} aria-hidden />
+              <Sparkles className="size-4 shrink-0" style={{ color: 'var(--brand)' }} aria-hidden />
               <span>Essai Premium jusqu’au {longDate.format(new Date(data.profile.trial_ends_at))}.</span>
             </p>
           )}

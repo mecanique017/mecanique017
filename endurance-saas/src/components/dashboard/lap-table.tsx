@@ -38,12 +38,12 @@ export function LapTable({ laps, sport }: { laps: LapRow[]; sport: string }) {
               <td className="py-1.5">
                 <span className="inline-flex items-center gap-2">
                   {l.n}
-                  <span className="hidden sm:inline-block h-1.5 rounded-full bg-orange-500/70" style={{ width: `${Math.round((speeds[i] / best) * 48)}px` }} aria-hidden />
+                  <span className="hidden sm:inline-block h-1.5 rounded-full bg-red-600/70" style={{ width: `${Math.round((speeds[i] / best) * 48)}px` }} aria-hidden />
                 </span>
               </td>
               <td className="text-right">{(l.dist / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} km</td>
               <td className="text-right">{clock(l.time)}</td>
-              <td className={i === speeds.indexOf(best) && laps.length > 1 ? 'text-right font-semibold text-orange-400' : 'text-right'}>
+              <td className={i === speeds.indexOf(best) && laps.length > 1 ? 'text-right font-semibold text-red-500' : 'text-right'}>
                 {run ? `${clock(1000 / Math.max(speeds[i], 0.01))} /km` : `${(speeds[i] * 3.6).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km/h`}
               </td>
               {laps.some((x) => x.hr) && <td className="text-right">{l.hr ?? '–'}</td>}
