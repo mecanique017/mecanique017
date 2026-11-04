@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils'
 import type { SportType } from '@/types/database'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
+import { SportOptions } from '@/components/ui/sport-options'
 
 export function CalendarPage() {
   const user = useUser()
@@ -161,9 +162,7 @@ function PlanForm({ userId, defaultDate, onSaved }: { userId: string; defaultDat
       <div className="grid grid-cols-2 gap-4">
         <Field id="date" label="Date" type="date" value={f.date} onChange={set('date')} required />
         <SelectField id="sport" label="Sport" value={f.sport} onChange={set('sport')}>
-          <option value="run">Course à pied</option>
-          <option value="ride">Vélo</option>
-          <option value="swim">Natation</option>
+          <SportOptions />
         </SelectField>
       </div>
       <Field id="title" label="Séance" placeholder="Ex. 5 × 1000 m" value={f.title} onChange={set('title')} required />

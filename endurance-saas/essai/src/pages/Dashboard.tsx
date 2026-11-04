@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CalendarDays, HeartPulse, Plus, Sparkles, Upload } from 'lucide-react'
+import { CalendarDays, Circle, HeartPulse, Plus, Sparkles, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { KpiTiles } from '@/components/dashboard/kpi-tiles'
 import { LoadChart } from '@/components/dashboard/load-chart'
@@ -32,15 +32,20 @@ export function DashboardPage() {
           <h1 className="text-2xl md:text-3xl font-bold">Tableau de bord</h1>
           <p className="text-muted-foreground text-sm mt-1">Votre charge d’entraînement sur les 90 derniers jours.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button asChild className="bg-orange-500 text-white hover:bg-orange-500/90">
+            <Link to="/dashboard/record">
+              <Circle className="h-4 w-4 fill-current" /> Enregistrer
+            </Link>
+          </Button>
           <Button variant="outline" asChild>
             <Link to="/dashboard/activities/import">
               <Upload className="h-4 w-4" /> Importer
             </Link>
           </Button>
-          <Button asChild>
+          <Button variant="outline" asChild>
             <Link to="/dashboard/activities/new">
-              <Plus className="h-4 w-4" /> Nouvelle séance
+              <Plus className="h-4 w-4" /> Saisir
             </Link>
           </Button>
         </div>

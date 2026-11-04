@@ -12,9 +12,10 @@ export type Json =
   | Json[]
 
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon'
-export type SportType = 'run' | 'ride' | 'swim'
+export type { SportKey as SportType } from '@/lib/sports'
+import type { SportKey as SportType } from '@/lib/sports'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
-export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar' | 'demo'
+export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar' | 'demo' | 'live'
 export type PlannedSource = 'manual' | 'ai' | 'demo'
 export type AiUsageKind = 'coach_analysis' | 'training_plan'
 

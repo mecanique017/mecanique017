@@ -32,13 +32,14 @@ export interface ParsedFitActivity {
 export class FitImportError extends Error {}
 
 const SPORTS: Record<string, SportType> = {
-  running: 'run',
-  trail_running: 'run',
-  walking: 'run',
-  hiking: 'run',
-  cycling: 'ride',
-  e_biking: 'ride',
-  swimming: 'swim',
+  running: 'run', trail: 'trail', trail_running: 'trail', walking: 'walk', hiking: 'hike',
+  cycling: 'ride', road: 'ride', mountain: 'mtb', gravel_cycling: 'gravel', e_biking: 'ebike', e_bike_fitness: 'ebike',
+  indoor_cycling: 'virtual_ride', virtual_activity: 'virtual_ride',
+  swimming: 'swim', lap_swimming: 'swim', open_water: 'open_water',
+  rowing: 'rowing', indoor_rowing: 'rowing', paddling: 'kayak', kayaking: 'kayak', stand_up_paddleboarding: 'kayak',
+  cross_country_skiing: 'ski_nordic', backcountry: 'ski_touring', alpine_skiing: 'ski', snowboarding: 'ski',
+  elliptical: 'elliptical', training: 'strength', strength_training: 'strength', hiit: 'hiit', yoga: 'yoga',
+  rock_climbing: 'climbing', soccer: 'team', basketball: 'team', tennis: 'racket', fitness_equipment: 'cardio',
 }
 
 /** Nombre maximal de points conservés (graphiques) : ~1 point / 10 s pour 2 h. */

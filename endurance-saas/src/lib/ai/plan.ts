@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { CoachRefusalError } from './coach'
 import { addDays } from '@/lib/dates'
 import type { SportType } from '@/types/database'
+import { SPORTS } from '@/lib/sports'
 
 /** Format imposé au modèle. Les dates sont revalidées ensuite (plage, jours disponibles). */
 export const TrainingPlanSchema = z.object({
@@ -38,7 +39,7 @@ export interface PlanRequest {
 }
 
 const DAY_NAMES = ['', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche']
-const SPORT_NAMES: Record<SportType, string> = { run: 'course à pied', ride: 'vélo', swim: 'natation' }
+const SPORT_NAMES = Object.fromEntries(SPORTS.map((s) => [s.key, s.label.toLowerCase()])) as Record<SportType, string>
 
 const SYSTEM_PROMPT = `Tu es un entraîneur expert en sports d'endurance. Tu construis des plans d'entraînement réalistes et sûrs, en français.
 

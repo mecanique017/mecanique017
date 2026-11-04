@@ -2,7 +2,7 @@
  * Service worker de la version d'essai : met en cache l'application elle-même (fichiers statiques
  * versionnés). Les DONNÉES (Supabase) ne sont jamais mises en cache : elles restent en ligne.
  */
-const CACHE = 'endurance-essai-v1'
+const CACHE = 'endurance-essai-v2'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(['./', './index.html', './manifest.webmanifest', './icons/icon-192.png'])).then(() => self.skipWaiting()))

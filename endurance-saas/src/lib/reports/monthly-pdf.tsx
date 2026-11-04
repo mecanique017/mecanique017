@@ -1,6 +1,7 @@
 import 'server-only'
 import { Document, G, Line, Page, Polyline, Rect, StyleSheet, Svg, Text, View } from '@react-pdf/renderer'
 import type { MonthlyReport } from './monthly'
+import { sportInfo } from '@/lib/sports'
 
 /**
  * Bilan mensuel au format PDF (A4). Police Helvetica intégrée (jeu WinAnsi) :
@@ -34,7 +35,7 @@ const hours = (sec: number) => {
   return `${Math.floor(total / 60)} h ${String(total % 60).padStart(2, '0')}`
 }
 const km = (m: number) => `${fmt(m / 1000)} km`
-const SPORTS = { run: 'Course', ride: 'Vélo', swim: 'Natation' } as const
+
 const day = (d: string, opts: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat('fr-FR', { ...opts, timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`))
 const monthLabel = (m: string) => day(`${m}-01`, { month: 'long', year: 'numeric' })
 
@@ -77,7 +78,7 @@ export function MonthlyReportPdf({ r }: { r: MonthlyReport }) {
             {r.bySport.length === 0 && <Text style={{ color: C.muted, marginTop: 4 }}>Aucune séance ce mois-ci.</Text>}
             {r.bySport.map((b) => (
               <View key={b.sport} style={s.row}>
-                <Text style={{ flex: 2 }}>{SPORTS[b.sport]}</Text>
+                <Text style={{ flex: 2 }}>{sportInfo(b.sport).short}</Text>
                 <Text style={{ flex: 1, textAlign: 'right' }}>{b.sessions}</Text>
                 <Text style={{ flex: 1.4, textAlign: 'right' }}>{hours(b.seconds)}</Text>
                 <Text style={{ flex: 1.4, textAlign: 'right' }}>{km(b.meters)}</Text>
@@ -114,7 +115,7 @@ export function MonthlyReportPdf({ r }: { r: MonthlyReport }) {
             <View key={i} style={s.row} wrap={false}>
               <Text style={{ width: 70 }}>{day(a.date, { weekday: 'short', day: 'numeric', month: 'short' })}</Text>
               <Text style={{ flex: 1 }}>{a.title}</Text>
-              <Text style={{ width: 60 }}>{SPORTS[a.sport]}</Text>
+              <Text style={{ width: 60 }}>{sportInfo(a.sport).short}</Text>
               <Text style={{ width: 55, textAlign: 'right' }}>{hours(a.seconds)}</Text>
               <Text style={{ width: 60, textAlign: 'right' }}>{a.meters > 0 ? km(a.meters) : '-'}</Text>
               <Text style={{ width: 40, textAlign: 'right' }}>{fmt(a.tss, 0)}</Text>

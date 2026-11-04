@@ -6,10 +6,11 @@ import { createClient } from '@/lib/supabase/server'
 import { calculateTSS } from '@/lib/training/metrics'
 import { linkPlannedWorkout } from '@/lib/training/planned'
 import { fieldErrors, optionalNumber, optionalText, requiredNumber, type FormState } from '@/lib/form-utils'
+import { SPORT_KEYS } from '@/lib/sports'
 
 const ActivitySchema = z.object({
   title: z.string().trim().min(1, 'Titre obligatoire').max(120),
-  sport_type: z.enum(['run', 'ride', 'swim'], { message: 'Sport invalide' }),
+  sport_type: z.enum(SPORT_KEYS, { message: 'Sport invalide' }),
   // ISO UTC calculé dans le navigateur à partir de l'heure locale saisie
   start_time: z.iso.datetime({ message: 'Date et heure obligatoires' }),
   hours: requiredNumber(z.number().int().min(0).max(48)),
@@ -58,6 +59,7 @@ export async function createActivity(_prev: FormState, formData: FormData): Prom
     avgHr: input.avg_hr,
     hrRest: profile.hr_rest,
     lactateThresholdHr: profile.lactate_threshold_hr,
+    rpe: input.rpe_score,
   })
 
   const { data: activity, error } = await supabase

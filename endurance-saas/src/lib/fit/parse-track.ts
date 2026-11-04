@@ -19,9 +19,12 @@ const parser = new XMLParser({
 })
 
 const SPORTS: Record<string, SportType> = {
-  running: 'run', run: 'run', trail_running: 'run', trailrunning: 'run', walking: 'run', hiking: 'run', '9': 'run',
-  cycling: 'ride', biking: 'ride', ride: 'ride', road_biking: 'ride', mountain_biking: 'ride', gravel_cycling: 'ride', virtualride: 'ride', '1': 'ride',
-  swimming: 'swim', swim: 'swim', open_water_swimming: 'swim',
+  running: 'run', run: 'run', trail_running: 'trail', trailrunning: 'trail', trail_run: 'trail', trailrun: 'trail', walking: 'walk', walk: 'walk', hiking: 'hike', hike: 'hike', '9': 'run',
+  cycling: 'ride', biking: 'ride', ride: 'ride', road_biking: 'ride', mountain_biking: 'mtb', mountainbikeride: 'mtb', gravel_cycling: 'gravel', gravelride: 'gravel',
+  virtualride: 'virtual_ride', ebikeride: 'ebike', e_biking: 'ebike', '1': 'ride',
+  swimming: 'swim', swim: 'swim', open_water_swimming: 'open_water',
+  rowing: 'rowing', kayaking: 'kayak', canoeing: 'kayak', standuppaddling: 'kayak', nordicski: 'ski_nordic', backcountryski: 'ski_touring', alpineski: 'ski', snowboard: 'ski',
+  elliptical: 'elliptical', weighttraining: 'strength', crossfit: 'hiit', hiit: 'hiit', yoga: 'yoga', rockclimbing: 'climbing',
 }
 
 const R = 6_371_000
