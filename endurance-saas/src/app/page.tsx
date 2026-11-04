@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Activity, Calendar, Zap } from "lucide-react";
 
@@ -25,7 +26,7 @@ export default function Home() {
       <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
         <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           Phase 1 Initialisée avec succès &mdash;&nbsp;
-          <code className="font-bold">Prêt pour Supabase &amp; Auth</code>
+          <code className="font-bold">Auth Supabase active</code>
         </p>
       </div>
 
@@ -37,8 +38,12 @@ export default function Home() {
           Votre écosystème de suivi d&apos;entraînement, d&apos;analyse physiologique et de coaching par IA.
         </p>
         <div className="flex gap-4 justify-center">
-          <Button>Commencer</Button>
-          <Button variant="outline">En savoir plus</Button>
+          <Button asChild>
+            <Link href="/register">Commencer</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/login">Se connecter</Link>
+          </Button>
         </div>
       </div>
 
