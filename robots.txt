@@ -2,4 +2,5 @@ User-agent: *
 Allow: /
 Disallow: /admin.html
 Disallow: /js/admin.js
+Disallow: /app-endurance/
 Sitemap: https://garage-mecanique17.fr/sitemap.xml

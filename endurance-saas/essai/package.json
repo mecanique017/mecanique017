@@ -1,0 +1,16 @@
+{
+  "name": "endurance-essai",
+  "private": true,
+  "type": "module",
+  "description": "Version d'essai installable (PWA statique) : mêmes calculs et composants que l'application, données via Supabase (RLS).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.4",
+    "@vitejs/plugin-react": "^6.2.1",
+    "react-router-dom": "^7.18.5",
+    "vite": "^8.3.5"
+  }
+}
