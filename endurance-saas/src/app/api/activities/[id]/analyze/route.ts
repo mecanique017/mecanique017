@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { analyzeWorkoutWithClaude, CoachRefusalError } from '@/lib/ai/coach'
-import { getCoachUsage } from '@/lib/coach-quota'
+import { aiQuotaConfigured, getCoachUsage, recordAiUsage } from '@/lib/coach-quota'
 import { getTrainingLoad, localDate } from '@/lib/training/load'
 import { getWellnessContext } from '@/lib/training/wellness'
 
@@ -17,7 +17,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   if (!z.uuid().safeParse(id).success) {
     return NextResponse.json({ error: 'Identifiant invalide' }, { status: 400 })
   }
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.ANTHROPIC_API_KEY || !aiQuotaConfigured()) {
     return NextResponse.json({ error: 'Coach IA non configuré' }, { status: 503 })
   }
 
@@ -100,6 +100,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
       .select()
       .single()
     if (error) throw error
+    // Quota consommé uniquement après une analyse réussie
+    await recordAiUsage(user.id, 'coach_analysis')
 
     return NextResponse.json({ insight })
   } catch (error) {

@@ -90,7 +90,9 @@ export async function POST(req: Request) {
       max_watts: parsed.maxWatts,
       tss,
       intensity_factor: intensityFactor,
-      raw_telemetry: { version: 1, normalizedPower: parsed.normalizedPower, points: parsed.telemetry },
+      normalized_power: parsed.normalizedPower,
+      source: 'fit',
+      raw_telemetry: { version: 2, points: parsed.telemetry, route: parsed.route },
     })
     .select('id, sport_type, start_time')
     .single()

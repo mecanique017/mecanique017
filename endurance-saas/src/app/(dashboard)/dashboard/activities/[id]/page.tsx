@@ -11,6 +11,7 @@ import { formatDuration, SPORT_LABELS } from '@/components/dashboard/activity-li
 import { deleteActivity } from '../actions'
 import { AnalyzeButton } from './analyze-button'
 import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
+import { RouteMap } from '@/components/dashboard/route-map'
 import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 
 export const metadata: Metadata = { title: 'Séance — Endurance SaaS' }
@@ -53,8 +54,9 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
   const usage = await getCoachUsage(supabase, user.id, profile?.subscription_tier ?? 'free')
 
   const sport = SPORT_LABELS[activity.sport_type]
-  const telemetry = activity.raw_telemetry as { normalizedPower?: number | null; points?: TelemetryPoint[] } | null
+  const telemetry = activity.raw_telemetry as { points?: TelemetryPoint[]; route?: [number, number][] } | null
   const points = Array.isArray(telemetry?.points) ? telemetry.points : []
+  const route = Array.isArray(telemetry?.route) ? telemetry.route : []
   const km = Number(activity.distance_meters) / 1000
   const stats = [
     { label: 'Durée', value: formatDuration(activity.duration_seconds) },
@@ -64,7 +66,7 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
     { label: 'FC moyenne', value: activity.avg_hr ? `${activity.avg_hr} bpm` : '—' },
     { label: 'FC max', value: activity.max_hr ? `${activity.max_hr} bpm` : '—' },
     { label: 'Puissance moy.', value: activity.avg_watts ? `${activity.avg_watts} W` : '—' },
-    ...(telemetry?.normalizedPower ? [{ label: 'Puissance normalisée', value: `${telemetry.normalizedPower} W` }] : []),
+    { label: 'Puissance normalisée', value: activity.normalized_power ? `${activity.normalized_power} W` : '—' },
     { label: 'Dénivelé +', value: Number(activity.elevation_gain_meters) > 0 ? `${Math.round(Number(activity.elevation_gain_meters))} m` : '—' },
     { label: 'Effort ressenti', value: activity.rpe_score ? `${activity.rpe_score} / 10` : '—' },
   ]
@@ -94,6 +96,13 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
           </div>
         ))}
       </dl>
+
+      {route.length > 1 && (
+        <section className="rounded-xl border bg-card p-4 md:p-6 space-y-3">
+          <h2 className="font-semibold">Parcours</h2>
+          <RouteMap route={route} />
+        </section>
+      )}
 
       {points.length > 1 && (
         <section className="rounded-xl border bg-card p-4 md:p-6 space-y-4">

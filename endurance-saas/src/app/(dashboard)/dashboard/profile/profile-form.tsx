@@ -48,7 +48,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       <fieldset className="grid gap-4 grid-cols-2 sm:grid-cols-3">
         <legend className="mb-1 text-sm font-semibold">Paramètres de calcul du TSS</legend>
         <p className="col-span-full -mt-1 mb-1 text-xs text-muted-foreground">
-          Utilisés pour les nouvelles séances. Les séances déjà enregistrées gardent leur TSS.
+          Utilisés pour les nouvelles séances, et pour les séances récentes si vous cochez la case ci-dessous.
         </p>
         <Field id="hr_rest" label="FC repos (bpm)" type="number" inputMode="numeric" required defaultValue={value(profile.hr_rest)} error={e.hr_rest} />
         <Field id="lactate_threshold_hr" label="FC seuil (bpm)" type="number" inputMode="numeric" required defaultValue={value(profile.lactate_threshold_hr)} error={e.lactate_threshold_hr} hint="Base du TSS cardiaque" />
@@ -56,6 +56,16 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         <Field id="ftp" label="FTP (W)" type="number" inputMode="numeric" required defaultValue={value(profile.ftp)} error={e.ftp} hint="Base du TSS puissance" />
         <Field id="vma" label="VMA (km/h)" type="number" inputMode="decimal" step="0.1" required defaultValue={value(profile.vma)} error={e.vma} />
       </fieldset>
+
+      <label className="flex items-start gap-2 text-sm">
+        <input type="checkbox" name="recalculate" className="mt-0.5 size-4 accent-primary" />
+        <span>
+          Recalculer le TSS des séances des 90 derniers jours avec ces valeurs
+          <span className="block text-xs text-muted-foreground">
+            Utile après un test de FTP ou de seuil : la forme (CTL) et la fatigue (ATL) seront mises à jour.
+          </span>
+        </span>
+      </label>
 
       <Button type="submit" disabled={pending}>
         {pending && <Loader2 className="h-4 w-4 animate-spin" />}

@@ -25,6 +25,8 @@ export interface ParsedFitActivity {
   maxWatts: number | null
   normalizedPower: number | null
   telemetry: TelemetryPoint[]
+  /** Tracé GPS [lat, lng] (≤ 500 points), vide si pas de GPS (home-trainer, piscine) */
+  route: [number, number][]
 }
 
 export class FitImportError extends Error {}
@@ -50,6 +52,8 @@ interface FitRecord {
   enhanced_speed?: number
   altitude?: number
   enhanced_altitude?: number
+  position_lat?: number
+  position_long?: number
 }
 
 interface FitSession {
@@ -130,7 +134,24 @@ export async function parseFitActivity(buffer: ArrayBuffer): Promise<ParsedFitAc
     maxWatts: roundOrNull(num(session.max_power) ?? (powerValues.length ? Math.max(...powerValues) : undefined)),
     normalizedPower: normalizedPower(watts1Hz),
     telemetry: downsample(records, startMs),
+    route: extractRoute(records),
   }
+}
+
+const MAX_ROUTE_POINTS = 500
+
+/** Tracé GPS allégé : un point sur N, coordonnées arrondies à 5 décimales (≈ 1 m). */
+function extractRoute(records: FitRecord[]): [number, number][] {
+  const points = records
+    .map((r) => [num(r.position_lat), num(r.position_long)] as const)
+    .filter((p): p is readonly [number, number] => p[0] !== undefined && p[1] !== undefined && Math.abs(p[0]) <= 90 && Math.abs(p[1]) <= 180 && !(p[0] === 0 && p[1] === 0))
+  if (points.length < 2) return []
+  const step = Math.ceil(points.length / MAX_ROUTE_POINTS)
+  const round5 = (v: number) => Math.round(v * 1e5) / 1e5
+  const route = points.filter((_, i) => i % step === 0).map(([lat, lng]) => [round5(lat), round5(lng)] as [number, number])
+  const last = points.at(-1)!
+  route.push([round5(last[0]), round5(last[1])]) // l'arrivée est toujours conservée
+  return route
 }
 
 /** Moyenne par tranches de temps pour limiter la taille stockée. */

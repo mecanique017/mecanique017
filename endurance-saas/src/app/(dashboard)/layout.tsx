@@ -6,6 +6,7 @@ import { signOut } from './dashboard/actions'
 const NAV = [
   { href: '/dashboard', label: 'Tableau de bord' },
   { href: '/dashboard/calendar', label: 'Calendrier' },
+  { href: '/dashboard/plan', label: 'Plan IA' },
   { href: '/dashboard/activities/new', label: 'Nouvelle séance' },
   { href: '/dashboard/activities/import', label: 'Importer' },
   { href: '/dashboard/wellness', label: 'Bien-être' },

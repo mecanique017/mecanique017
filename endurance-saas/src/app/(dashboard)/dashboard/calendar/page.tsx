@@ -20,7 +20,10 @@ export default function CalendarPage({ searchParams }: PageProps<'/dashboard/cal
       <div>
         <h1 className="text-2xl md:text-3xl font-bold">Calendrier</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Programme de la semaine. Une séance réalisée valide automatiquement la séance prévue du même jour et du même sport.
+          Programme de la semaine. Une séance réalisée valide automatiquement la séance prévue du même jour et du même sport.{' '}
+          <Link href="/dashboard/plan" className="underline underline-offset-4">
+            Générer un plan avec le coach IA
+          </Link>
         </p>
       </div>
       <Suspense fallback={<div className="h-[32rem] rounded-xl border bg-card animate-pulse" aria-hidden />}>
@@ -132,6 +135,11 @@ async function Week({ searchParams }: { searchParams: PageProps<'/dashboard/cale
                     <p className="flex items-start gap-1.5 font-medium">
                       <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-label={SPORT_LABELS[p.sport_type].label} />
                       <span className={cn('min-w-0 break-words', p.is_completed && 'line-through')}>{p.title}</span>
+                      {p.source === 'ai' && (
+                        <span className="ml-auto shrink-0 rounded bg-accent px-1 text-[10px] font-semibold text-muted-foreground" title="Proposée par le coach IA">
+                          IA
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {[p.target_duration_seconds && formatDuration(p.target_duration_seconds), p.target_tss != null && `${p.target_tss} TSS`]

@@ -14,6 +14,9 @@ export type Json =
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon'
 export type SportType = 'run' | 'ride' | 'swim'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
+export type ActivitySource = 'manual' | 'fit'
+export type PlannedSource = 'manual' | 'ai'
+export type AiUsageKind = 'coach_analysis' | 'training_plan'
 
 export type Database = {
   public: {
@@ -108,6 +111,8 @@ export type Database = {
           raw_telemetry: Json | null
           rpe_score: number | null
           athlete_notes: string | null
+          normalized_power: number | null
+          source: ActivitySource
           created_at: string
         }
         Insert: {
@@ -129,6 +134,8 @@ export type Database = {
           raw_telemetry?: Json | null
           rpe_score?: number | null
           athlete_notes?: string | null
+          normalized_power?: number | null
+          source?: ActivitySource
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['activities']['Insert']>
@@ -147,6 +154,7 @@ export type Database = {
           workout_structure: Json | null
           is_completed: boolean
           activity_id: string | null
+          source: PlannedSource
           created_at: string
         }
         Insert: {
@@ -161,6 +169,7 @@ export type Database = {
           workout_structure?: Json | null
           is_completed?: boolean
           activity_id?: string | null
+          source?: PlannedSource
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['planned_workouts']['Insert']>
@@ -186,6 +195,12 @@ export type Database = {
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['coach_insights']['Insert']>
+        Relationships: []
+      }
+      ai_usage: {
+        Row: { id: string; user_id: string; kind: AiUsageKind; created_at: string }
+        Insert: { id?: string; user_id: string; kind: AiUsageKind; created_at?: string }
+        Update: Partial<Database['public']['Tables']['ai_usage']['Insert']>
         Relationships: []
       }
     }

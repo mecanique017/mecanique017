@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
+import { recalculateRecentTss, RECALC_DAYS } from '@/lib/training/recalc'
 import { fieldErrors, optionalNumber, optionalText, requiredNumber, type FormState } from '@/lib/form-utils'
 
 // Mêmes bornes que les contraintes CHECK de la migration SQL
@@ -61,6 +62,19 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
   if (error) {
     console.error('Mise à jour profil', error)
     return { message: 'Enregistrement impossible. Réessayez.' }
+  }
+
+  if (formData.get('recalculate') === 'on') {
+    try {
+      const updated = await recalculateRecentTss(supabase, p)
+      return {
+        ok: true,
+        message: `Profil enregistré. ${updated} séance(s) des ${RECALC_DAYS} derniers jours recalculée(s).`,
+      }
+    } catch (e) {
+      console.error('Recalcul TSS', e)
+      return { ok: true, message: 'Profil enregistré, mais le recalcul des séances a échoué. Réessayez.' }
+    }
   }
   return { ok: true, message: 'Profil enregistré. Les prochaines séances utiliseront ces valeurs.' }
 }
