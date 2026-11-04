@@ -1,0 +1,127 @@
+'use server'
+
+import { redirect } from 'next/navigation'
+import { z } from 'zod'
+import { createClient } from '@/lib/supabase/server'
+import { recalculateRecentTss, RECALC_DAYS } from '@/lib/training/recalc'
+import { clearDemoData, seedDemoData } from '@/lib/demo'
+import { refresh } from 'next/cache'
+import { fieldErrors, optionalNumber, optionalText, requiredNumber, type FormState } from '@/lib/form-utils'
+
+// Mêmes bornes que les contraintes CHECK de la migration SQL
+const ProfileSchema = z
+  .object({
+    full_name: optionalText(120),
+    sport_discipline: z.enum(['running', 'cycling', 'triathlon']),
+    age: optionalNumber(z.number().int().min(5, 'Âge invalide').max(120, 'Âge invalide')),
+    weight: optionalNumber(z.number().positive('Poids invalide').max(400)),
+    height: optionalNumber(z.number().positive('Taille invalide').max(260)),
+    hr_max: requiredNumber(z.number().int().min(100, 'Entre 100 et 250').max(250, 'Entre 100 et 250')),
+    hr_rest: requiredNumber(z.number().int().min(25, 'Entre 25 et 120').max(120, 'Entre 25 et 120')),
+    lactate_threshold_hr: requiredNumber(z.number().int().min(80, 'Entre 80 et 250').max(250, 'Entre 80 et 250')),
+    ftp: requiredNumber(z.number().int().positive('FTP invalide').max(2500)),
+    vma: requiredNumber(z.number().positive('VMA invalide').max(40)),
+  })
+  .refine((p) => p.hr_rest < p.lactate_threshold_hr, {
+    path: ['lactate_threshold_hr'],
+    message: 'La FC seuil doit être supérieure à la FC de repos',
+  })
+  .refine((p) => p.lactate_threshold_hr <= p.hr_max, {
+    path: ['lactate_threshold_hr'],
+    message: 'La FC seuil ne peut pas dépasser la FC max',
+  })
+
+export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = ProfileSchema.safeParse(Object.fromEntries(formData))
+  if (!parsed.success) {
+    return { errors: fieldErrors(parsed.error), message: 'Vérifiez les champs en rouge.' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const p = parsed.data
+  // Seules ces colonnes sont autorisées en écriture (GRANT par colonne dans la migration)
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: p.full_name,
+      sport_discipline: p.sport_discipline,
+      age: p.age ?? null,
+      weight: p.weight ?? null,
+      height: p.height ?? null,
+      hr_max: p.hr_max,
+      hr_rest: p.hr_rest,
+      lactate_threshold_hr: p.lactate_threshold_hr,
+      ftp: p.ftp,
+      vma: p.vma,
+      // Cases à cocher : absentes du formulaire = décochées
+      notify_weekly: formData.get('notify_weekly') === 'on',
+      notify_fatigue: formData.get('notify_fatigue') === 'on',
+    })
+    .eq('id', user.id)
+
+  if (error) {
+    console.error('Mise à jour profil', error)
+    return { message: 'Enregistrement impossible. Réessayez.' }
+  }
+
+  if (formData.get('recalculate') === 'on') {
+    try {
+      const updated = await recalculateRecentTss(supabase, p)
+      return {
+        ok: true,
+        message: `Profil enregistré. ${updated} séance(s) des ${RECALC_DAYS} derniers jours recalculée(s).`,
+      }
+    } catch (e) {
+      console.error('Recalcul TSS', e)
+      return { ok: true, message: 'Profil enregistré, mais le recalcul des séances a échoué. Réessayez.' }
+    }
+  }
+  return { ok: true, message: 'Profil enregistré. Les prochaines séances utiliseront ces valeurs.' }
+}
+
+/** Ajoute 12 semaines de données de démonstration (refusé si le compte a déjà des séances réelles). */
+export async function addDemoData(): Promise<FormState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const [{ count: real }, { count: demo }] = await Promise.all([
+    supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).neq('source', 'demo'),
+    supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('source', 'demo'),
+  ])
+  if ((demo ?? 0) > 0) return { message: 'Les données de démonstration sont déjà chargées.' }
+  if ((real ?? 0) > 0) return { message: 'Votre compte contient déjà de vraies séances : les données de démonstration fausseraient votre charge.' }
+
+  try {
+    const r = await seedDemoData(supabase, user.id)
+    refresh()
+    return { ok: true, message: `${r.activities} séances, ${r.wellness} relevés de bien-être et ${r.planned} séances prévues ajoutés.` }
+  } catch (e) {
+    console.error('Démo', e)
+    return { message: 'Ajout impossible. Réessayez.' }
+  }
+}
+
+/** Supprime les données de démonstration (les vraies données ne sont jamais touchées). */
+export async function removeDemoData(): Promise<FormState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  try {
+    await clearDemoData(supabase, user.id)
+    refresh()
+    return { ok: true, message: 'Données de démonstration supprimées.' }
+  } catch (e) {
+    console.error('Démo', e)
+    return { message: 'Suppression impossible. Réessayez.' }
+  }
+}

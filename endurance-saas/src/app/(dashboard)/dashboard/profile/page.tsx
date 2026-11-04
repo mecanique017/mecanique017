@@ -1,0 +1,52 @@
+import { Suspense } from 'react'
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { ProfileForm } from './profile-form'
+import { DemoData } from './demo-data'
+
+export const metadata: Metadata = { title: 'Profil — Endurance SaaS' }
+
+export default function ProfilePage() {
+  return (
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold">Profil</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Vos paramètres physiologiques servent au calcul de la charge.{' '}
+          <Link href="/pricing" className="underline underline-offset-4">
+            Voir les offres
+          </Link>
+        </p>
+      </div>
+      <Suspense fallback={<div className="h-96 rounded-xl border bg-card animate-pulse" aria-hidden />}>
+        <ProfileLoader />
+      </Suspense>
+    </div>
+  )
+}
+
+async function ProfileLoader() {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, sport_discipline, age, weight, height, hr_max, hr_rest, lactate_threshold_hr, ftp, vma, notify_weekly, notify_fatigue')
+    .eq('id', user.id)
+    .single()
+  if (!profile) return <p className="text-sm text-muted-foreground">Profil introuvable.</p>
+
+  const { count: demo } = await supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('source', 'demo')
+
+  return (
+    <div className="space-y-6">
+      <ProfileForm profile={profile} />
+      <DemoData hasDemo={(demo ?? 0) > 0} />
+    </div>
+  )
+}
