@@ -13,6 +13,7 @@ import {
   addFix, addHeartRate, tick, currentLap, currentSpeed, defaultAutoPause, GOOD_ACCURACY_M, heartRateStats, loadSession, manualLap, movingSeconds, newSession,
   parseHeartRate, pause, resume, saveSession, toTelemetry, type Lap, type LiveSession,
 } from '@/lib/live/recorder'
+import { elevationFromProfile, fetchIgnElevations, refineDistance, resample, smoothedRoute, smoothTrack, withIgnAltitude } from '@/lib/live/refine'
 import { cn } from '@/lib/utils'
 import { TrackMap, type BaseLayer } from '../components/TrackMap'
 import { supabase } from '../supabase'
@@ -292,7 +293,9 @@ export function RecordPage() {
       ? 'Recherche du signal GPS…'
       : 'error' in gps
         ? gps.error
-        : gps.accuracy <= GOOD_ACCURACY_M
+        : gps.accuracy > 500
+          ? 'Position approximative : Réglages → Confidentialité → Service de localisation → Safari → activez « Position exacte »'
+          : gps.accuracy <= GOOD_ACCURACY_M
           ? `GPS prêt · ± ${gps.accuracy} m`
           : `Signal GPS faible · ± ${gps.accuracy} m`
 
@@ -376,7 +379,7 @@ export function RecordPage() {
 
         {/* Haut : état GPS */}
         {useGps && (
-          <p className={cn('absolute left-1/2 top-4 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg', gpsReady ? 'bg-emerald-600 text-white' : 'bg-neutral-900/90 text-white')} aria-live="polite">
+          <p className={cn('absolute left-1/2 top-4 -translate-x-1/2 flex max-w-[calc(100%-8rem)] items-center gap-1.5 rounded-full text-center px-3 py-1.5 text-xs font-medium shadow-lg', gpsReady ? 'bg-emerald-600 text-white' : 'bg-neutral-900/90 text-white')} aria-live="polite">
             <MapPin className="size-3.5" /> {session?.status === 'autopaused' ? 'Pause auto' : session?.status === 'paused' ? 'En pause' : gpsLine}
           </p>
         )}
@@ -625,12 +628,36 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
   const avgHr = Number(f.hr) || null
   const tss = calculateTSS({ durationSeconds: seconds, avgHr, hrRest: profile.hr_rest, lactateThresholdHr: profile.lactate_threshold_hr, rpe: Number(f.rpe) || null })
 
+  // Affinage de fin de séance : lissage avant/arrière de tous les points + dénivelé sur le relief IGN
+  const smoothed = useMemo(() => smoothTrack(session.raw ?? [], session.sport), [session])
+  const distance = refineDistance(session.distance, smoothed)
+  const [ign, setIgn] = useState<{ state: 'loading' | 'ok' | 'off'; profile?: { t: number; z: number }[]; gain?: number }>({ state: smoothed ? 'loading' : 'off' })
+  useEffect(() => {
+    if (!smoothed) return
+    const ctrl = new AbortController()
+    const pts = resample(smoothed.points, 15)
+    fetchIgnElevations(pts, ctrl.signal).then((z) => {
+      if (ctrl.signal.aborted) return
+      if (!z) return setIgn({ state: 'off' })
+      setIgn({ state: 'ok', profile: pts.map((p, i) => ({ t: p.t, z: z[i] })), gain: elevationFromProfile(z).gain })
+    })
+    return () => ctrl.abort()
+  }, [smoothed])
+  const elevation = ign.state === 'ok' ? ign.gain! : Math.round(session.elevationGain)
+
   const save = async (e: React.FormEvent) => {
     e.preventDefault()
     if (seconds < 1) return setError('Séance trop courte pour être enregistrée.')
     setSaving(true)
     setError(null)
-    const telemetry = toTelemetry(session)
+    const base = toTelemetry(session)
+    const route = smoothedRoute(smoothed)
+    const telemetry = {
+      ...base,
+      route: route.length > 1 ? route : base.route,
+      points: ign.state === 'ok' ? withIgnAltitude(base.points, ign.profile!) : base.points,
+      elevation_source: ign.state === 'ok' ? 'ign' : 'gps',
+    }
     const { data, error } = await supabase
       .from('activities')
       .insert({
@@ -639,8 +666,8 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
         sport_type: f.sport,
         start_time: new Date(session.startedAt).toISOString(),
         duration_seconds: seconds,
-        distance_meters: Math.round(session.distance),
-        elevation_gain_meters: Math.round(session.elevationGain),
+        distance_meters: Math.round(distance),
+        elevation_gain_meters: elevation,
         avg_hr: avgHr,
         max_hr: stats.max ?? avgHr,
         rpe_score: Number(f.rpe) || null,
@@ -666,9 +693,15 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
       {error && <FormAlert message={error} />}
       <dl className="grid grid-cols-3 gap-3 text-center">
         <Stat label="Durée" value={clock(seconds)} unit="" />
-        <Stat label="Distance" value={(session.distance / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} unit="km" />
-        <Stat label="D+" value={String(Math.round(session.elevationGain))} unit="m" />
+        <Stat label="Distance" value={(distance / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} unit="km" />
+        <Stat label="D+" value={String(elevation)} unit="m" />
       </dl>
+      {smoothed && (
+        <p className="text-xs text-muted-foreground" aria-live="polite">
+          Trace affinée sur {smoothed.points.length} points GPS.{' '}
+          {ign.state === 'loading' ? 'Correction du dénivelé avec le relief IGN…' : ign.state === 'ok' ? `Dénivelé corrigé avec le relief IGN (GPS seul : ${Math.round(session.elevationGain)} m).` : 'Dénivelé calculé par le GPS (relief IGN indisponible : hors de France ou sans réseau).'}
+        </p>
+      )}
       <Field id="title" label="Titre" value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} maxLength={120} />
       <div className="grid grid-cols-2 gap-4">
         <SelectField id="sport" label="Sport" value={f.sport} onChange={(e) => setF({ ...f, sport: e.target.value as SportKey })}>
