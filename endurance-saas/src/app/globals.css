@@ -59,6 +59,16 @@
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
+  /* Data-viz : couleurs validées (scripts dataviz, CVD + contraste) */
+  --viz-ctl: #2a78d6;        /* Forme (CTL) — série 1 */
+  --viz-atl: #eb6834;        /* Fatigue (ATL) — série 2 */
+  --viz-positive: #2a78d6;   /* TSB > 0 (pôle froid) */
+  --viz-negative: #e34948;   /* TSB < 0 (pôle chaud) */
+  --viz-grid: #e8e7e4;
+  --status-good: #0ca30c;
+  --status-warning: #fab219;
+  --status-serious: #ec835a;
+  --status-critical: #d03b3b;
 }
 
 .dark {
@@ -85,6 +95,11 @@
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.645 0.246 39.381);
   --chart-5: oklch(0.627 0.265 303.9);
+  --viz-ctl: #3987e5;
+  --viz-atl: #d95926;
+  --viz-positive: #3987e5;
+  --viz-negative: #e66767;
+  --viz-grid: #2a2a29;
 }
 
 @layer base {

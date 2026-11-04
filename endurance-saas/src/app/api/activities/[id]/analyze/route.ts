@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { analyzeWorkoutWithClaude, CoachRefusalError } from '@/lib/ai/coach'
+import { getCoachUsage } from '@/lib/coach-quota'
+import { getTrainingLoad, localDate } from '@/lib/training/load'
 
 /**
  * POST /api/activities/:id/analyze
@@ -34,14 +36,19 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     return NextResponse.json({ error: 'Séance introuvable' }, { status: 404 })
   }
 
-  // Dernier état de charge connu à la date de la séance
-  const { data: metrics } = await supabase
-    .from('daily_metrics')
-    .select('atl, ctl, tsb')
-    .lte('date', activity.start_time.slice(0, 10))
-    .order('date', { ascending: false })
-    .limit(1)
-    .maybeSingle()
+  // Quota mensuel selon l'offre (voir lib/plans.ts)
+  const usage = await getCoachUsage(supabase, user.id, profile.subscription_tier)
+  if (usage.remaining === 0) {
+    return NextResponse.json(
+      { error: `Quota atteint : ${usage.limit} analyses ce mois-ci. Passez à l'offre supérieure pour continuer.` },
+      { status: 403 }
+    )
+  }
+
+  // État de charge le jour de la séance, calculé à partir des séances (séance du jour incluse)
+  const activityDay = localDate(activity.start_time)
+  const series = await getTrainingLoad(supabase, new Date(activity.start_time))
+  const metrics = series.findLast((d) => d.date <= activityDay)
 
   try {
     const analysis = await analyzeWorkoutWithClaude({
@@ -62,9 +69,9 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
         athleteNotes: activity.athlete_notes,
       },
       currentMetrics: {
-        atl: Number(metrics?.atl ?? 0),
-        ctl: Number(metrics?.ctl ?? 0),
-        tsb: Number(metrics?.tsb ?? 0),
+        atl: metrics?.atl ?? 0,
+        ctl: metrics?.ctl ?? 0,
+        tsb: metrics?.tsb ?? 0,
       },
     })
 

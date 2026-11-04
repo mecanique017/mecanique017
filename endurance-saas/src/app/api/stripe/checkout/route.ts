@@ -28,9 +28,15 @@ export async function POST(req: Request) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('stripe_customer_id')
+    .select('stripe_customer_id, subscription_tier')
     .eq('id', user.id)
     .single()
+
+  // Déjà abonné : un 2e checkout créerait un 2e abonnement facturé.
+  // Les changements d'offre passent par le portail client (/api/stripe/portal).
+  if (profile && profile.subscription_tier !== 'free') {
+    return NextResponse.json({ error: 'Abonnement déjà actif : utilisez « Gérer mon abonnement ».' }, { status: 409 })
+  }
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin
 

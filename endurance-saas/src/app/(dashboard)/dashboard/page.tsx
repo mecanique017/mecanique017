@@ -1,65 +1,146 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { LogOut, UserCheck } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Plus, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
+import { getTrainingLoad } from '@/lib/training/load'
+import { getCoachUsage } from '@/lib/coach-quota'
+import { getPlan } from '@/lib/plans'
 import { Button } from '@/components/ui/button'
-import { signOut } from './actions'
+import { KpiTiles } from '@/components/dashboard/kpi-tiles'
+import { LoadChart } from '@/components/dashboard/load-chart'
+import { ActivityList } from '@/components/dashboard/activity-list'
 
-export const metadata: Metadata = { title: 'Espace Athlète — Endurance SaaS' }
+export const metadata: Metadata = { title: 'Tableau de bord — Endurance SaaS' }
 
-export default function DashboardPage() {
+const CHART_DAYS = 90
+
+export default function DashboardPage({ searchParams }: PageProps<'/dashboard'>) {
   return (
-    <div className="p-6 md:p-8 max-w-4xl mx-auto space-y-6">
-      {/* En-tête statique : prérendu dans le shell */}
-      <div className="flex items-center justify-between gap-4 border-b pb-6">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Espace Athlète</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Bienvenue sur votre tableau de bord sécurisé.
-          </p>
+          <h1 className="text-2xl md:text-3xl font-bold">Tableau de bord</h1>
+          <p className="text-muted-foreground text-sm mt-1">Votre charge d’entraînement sur les 90 derniers jours.</p>
         </div>
-        <form action={signOut}>
-          <Button variant="outline" size="sm" type="submit">
-            <LogOut className="h-4 w-4" /> Déconnexion
-          </Button>
-        </form>
+        <Button asChild>
+          <Link href="/dashboard/activities/new">
+            <Plus className="h-4 w-4" /> Nouvelle séance
+          </Link>
+        </Button>
       </div>
 
-      {/* Lecture de session (cookies) : rendu à la requête, derrière Suspense */}
-      <Suspense fallback={<UserCardSkeleton />}>
-        <UserCard />
+      {/* Tout ce qui lit la session (cookies) ou l'URL est rendu à la requête, derrière Suspense */}
+      <Suspense fallback={<DashboardSkeleton />}>
+        <DashboardContent searchParams={searchParams} />
       </Suspense>
     </div>
   )
 }
 
-async function UserCard() {
+async function DashboardContent({ searchParams }: { searchParams: PageProps<'/dashboard'>['searchParams'] }) {
   const supabase = await createClient()
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  // Double sécurité : le proxy redirige déjà les visiteurs non connectés.
-  if (!user) {
-    redirect('/login')
-  }
-
-  const fullName = user.user_metadata?.full_name as string | undefined
+  const [{ subscription }, series, { data: profile }, { data: activities }] = await Promise.all([
+    searchParams,
+    getTrainingLoad(supabase),
+    supabase.from('profiles').select('full_name, subscription_tier').eq('id', user.id).single(),
+    supabase
+      .from('activities')
+      .select('id, title, sport_type, start_time, duration_seconds, distance_meters, tss')
+      .order('start_time', { ascending: false })
+      .limit(8),
+  ])
+  const tier = profile?.subscription_tier ?? 'free'
+  const usage = await getCoachUsage(supabase, user.id, tier)
 
   return (
-    <div className="p-6 border rounded-xl bg-card space-y-3">
-      <div className="flex items-center gap-2 text-emerald-500 font-semibold">
-        <UserCheck className="h-5 w-5" />
-        <span>Authentification Supabase validée</span>
+    <div className="space-y-6">
+      {subscription === 'success' && (
+        <Banner icon={CheckCircle2} tone="good">
+          Paiement confirmé. Votre offre sera active dans quelques secondes.
+        </Banner>
+      )}
+      {subscription === 'cancelled' && <Banner icon={AlertTriangle}>Paiement annulé : aucun montant n’a été débité.</Banner>}
+
+      <KpiTiles series={series} />
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2 rounded-xl border bg-card p-4 md:p-6">
+          {activities && activities.length > 0 ? (
+            <LoadChart data={series.slice(-CHART_DAYS)} />
+          ) : (
+            <EmptyState />
+          )}
+        </div>
+
+        <div className="space-y-6">
+          <div className="rounded-xl border bg-card p-4 space-y-2">
+            <div className="flex items-center gap-2 font-semibold">
+              <Sparkles className="size-4 text-emerald-500" aria-hidden /> Coach IA
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Offre {getPlan(tier).name} :{' '}
+              {usage.limit === null
+                ? `${usage.used} analyse(s) ce mois-ci, illimité`
+                : `${usage.used} / ${usage.limit} analyses ce mois-ci`}
+            </p>
+            {usage.remaining === 0 && (
+              <Link href="/pricing" className="text-sm font-medium underline underline-offset-4">
+                Passer à l’offre supérieure
+              </Link>
+            )}
+          </div>
+
+          <div className="rounded-xl border bg-card p-4">
+            <h2 className="font-semibold mb-3">Dernières séances</h2>
+            <ActivityList activities={activities ?? []} />
+          </div>
+        </div>
       </div>
-      {fullName && <p className="text-lg font-semibold">{fullName}</p>}
-      <p className="text-sm font-mono text-muted-foreground break-all">ID utilisateur : {user.id}</p>
-      <p className="text-sm font-mono text-muted-foreground break-all">Email : {user.email}</p>
     </div>
   )
 }
 
-function UserCardSkeleton() {
-  return <div className="h-32 border rounded-xl bg-card animate-pulse" aria-hidden />
+function Banner({ icon: Icon, tone, children }: { icon: typeof CheckCircle2; tone?: 'good'; children: React.ReactNode }) {
+  return (
+    <div role="status" className="flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm">
+      <Icon className="size-4 shrink-0" style={{ color: tone === 'good' ? 'var(--status-good)' : 'var(--muted-foreground)' }} aria-hidden />
+      {children}
+    </div>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div className="flex h-full min-h-60 flex-col items-center justify-center gap-3 text-center">
+      <p className="font-semibold">Aucune séance pour l’instant</p>
+      <p className="max-w-sm text-sm text-muted-foreground">
+        Ajoutez vos séances : la forme (CTL), la fatigue (ATL) et la fraîcheur (TSB) se calculent automatiquement.
+      </p>
+      <Button asChild size="sm">
+        <Link href="/dashboard/activities/new">
+          <Plus className="h-4 w-4" /> Ajouter ma première séance
+        </Link>
+      </Button>
+    </div>
+  )
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="space-y-6" aria-hidden>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="h-28 rounded-xl border bg-card animate-pulse" />
+        ))}
+      </div>
+      <div className="h-96 rounded-xl border bg-card animate-pulse" />
+    </div>
+  )
 }
