@@ -17,3 +17,7 @@ input[type="date"], input[type="datetime-local"], input[type="time"] {
   text-align: left;
 }
 input::-webkit-date-and-time-value { text-align: left; }
+
+/* Carte d'enregistrement : échelle et crédits au-dessus du bandeau de données */
+.live-map .maplibregl-ctrl-bottom-left,
+.live-map .maplibregl-ctrl-bottom-right { bottom: 132px; }

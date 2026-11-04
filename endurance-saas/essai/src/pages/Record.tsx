@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, Bluetooth, BluetoothOff, Flag, Heart, Loader2, MapPin, Pause, Play, Square, Trash2, Volume2, VolumeX } from 'lucide-react'
+import { AlertTriangle, BarChart3, Bluetooth, BluetoothOff, ChevronDown, Compass, Flag, Heart, Layers, Loader2, LocateFixed, Map as MapIcon, MapPin, Maximize2, Pause, Play, Settings, Square, Trash2, Volume2, VolumeX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { SportOptions } from '@/components/ui/sport-options'
@@ -14,7 +14,7 @@ import {
   parseHeartRate, pause, resume, saveSession, toTelemetry, type Lap, type LiveSession,
 } from '@/lib/live/recorder'
 import { cn } from '@/lib/utils'
-import { TrackMap } from '../components/TrackMap'
+import { TrackMap, type BaseLayer } from '../components/TrackMap'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -38,14 +38,55 @@ const partOfDay = (d: Date) => { const h = d.getHours(); return h < 11 ? 'du mat
 
 // Réglages mémorisés sur le téléphone
 const PREFS_KEY = 'endurance-live-prefs'
-type Prefs = { voice: boolean; lapKm: string; autoPause: Record<string, boolean> }
+type Prefs = { voice: boolean; lapKm: string; autoPause: Record<string, boolean>; layer: BaseLayer; heat: boolean; threeD: boolean; headingUp: boolean }
+const DEFAULT_PREFS: Prefs = { voice: true, lapKm: 'auto', autoPause: {}, layer: 'plan', heat: true, threeD: false, headingUp: false }
 const loadPrefs = (): Prefs => {
   try {
-    return { voice: true, lapKm: 'auto', autoPause: {}, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }
+    return { ...DEFAULT_PREFS, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') }
   } catch {
-    return { voice: true, lapKm: 'auto', autoPause: {} }
+    return DEFAULT_PREFS
   }
 }
+
+// --- Boussole (direction du téléphone) ---
+type OrientationEvt = DeviceOrientationEvent & { webkitCompassHeading?: number }
+type OrientationCtor = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<'granted' | 'denied'> }
+/** iPhone : l'accès à la boussole doit être demandé lors d'un geste (bouton). */
+async function requestCompass() {
+  try {
+    const ctor = (window as unknown as { DeviceOrientationEvent?: OrientationCtor }).DeviceOrientationEvent
+    if (ctor?.requestPermission) await ctor.requestPermission()
+  } catch {
+    // refus ou non pris en charge : la direction viendra du GPS en mouvement
+  }
+}
+function useCompass() {
+  const [heading, setHeading] = useState<number | null>(null)
+  useEffect(() => {
+    let last = 0
+    const onEvt = (e: Event) => {
+      const ev = e as OrientationEvt
+      const h = ev.webkitCompassHeading ?? (ev.absolute && ev.alpha != null ? 360 - ev.alpha : null)
+      const t = Date.now()
+      if (h == null || t - last < 250) return // 4 mises à jour / s suffisent
+      last = t
+      setHeading(Math.round(h))
+    }
+    window.addEventListener('deviceorientationabsolute', onEvt)
+    window.addEventListener('deviceorientation', onEvt)
+    return () => {
+      window.removeEventListener('deviceorientationabsolute', onEvt)
+      window.removeEventListener('deviceorientation', onEvt)
+    }
+  }, [])
+  return heading
+}
+
+const LAYERS: { key: BaseLayer; label: string; hint: string }[] = [
+  { key: 'plan', label: 'Plan', hint: 'OpenStreetMap' },
+  { key: 'satellite', label: 'Satellite', hint: 'Photos aériennes IGN (France)' },
+  { key: 'topo', label: 'Topo', hint: 'Carte IGN (sentiers, relief)' },
+]
 
 /** Annonce vocale (synthèse du téléphone, hors ligne). */
 function say(text: string) {
@@ -77,17 +118,26 @@ export function RecordPage() {
   const user = useUser()
   const navigate = useNavigate()
   const { data: profile } = useData(async () => (await supabase.from('profiles').select('ftp, hr_rest, lactate_threshold_hr').eq('id', user.id).single()).data, [user.id])
+  // « Mes passages » : tracés des 150 dernières séances (seule la colonne du tracé est lue)
+  const { data: heatRows } = useData(async () => {
+    const { data } = await supabase.from('activities').select('route:raw_telemetry->route').eq('user_id', user.id).not('raw_telemetry', 'is', null).order('start_time', { ascending: false }).limit(150)
+    return (data ?? []).map((r) => r.route).filter((r): r is [number, number][] => Array.isArray(r) && r.length > 1) as [number, number][][]
+  }, [user.id])
   const [session, setSession] = useState<LiveSession | null>(() => loadSession())
   const sessionRef = useRef<LiveSession | null>(session)
   const [prefs, setPrefs] = useState<Prefs>(loadPrefs)
   const prefsRef = useRef(prefs)
   const [sport, setSport] = useState<SportKey>((session?.sport as SportKey) ?? 'run')
   const [now, setNow] = useState(() => Date.now())
-  const [gps, setGps] = useState<{ accuracy: number; at: number; lat: number; lng: number } | { error: string } | null>(null)
+  const [gps, setGps] = useState<{ accuracy: number; at: number; lat: number; lng: number; heading: number | null; speed: number | null } | { error: string } | null>(null)
   const [gap, setGap] = useState<number | null>(null)
   const [hr, setHr] = useState<number | null>(null)
   const [hrDevice, setHrDevice] = useState<string | null>(null)
   const [finishing, setFinishing] = useState(false)
+  const [follow, setFollow] = useState(true)
+  const [panel, setPanel] = useState<'none' | 'settings' | 'layers'>('none')
+  const [dataView, setDataView] = useState(false)
+  const compass = useCompass()
   const hrRef = useRef<number | null>(null)
   const hrOnlyRef = useRef(false)
   const deviceRef = useRef<BtDevice | null>(null)
@@ -118,7 +168,7 @@ export function RecordPage() {
     hrOnlyRef.current = !useGps
   }, [useGps])
 
-  // Chronomètre (affichage)
+  // Chronomètre (affichage) + pause auto sans nouvelle position
   const active = !!session
   useEffect(() => {
     if (!active) return
@@ -126,8 +176,6 @@ export function RecordPage() {
     const id = setInterval(() => {
       const t = Date.now()
       setNow(t)
-      // Pause auto sans nouvelle position (téléphone immobile) — seulement si l'appli tournait en continu,
-      // pour ne pas confondre avec un écran verrouillé
       const s = sessionRef.current
       if (s && document.visibilityState === 'visible' && t - last < 3000) {
         const r = tick(s, t)
@@ -148,7 +196,7 @@ export function RecordPage() {
     const id = navigator.geolocation.watchPosition(
       (p) => {
         const at = p.timestamp || Date.now()
-        setGps({ accuracy: Math.round(p.coords.accuracy), at, lat: p.coords.latitude, lng: p.coords.longitude })
+        setGps({ accuracy: Math.round(p.coords.accuracy), at, lat: p.coords.latitude, lng: p.coords.longitude, heading: p.coords.heading, speed: p.coords.speed })
         const s = sessionRef.current
         if (!s) return
         const r = addFix(s, { lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy, altitude: p.coords.altitude, at }, hrRef.current)
@@ -164,7 +212,7 @@ export function RecordPage() {
           if (prefsRef.current.voice) say('Reprise')
         }
       },
-      (e) => setGps({ error: e.code === 1 ? 'Accès à la position refusé : autorisez-le dans les réglages du téléphone (Safari → Position).' : 'Recherche du signal GPS…' }),
+      (e) => setGps({ error: e.code === 1 ? 'Position refusée : Réglages → Confidentialité → Service de localisation → Safari → « Lorsque l’app est active ».' : 'Recherche du signal GPS…' }),
       { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 },
     )
     return () => navigator.geolocation.clearWatch(id)
@@ -221,6 +269,9 @@ export function RecordPage() {
     const lapEvery = prefs.lapKm === 'auto' ? undefined : prefs.lapKm === 'off' ? 0 : Number(prefs.lapKm) * 1000
     apply(newSession(sport, Date.now(), { lapEvery, autoPause: autoPauseOn }))
     setNow(Date.now())
+    setFollow(true)
+    setPanel('none')
+    requestCompass()
     // La synthèse vocale d'iOS doit être déclenchée par un geste : première annonce au départ
     if (prefs.voice) say('C’est parti !')
   }
@@ -242,8 +293,8 @@ export function RecordPage() {
       : 'error' in gps
         ? gps.error
         : gps.accuracy <= GOOD_ACCURACY_M
-          ? `GPS prêt (± ${gps.accuracy} m)`
-          : `Signal GPS en cours d’affinage (± ${gps.accuracy} m)…`
+          ? `GPS prêt · ± ${gps.accuracy} m`
+          : `Signal GPS faible · ± ${gps.accuracy} m`
 
   // Tracé (≤ 2000 points affichés) et position pour la carte
   const points = session?.points
@@ -252,148 +303,276 @@ export function RecordPage() {
     const k = Math.max(1, Math.ceil(r.length / 2000))
     return k === 1 ? r : r.filter((_, i) => i % k === 0 || i === r.length - 1)
   }, [points])
-  const position = gps && 'lat' in gps ? { lat: gps.lat, lng: gps.lng, accuracy: gps.accuracy } : null
+  // Direction : GPS en mouvement (fiable), sinon boussole du téléphone
+  const gpsHeading = gps && 'lat' in gps && gps.heading != null && Number.isFinite(gps.heading) && (gps.speed ?? 0) > 1 ? gps.heading : null
+  const heading = gpsHeading ?? compass
+  const position = useMemo(
+    () => (gps && 'lat' in gps ? { lat: gps.lat, lng: gps.lng, accuracy: gps.accuracy, heading } : null),
+    [gps, heading],
+  )
 
-  if (!session) {
+  if (finishing && session && profile) {
     return (
-      <div className="max-w-md mx-auto space-y-5">
-        <h1 className="text-2xl font-bold">Enregistrer une séance</h1>
-        {useGps && <TrackMap route={[]} position={position} live className="h-64" />}
-        <SelectField id="sport" label="Sport" value={sport} onChange={(e) => setSport(e.target.value as SportKey)}>
-          <SportOptions />
-        </SelectField>
-        {useGps && (
-          <p className={cn('flex items-center gap-2 rounded-lg border p-3 text-sm', gpsReady ? 'border-emerald-500/40 text-emerald-400' : 'text-muted-foreground')} aria-live="polite">
-            <MapPin className="size-4 shrink-0" /> {gpsLine}
-          </p>
-        )}
-        <div className="grid grid-cols-2 gap-3">
-          <SelectField id="lap" label="Tour automatique" value={prefs.lapKm} onChange={(e) => savePrefs({ ...prefs, lapKm: e.target.value })}>
-            <option value="auto">{sportFamily(sport) === 'ride' ? '5 km' : sportFamily(sport) === 'swim' ? '100 m' : '1 km'} (conseillé)</option>
-            <option value="0.4">400 m</option>
-            <option value="1">1 km</option>
-            <option value="2">2 km</option>
-            <option value="5">5 km</option>
-            <option value="10">10 km</option>
-            <option value="off">Aucun</option>
-          </SelectField>
-          <div className="space-y-1.5">
-            <p className="text-sm font-medium">Options</p>
-            <label className="flex items-center gap-2 text-sm h-10">
-              <input type="checkbox" className="size-4 accent-primary" checked={autoPauseOn} onChange={(e) => savePrefs({ ...prefs, autoPause: { ...prefs.autoPause, [sport]: e.target.checked } })} />
-              Pause auto
-            </label>
-          </div>
+      <FullScreen>
+        <div className="flex-1 overflow-y-auto px-4 py-6 bg-background">
+          <FinishForm
+            session={session}
+            profile={profile}
+            userId={user.id}
+            onBack={() => setFinishing(false)}
+            onDiscard={() => { apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
+            onSaved={(id) => { apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}`) }}
+          />
         </div>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" className="size-4 accent-primary" checked={prefs.voice} onChange={(e) => savePrefs({ ...prefs, voice: e.target.checked })} />
-          Annonces vocales à chaque tour (temps, allure, cardio)
-        </label>
-        <HrButton device={hrDevice} hr={hr} onConnect={connectHr} />
-        <Button size="lg" className="w-full h-16 text-lg rounded-full bg-orange-500 text-white hover:bg-orange-500/90" onClick={start}>
-          <Play className="size-6 fill-current" /> {useGps && !gpsReady ? 'Démarrer quand même' : 'Démarrer'}
-        </Button>
-        <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-5">
-          {useGps ? (
-            <>
-              <li>Pour un tracé précis, attendez « GPS prêt » à découvert (pas sous un toit) avant de démarrer.</li>
-              <li>L’écran reste allumé pendant l’enregistrement : <strong className="text-foreground">ne le verrouillez pas et restez dans l’application</strong>, sinon le téléphone coupe le GPS (limite des applications web, surtout sur iPhone).</li>
-            </>
-          ) : (
-            <li>Sport en salle : chronomètre (et fréquence cardiaque si une ceinture est connectée), sans GPS.</li>
-          )}
-          <li>Si l’application se ferme, la séance reprend où elle en était à la réouverture.</li>
-        </ul>
-      </div>
+      </FullScreen>
     )
   }
 
-  const seconds = movingSeconds(session, Math.max(now, session.lastFix?.at ?? 0))
-  const speed = currentSpeed(session)
-  const avgSpeed = seconds > 0 ? session.distance / seconds : null
-  const isRun = sportFamily(session.sport) === 'run'
-  const cur = currentLap(session, Math.max(now, session.lastFix?.at ?? 0))
-
-  if (finishing && profile) {
-    return (
-      <FinishForm
-        session={session}
-        profile={profile}
-        userId={user.id}
-        onBack={() => setFinishing(false)}
-        onDiscard={() => { apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
-        onSaved={(id) => { apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}`) }}
-      />
-    )
-  }
+  const t = session ? movingSeconds(session, Math.max(now, session.lastFix?.at ?? 0)) : 0
+  const speed = session ? currentSpeed(session) : null
+  const avgSpeed = session && t > 0 ? session.distance / t : null
+  const isRun = sportFamily(session?.sport ?? sport) === 'run'
+  const cur = session ? currentLap(session, Math.max(now, session.lastFix?.at ?? 0)) : null
+  const showMap = useGps && !dataView
+  const roundBtn = 'flex size-12 items-center justify-center rounded-full bg-neutral-900/90 text-white shadow-lg backdrop-blur active:scale-95'
 
   return (
-    <div className="max-w-md mx-auto space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="font-semibold">{sportInfo(session.sport).label}</p>
-        <p className={cn('text-xs rounded-full px-2 py-1', running ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400')}>
-          {running ? '● Enregistrement' : session.status === 'autopaused' ? 'Pause auto' : 'En pause'}
-        </p>
+    <FullScreen>
+      {/* ---------- Zone carte (ou données en grand) ---------- */}
+      <div className="relative flex-1 min-h-0">
+        {showMap ? (
+          <TrackMap
+            route={route}
+            position={position}
+            live
+            follow={follow}
+            onUserPan={() => setFollow(false)}
+            layer={prefs.layer}
+            heat={prefs.heat ? heatRows ?? undefined : undefined}
+            threeD={prefs.threeD}
+            headingUp={prefs.headingUp}
+            className="absolute inset-0 rounded-none border-0"
+          />
+        ) : session ? (
+          <DataView session={session} seconds={t} speed={speed} avgSpeed={avgSpeed} isRun={isRun} useGps={useGps} hr={hrDevice ? hr : null} cur={cur} />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center bg-background p-6 text-center text-muted-foreground">
+            {sportInfo(sport).label} : sport sans GPS, chronomètre{nav.bluetooth ? ' et fréquence cardiaque' : ''}.
+          </div>
+        )}
+
+        {/* Haut gauche : quitter (avant départ) ou basculer carte / données */}
+        <div className="absolute left-3 top-3 flex flex-col gap-3">
+          {!session ? (
+            <button className={roundBtn} onClick={() => navigate('/dashboard')} aria-label="Fermer">
+              <ChevronDown className="size-6" />
+            </button>
+          ) : useGps ? (
+            <button className={roundBtn} onClick={() => setDataView((v) => !v)} aria-label={dataView ? 'Afficher la carte' : 'Afficher les données'}>
+              {dataView ? <MapIcon className="size-5" /> : <BarChart3 className="size-5" />}
+            </button>
+          ) : null}
+        </div>
+
+        {/* Haut : état GPS */}
+        {useGps && (
+          <p className={cn('absolute left-1/2 top-4 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-lg', gpsReady ? 'bg-emerald-600 text-white' : 'bg-neutral-900/90 text-white')} aria-live="polite">
+            <MapPin className="size-3.5" /> {session?.status === 'autopaused' ? 'Pause auto' : session?.status === 'paused' ? 'En pause' : gpsLine}
+          </p>
+        )}
+
+        {/* Haut droite : réglages + orientation */}
+        <div className="absolute right-3 top-3 flex flex-col gap-3">
+          <button className={roundBtn} onClick={() => setPanel(panel === 'settings' ? 'none' : 'settings')} aria-label="Réglages">
+            <Settings className="size-5" />
+          </button>
+          {showMap && (
+            <button
+              className={cn(roundBtn, prefs.headingUp && 'bg-white text-neutral-900')}
+              onClick={() => { requestCompass(); savePrefs({ ...prefs, headingUp: !prefs.headingUp }); setFollow(true) }}
+              aria-label={prefs.headingUp ? 'Carte orientée nord' : 'Carte orientée dans ma direction'}
+            >
+              <Compass className="size-5" style={{ transform: `rotate(${prefs.headingUp && heading != null ? -heading : 0}deg)` }} />
+            </button>
+          )}
+        </div>
+
+        {/* Bas droite : fonds, 3D, recentrer */}
+        {showMap && (
+          <div className="absolute right-3 bottom-40 flex flex-col gap-3">
+            <button className={roundBtn} onClick={() => setPanel(panel === 'layers' ? 'none' : 'layers')} aria-label="Fonds de carte">
+              <Layers className="size-5" />
+            </button>
+            <button className={cn(roundBtn, 'text-sm font-bold', prefs.threeD && 'bg-white text-neutral-900')} onClick={() => savePrefs({ ...prefs, threeD: !prefs.threeD })} aria-label="Vue 3D">
+              3D
+            </button>
+            <button className={cn(roundBtn, follow && 'text-sky-400')} onClick={() => { setFollow(true); requestCompass() }} aria-label="Recentrer sur ma position">
+              <LocateFixed className="size-5" />
+            </button>
+          </div>
+        )}
+
+        {gap && (
+          <div role="alert" className="absolute inset-x-3 top-20 flex items-start gap-2 rounded-xl bg-amber-500 p-3 text-sm text-neutral-950 shadow-lg">
+            <AlertTriangle className="size-4 shrink-0" />
+            <span className="flex-1">GPS interrompu {spokenDuration(gap)} (écran verrouillé ou appli quittée) : tronçon compté en ligne droite.</span>
+            <button onClick={() => setGap(null)} aria-label="Fermer l’alerte"><X className="size-4" /></button>
+          </div>
+        )}
+
+        {/* Bandeau de données compact (sur la carte) */}
+        {showMap && session && (
+          <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-neutral-950/95 p-3 text-white shadow-xl">
+            <div className="flex items-center justify-between text-xs text-neutral-400">
+              <span>{sportInfo(session.sport).label}{hrDevice && hr ? ` · ♥ ${hr} bpm` : ''}</span>
+              <button onClick={() => setDataView(true)} aria-label="Agrandir les données"><Maximize2 className="size-4" /></button>
+            </div>
+            <div className="mt-1 grid grid-cols-3 items-end text-center">
+              <Mini value={clock(t)} label="Temps" />
+              <Mini value={isRun ? pace(speed) : kmh(speed)} label={isRun ? 'Allure (/km)' : 'Vitesse (km/h)'} big />
+              <Mini value={km(session.distance)} label="Distance (km)" />
+            </div>
+          </div>
+        )}
+
+        {/* Panneaux : réglages / fonds de carte */}
+        {panel !== 'none' && (
+          <div className="absolute inset-x-3 top-16 z-10 max-h-[70%] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-semibold">{panel === 'layers' ? 'Carte' : 'Réglages'}</h2>
+              <button onClick={() => setPanel('none')} aria-label="Fermer"><X className="size-5" /></button>
+            </div>
+            {panel === 'layers' ? (
+              <>
+                <div className="grid grid-cols-3 gap-2">
+                  {LAYERS.map((l) => (
+                    <button key={l.key} onClick={() => savePrefs({ ...prefs, layer: l.key })} className={cn('rounded-xl border p-3 text-left', prefs.layer === l.key && 'border-orange-500 bg-orange-500/10')}>
+                      <span className="block text-sm font-semibold">{l.label}</span>
+                      <span className="block text-[11px] leading-tight text-muted-foreground">{l.hint}</span>
+                    </button>
+                  ))}
+                </div>
+                <label className="flex items-start gap-2 text-sm">
+                  <input type="checkbox" className="mt-0.5 size-4 accent-primary" checked={prefs.heat} onChange={(e) => savePrefs({ ...prefs, heat: e.target.checked })} />
+                  <span>
+                    Mes passages <span className="block text-xs text-muted-foreground">Vos anciens parcours en violet ({heatRows?.length ?? 0} séance{(heatRows?.length ?? 0) > 1 ? 's' : ''} avec tracé)</span>
+                  </span>
+                </label>
+              </>
+            ) : (
+              <>
+                {!session && (
+                  <SelectField id="lap" label="Tour automatique" value={prefs.lapKm} onChange={(e) => savePrefs({ ...prefs, lapKm: e.target.value })}>
+                    <option value="auto">{sportFamily(sport) === 'ride' ? '5 km' : sportFamily(sport) === 'swim' ? '100 m' : '1 km'} (conseillé)</option>
+                    <option value="0.4">400 m</option>
+                    <option value="1">1 km</option>
+                    <option value="2">2 km</option>
+                    <option value="5">5 km</option>
+                    <option value="10">10 km</option>
+                    <option value="off">Aucun</option>
+                  </SelectField>
+                )}
+                {!session && (
+                  <label className="flex items-center gap-2 text-sm">
+                    <input type="checkbox" className="size-4 accent-primary" checked={autoPauseOn} onChange={(e) => savePrefs({ ...prefs, autoPause: { ...prefs.autoPause, [sport]: e.target.checked } })} />
+                    Pause automatique ({sportInfo(sport).short})
+                  </label>
+                )}
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" className="size-4 accent-primary" checked={prefs.voice} onChange={(e) => savePrefs({ ...prefs, voice: e.target.checked })} />
+                  {prefs.voice ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />} Annonces vocales à chaque tour
+                </label>
+                <HrButton device={hrDevice} hr={hr} onConnect={connectHr} />
+                <p className="text-xs text-muted-foreground">
+                  L’écran reste allumé pendant l’enregistrement. Ne le verrouillez pas et restez dans l’application : sur iPhone, une application web ne reçoit plus le GPS écran éteint.
+                </p>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {gap && (
-        <p role="alert" className="flex items-start gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-          <AlertTriangle className="size-4 shrink-0 text-amber-400" />
-          <span>
-            GPS interrompu pendant {spokenDuration(gap)} (écran verrouillé ou application quittée). Le tronçon manquant est compté en ligne droite.{' '}
-            <button className="underline" onClick={() => setGap(null)}>OK</button>
-          </span>
-        </p>
-      )}
+      {/* ---------- Bas : commandes ---------- */}
+      <div className="shrink-0 rounded-t-2xl bg-neutral-950 px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)] text-white">
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-neutral-700" aria-hidden />
+        {!session ? (
+          <div className="space-y-3">
+            <select
+              aria-label="Sport"
+              value={sport}
+              onChange={(e) => setSport(e.target.value as SportKey)}
+              className="h-11 w-full rounded-xl border border-neutral-800 bg-neutral-900 px-3 text-base text-white"
+            >
+              <SportOptions />
+            </select>
+            <button onClick={start} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold active:scale-[.98]">
+              <Play className="size-6 fill-current" /> {useGps && !gpsReady ? 'Démarrer (GPS en recherche)' : 'Démarrer'}
+            </button>
+          </div>
+        ) : session.status === 'paused' ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={() => apply(resume(session))} className="flex h-14 items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold">
+              <Play className="size-6 fill-current" /> Reprendre
+            </button>
+            <button onClick={() => setFinishing(true)} className="flex h-14 items-center justify-center gap-2 rounded-full bg-white text-lg font-semibold text-neutral-950">
+              <Square className="size-5 fill-current" /> Terminer
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <button onClick={lap} disabled={session.status !== 'running'} className="flex size-14 shrink-0 items-center justify-center rounded-full bg-neutral-800 disabled:opacity-40" aria-label="Tour">
+              <Flag className="size-5" />
+            </button>
+            <button onClick={() => apply(pause(session))} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[#fc5200] text-lg font-semibold active:scale-[.98]">
+              <Pause className="size-6 fill-current" /> Pause
+            </button>
+          </div>
+        )}
+      </div>
+    </FullScreen>
+  )
+}
 
-      {useGps && <TrackMap route={route} position={position} live className="h-[42vh] min-h-64 -mx-4 rounded-none border-x-0 sm:mx-0 sm:rounded-xl sm:border-x" />}
+/** Plein écran au-dessus de l'en-tête de l'application (comme une appli native). */
+function FullScreen({ children }: { children: React.ReactNode }) {
+  return <div className="fixed inset-0 z-50 flex flex-col bg-black pt-[env(safe-area-inset-top)]">{children}</div>
+}
 
+function Mini({ value, label, big }: { value: string; label: string; big?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <p className={cn('font-bold tabular-nums leading-none truncate', big ? 'text-4xl' : 'text-2xl')}>{value}</p>
+      <p className="mt-1 text-[11px] text-neutral-400 truncate">{label}</p>
+    </div>
+  )
+}
+
+/** Vue « données » plein écran (comme l'écran de données d'une montre). */
+function DataView({ session, seconds, speed, avgSpeed, isRun, useGps, hr, cur }: {
+  session: LiveSession
+  seconds: number
+  speed: number | null
+  avgSpeed: number | null
+  isRun: boolean
+  useGps: boolean
+  hr: number | null
+  cur: { n: number; time: number; dist: number } | null
+}) {
+  return (
+    <div className="absolute inset-0 overflow-y-auto bg-background px-4 pt-20 pb-6 space-y-4">
       <div className="text-center">
-        <p className="text-6xl font-bold tabular-nums tracking-tight">{clock(seconds)}</p>
+        <p className="text-7xl font-bold tabular-nums tracking-tight">{clock(seconds)}</p>
         <p className="text-sm text-muted-foreground">Temps en mouvement</p>
       </div>
-
       <dl className="grid grid-cols-2 gap-3">
         {useGps && <Stat label="Distance" value={km(session.distance)} unit="km" big />}
         {useGps && (isRun ? <Stat label="Allure actuelle" value={pace(speed)} unit="/km" big /> : <Stat label="Vitesse" value={kmh(speed)} unit="km/h" big />)}
         {useGps && (isRun ? <Stat label="Allure moyenne" value={pace(avgSpeed)} unit="/km" /> : <Stat label="Vitesse moy." value={kmh(avgSpeed)} unit="km/h" />)}
         {useGps && <Stat label="Dénivelé +" value={String(Math.round(session.elevationGain))} unit="m" />}
-        {hrDevice && <Stat label="Fréquence cardiaque" value={hr ? String(hr) : '–'} unit="bpm" accent />}
-        {session.lapEvery > 0 || session.laps.length ? (
-          <Stat label={`Tour ${cur.n}`} value={clock(cur.time)} unit={useGps ? `· ${km(cur.dist)} km` : ''} />
-        ) : null}
+        {hr != null && <Stat label="Fréquence cardiaque" value={String(hr)} unit="bpm" accent />}
+        {cur && (session.lapEvery > 0 || session.laps.length > 0) && <Stat label={`Tour ${cur.n}`} value={clock(cur.time)} unit={useGps ? `· ${km(cur.dist)} km` : ''} />}
       </dl>
-
-      {useGps && (
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground" aria-live="polite">
-          <MapPin className="size-3.5" /> {gpsLine.replace('GPS prêt', 'GPS OK')}
-        </p>
-      )}
-
-      <div className="grid grid-cols-3 gap-3">
-        {session.status === 'paused' ? (
-          <Button size="lg" className="h-16 rounded-full bg-orange-500 text-white hover:bg-orange-500/90" onClick={() => apply(resume(session))} aria-label="Reprendre">
-            <Play className="size-6 fill-current" />
-          </Button>
-        ) : (
-          <Button size="lg" variant="outline" className="h-16 rounded-full" onClick={() => apply(pause(session))} aria-label="Pause">
-            <Pause className="size-6" />
-          </Button>
-        )}
-        <Button size="lg" variant="outline" className="h-16 rounded-full" onClick={lap} disabled={session.status !== 'running'} aria-label="Tour">
-          <Flag className="size-5" /> Tour
-        </Button>
-        <Button size="lg" variant="destructive" className="h-16 rounded-full" onClick={() => { apply(pause(session)); setFinishing(true) }} aria-label="Terminer">
-          <Square className="size-5 fill-current" />
-        </Button>
-      </div>
-
-      <button className="flex items-center gap-1.5 text-xs text-muted-foreground" onClick={() => savePrefs({ ...prefs, voice: !prefs.voice })}>
-        {prefs.voice ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />} Annonces vocales {prefs.voice ? 'activées' : 'désactivées'}
-      </button>
-
       {session.laps.length > 0 && <LapTable laps={session.laps} sport={session.sport} />}
-      {!hrDevice && <HrButton device={hrDevice} hr={hr} onConnect={connectHr} />}
     </div>
   )
 }
@@ -419,7 +598,7 @@ function HrButton({ device, hr, onConnect }: { device: string | null; hr: number
   if (!nav.bluetooth)
     return (
       <p className="flex items-start gap-2 text-xs text-muted-foreground">
-        <BluetoothOff className="size-4 shrink-0" /> Ceinture cardio : connexion Bluetooth possible avec Chrome sur Android (Apple ne l’autorise pas aux applications web sur iPhone). Vous pourrez saisir la FC moyenne à la fin.
+        <BluetoothOff className="size-4 shrink-0" /> Ceinture cardio : possible avec Chrome sur Android (Apple ne l’autorise pas aux applications web sur iPhone). Vous pourrez saisir la FC moyenne à la fin.
       </p>
     )
   return (
