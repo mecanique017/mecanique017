@@ -4,6 +4,8 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { recalculateRecentTss, RECALC_DAYS } from '@/lib/training/recalc'
+import { clearDemoData, seedDemoData } from '@/lib/demo'
+import { refresh } from 'next/cache'
 import { fieldErrors, optionalNumber, optionalText, requiredNumber, type FormState } from '@/lib/form-utils'
 
 // Mêmes bornes que les contraintes CHECK de la migration SQL
@@ -80,4 +82,46 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
     }
   }
   return { ok: true, message: 'Profil enregistré. Les prochaines séances utiliseront ces valeurs.' }
+}
+
+/** Ajoute 12 semaines de données de démonstration (refusé si le compte a déjà des séances réelles). */
+export async function addDemoData(): Promise<FormState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+
+  const [{ count: real }, { count: demo }] = await Promise.all([
+    supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).neq('source', 'demo'),
+    supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('source', 'demo'),
+  ])
+  if ((demo ?? 0) > 0) return { message: 'Les données de démonstration sont déjà chargées.' }
+  if ((real ?? 0) > 0) return { message: 'Votre compte contient déjà de vraies séances : les données de démonstration fausseraient votre charge.' }
+
+  try {
+    const r = await seedDemoData(supabase, user.id)
+    refresh()
+    return { ok: true, message: `${r.activities} séances, ${r.wellness} relevés de bien-être et ${r.planned} séances prévues ajoutés.` }
+  } catch (e) {
+    console.error('Démo', e)
+    return { message: 'Ajout impossible. Réessayez.' }
+  }
+}
+
+/** Supprime les données de démonstration (les vraies données ne sont jamais touchées). */
+export async function removeDemoData(): Promise<FormState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
+  try {
+    await clearDemoData(supabase, user.id)
+    refresh()
+    return { ok: true, message: 'Données de démonstration supprimées.' }
+  } catch (e) {
+    console.error('Démo', e)
+    return { message: 'Suppression impossible. Réessayez.' }
+  }
 }

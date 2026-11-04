@@ -14,8 +14,8 @@ export type Json =
 export type SportDiscipline = 'running' | 'cycling' | 'triathlon'
 export type SportType = 'run' | 'ride' | 'swim'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
-export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar'
-export type PlannedSource = 'manual' | 'ai'
+export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar' | 'demo'
+export type PlannedSource = 'manual' | 'ai' | 'demo'
 export type AiUsageKind = 'coach_analysis' | 'training_plan'
 
 export type Database = {
@@ -42,6 +42,7 @@ export type Database = {
           notify_weekly: boolean
           notify_fatigue: boolean
           last_fatigue_alert_at: string | null
+          trial_ends_at: string | null
         }
         Insert: {
           id: string
@@ -63,6 +64,7 @@ export type Database = {
           notify_weekly?: boolean
           notify_fatigue?: boolean
           last_fatigue_alert_at?: string | null
+          trial_ends_at?: string | null
         }
         Update: Partial<Database['public']['Tables']['profiles']['Insert']>
         Relationships: []
@@ -79,6 +81,7 @@ export type Database = {
           atl: number
           ctl: number
           tsb: number
+          is_demo: boolean
           created_at: string
         }
         Insert: {
@@ -92,6 +95,7 @@ export type Database = {
           atl?: number
           ctl?: number
           tsb?: number
+          is_demo?: boolean
           created_at?: string
         }
         Update: Partial<Database['public']['Tables']['daily_metrics']['Insert']>
@@ -265,6 +269,7 @@ export type Database = {
     Views: { [_ in never]: never }
     Functions: {
       is_coach_of: { Args: { athlete: string }; Returns: boolean }
+      expire_premium_trials: { Args: Record<string, never>; Returns: number }
       coached_athletes: {
         Args: Record<string, never>
         Returns: {

@@ -17,6 +17,7 @@ const ALERT_COOLDOWN_MS = 3 * 86_400_000
 
 /**
  * GET /api/cron/daily (Vercel Cron, chaque matin) :
+ * 0. fin des essais Premium échus ;
  * 1. synchronisation Polar de tous les comptes connectés ;
  * 2. alertes fatigue pour les utilisateurs qui les ont activées.
  */
@@ -24,7 +25,12 @@ export async function GET(req: Request) {
   if (!isAuthorizedCron(req)) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
 
   const admin = createAdminClient()
-  const report = { polar: { synced: 0, failed: 0, imported: 0 }, fatigue: { checked: 0, sent: 0 } }
+  const report = { trialsExpired: 0, polar: { synced: 0, failed: 0, imported: 0 }, fatigue: { checked: 0, sent: 0 } }
+
+  // 0. Essais Premium arrivés à échéance → offre Gratuit
+  const { data: expired, error: trialError } = await admin.rpc('expire_premium_trials')
+  if (trialError) console.error('Cron essais', trialError)
+  else report.trialsExpired = expired ?? 0
 
   // 1. Polar (séquentiel : respecte les limites de débit ; une erreur n'arrête pas les autres comptes)
   if (polarConfigured()) {

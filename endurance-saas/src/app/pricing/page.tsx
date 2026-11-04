@@ -57,27 +57,46 @@ async function PricingContent() {
   ])
 
   let currentTier: SubscriptionTier | null = null
+  let trialEndsAt: string | null = null
   if (auth.user) {
-    const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', auth.user.id).single()
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier, subscription_status, trial_ends_at')
+      .eq('id', auth.user.id)
+      .single()
     currentTier = profile?.subscription_tier ?? 'free'
+    if (profile?.subscription_status === 'trialing') trialEndsAt = profile.trial_ends_at
   }
 
-  return <PlanGrid currentTier={currentTier} prices={{ pro, premium }} />
+  return (
+    <div className="space-y-6">
+      {trialEndsAt && (
+        <p role="status" className="mx-auto max-w-xl rounded-lg border bg-card px-4 py-3 text-center text-sm">
+          Essai Premium en cours jusqu’au{' '}
+          <strong>{new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'Europe/Paris' }).format(new Date(trialEndsAt))}</strong>. Choisissez une offre pour continuer
+          ensuite.
+        </p>
+      )}
+      <PlanGrid currentTier={currentTier} prices={{ pro, premium }} trialing={Boolean(trialEndsAt)} />
+    </div>
+  )
 }
 
 function PlanGrid({
   currentTier,
   prices,
   pending,
+  trialing,
 }: {
   currentTier: SubscriptionTier | null
   prices: Partial<Record<SubscriptionTier, string | null>>
   pending?: boolean
+  trialing?: boolean
 }) {
   return (
     <div className="grid gap-6 md:grid-cols-3">
       {PLANS.map((plan) => (
-        <PlanCard key={plan.tier} plan={plan} price={plan.tier === 'free' ? '0 €' : prices[plan.tier]} currentTier={currentTier} pending={pending} />
+        <PlanCard key={plan.tier} plan={plan} price={plan.tier === 'free' ? '0 €' : prices[plan.tier]} currentTier={currentTier} pending={pending} trialing={trialing} />
       ))}
     </div>
   )
@@ -88,11 +107,13 @@ function PlanCard({
   price,
   currentTier,
   pending,
+  trialing,
 }: {
   plan: Plan
   price: string | null | undefined
   currentTier: SubscriptionTier | null
   pending?: boolean
+  trialing?: boolean
 }) {
   const highlighted = plan.tier === 'pro'
   return (
@@ -123,7 +144,7 @@ function PlanCard({
       {pending ? (
         <div className="h-9 rounded-md bg-muted animate-pulse" aria-hidden />
       ) : (
-        <PlanAction planTier={plan.tier} currentTier={currentTier} available={plan.tier === 'free' || Boolean(price)} />
+        <PlanAction planTier={plan.tier} currentTier={currentTier} available={plan.tier === 'free' || Boolean(price)} trialing={trialing} />
       )}
     </section>
   )

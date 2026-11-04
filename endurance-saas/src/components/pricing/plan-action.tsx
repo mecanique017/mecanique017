@@ -12,6 +12,8 @@ interface Props {
   /** null = visiteur non connecté */
   currentTier: SubscriptionTier | null
   available: boolean
+  /** true pendant un essai Premium : pas d'abonnement Stripe à gérer, on peut s'abonner */
+  trialing?: boolean
 }
 
 /**
@@ -21,7 +23,7 @@ interface Props {
  * - abonné payant → portail Stripe (changement d'offre / résiliation)
  * - gratuit → paiement Stripe Checkout
  */
-export function PlanAction({ planTier, currentTier, available }: Props) {
+export function PlanAction({ planTier, currentTier, available, trialing = false }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -32,7 +34,7 @@ export function PlanAction({ planTier, currentTier, available }: Props) {
       </Button>
     )
   }
-  if (planTier === currentTier) {
+  if (planTier === currentTier && !trialing) {
     return (
       <Button className="w-full" variant="outline" disabled>
         Offre actuelle
@@ -40,7 +42,7 @@ export function PlanAction({ planTier, currentTier, available }: Props) {
     )
   }
 
-  const isPaidUser = currentTier !== 'free'
+  const isPaidUser = currentTier !== 'free' && !trialing
   if (planTier === 'free' && !isPaidUser) return null
 
   const go = async () => {

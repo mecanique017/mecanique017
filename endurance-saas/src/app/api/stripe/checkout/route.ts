@@ -28,13 +28,14 @@ export async function POST(req: Request) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('stripe_customer_id, subscription_tier')
+    .select('stripe_customer_id, subscription_tier, subscription_status')
     .eq('id', user.id)
     .single()
 
   // Déjà abonné : un 2e checkout créerait un 2e abonnement facturé.
   // Les changements d'offre passent par le portail client (/api/stripe/portal).
-  if (profile && profile.subscription_tier !== 'free') {
+  // (un essai Premium n'est pas un abonnement : il peut être converti en abonnement payant)
+  if (profile && profile.subscription_tier !== 'free' && profile.subscription_status !== 'trialing') {
     return NextResponse.json({ error: 'Abonnement déjà actif : utilisez « Gérer mon abonnement ».' }, { status: 409 })
   }
 

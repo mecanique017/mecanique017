@@ -58,7 +58,7 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
   const [{ subscription }, series, { data: profile }, { data: activities }, { data: todayPlanned }, wellness] = await Promise.all([
     searchParams,
     getTrainingLoad(supabase, user.id),
-    supabase.from('profiles').select('full_name, subscription_tier').eq('id', user.id).single(),
+    supabase.from('profiles').select('full_name, subscription_tier, subscription_status, trial_ends_at').eq('id', user.id).single(),
     supabase
       .from('activities')
       .select('id, title, sport_type, start_time, duration_seconds, distance_meters, tss')
@@ -72,6 +72,15 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
 
   return (
     <div className="space-y-6">
+      {profile?.subscription_status === 'trialing' && profile.trial_ends_at && (
+        <Banner icon={Sparkles} tone="good">
+          Essai Premium jusqu’au {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'Europe/Paris' }).format(new Date(profile.trial_ends_at))} : coach IA, plans et espace
+          coach sans limite.{' '}
+          <Link href="/pricing" className="underline underline-offset-4">
+            Voir les offres
+          </Link>
+        </Banner>
+      )}
       {subscription === 'success' && (
         <Banner icon={CheckCircle2} tone="good">
           Paiement confirmé. Votre offre sera active dans quelques secondes.
@@ -178,7 +187,8 @@ function Banner({ icon: Icon, tone, children }: { icon: typeof CheckCircle2; ton
   return (
     <div role="status" className="flex items-center gap-2 rounded-lg border bg-card px-4 py-3 text-sm">
       <Icon className="size-4 shrink-0" style={{ color: tone === 'good' ? 'var(--status-good)' : 'var(--muted-foreground)' }} aria-hidden />
-      {children}
+      {/* Un seul bloc de texte : le lien éventuel reste dans la phrase */}
+      <span>{children}</span>
     </div>
   )
 }

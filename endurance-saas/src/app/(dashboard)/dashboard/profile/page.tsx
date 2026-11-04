@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ProfileForm } from './profile-form'
+import { DemoData } from './demo-data'
 
 export const metadata: Metadata = { title: 'Profil — Endurance SaaS' }
 
@@ -40,5 +41,12 @@ async function ProfileLoader() {
     .single()
   if (!profile) return <p className="text-sm text-muted-foreground">Profil introuvable.</p>
 
-  return <ProfileForm profile={profile} />
+  const { count: demo } = await supabase.from('activities').select('id', { count: 'exact', head: true }).eq('user_id', user.id).eq('source', 'demo')
+
+  return (
+    <div className="space-y-6">
+      <ProfileForm profile={profile} />
+      <DemoData hasDemo={(demo ?? 0) > 0} />
+    </div>
+  )
 }

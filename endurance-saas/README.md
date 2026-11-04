@@ -102,6 +102,9 @@ Exécuter les migrations **dans l'ordre** dans le SQL Editor Supabase (ou `supab
 2. `supabase/migrations/20261104010000_phase6.sql` (journal `ai_usage`, puissance normalisée, origine des séances)
 3. `supabase/migrations/20261104020000_phase7.sql` (connexion Polar, préférences de notification)
 4. `supabase/migrations/20261104030000_phase8.sql` (espace coach, formats .gpx / .tcx)
+5. `supabase/migrations/20261104040000_trial_demo.sql` (essai Premium, données de démonstration)
+
+**Mise en ligne pas à pas et installation sur téléphone : voir [`DEPLOIEMENT.md`](./DEPLOIEMENT.md).**
 
 Tables : `profiles`, `daily_metrics`, `activities`, `planned_workouts`, `coach_insights`, toutes avec la RLS activée (chaque utilisateur ne voit et ne modifie que ses lignes). Un profil est créé automatiquement à l'inscription.
 
@@ -189,6 +192,10 @@ Exports Strava, Garmin, Suunto, Komoot… Lecture côté serveur, convertie dans
 - **Sport** : celui du fichier ; à défaut, déduit de la vitesse moyenne (plus de 16 km/h → vélo).
 - **Gros fichiers** : ils sont compressés en gzip par le navigateur avant l'envoi, et le serveur limite la décompression à 50 Mo.
 - **Archives** : les `.gpx`, `.tcx` et leurs `.gz` sont aussi lus dans les `.zip`.
+
+## Essai Premium et démonstration
+- **Essai Premium** : `SELECT public.grant_premium_trial('email', 30);` dans le SQL Editor. Le statut passe à `trialing` avec une date de fin. Le compte peut ensuite s'abonner (le checkout reste ouvert pendant l'essai). La tâche de nuit repasse les essais échus à l'offre Gratuit. La fonction est **interdite aux utilisateurs** (réservée au service role et au SQL Editor) et n'écrase jamais un abonnement payant.
+- **Données de démonstration** (Profil) : 12 semaines réalistes, marquées `source = 'demo'` et `is_demo`. Elles sont refusées si le compte contient déjà de vraies séances, et supprimables sans toucher aux vraies données.
 
 ## Offres et quotas (`lib/plans.ts`)
 | Offre | Analyses de séance du coach IA / mois |
