@@ -9,6 +9,7 @@ import { linkPlannedWorkout } from '@/lib/training/planned'
 import type { SportType } from '@/types/database'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
+import { SportOptions } from '@/components/ui/sport-options'
 
 const nowLocal = () => {
   const d = new Date()
@@ -28,7 +29,7 @@ export function NewActivityPage() {
 
   const seconds = (Number(f.hours) || 0) * 3600 + (Number(f.minutes) || 0) * 60
   const tss = profile
-    ? calculateTSS({ durationSeconds: seconds, avgWatts: n(f.watts), ftp: profile.ftp, avgHr: n(f.hr), hrRest: profile.hr_rest, lactateThresholdHr: profile.lactate_threshold_hr })
+    ? calculateTSS({ durationSeconds: seconds, avgWatts: n(f.watts), ftp: profile.ftp, avgHr: n(f.hr), hrRest: profile.hr_rest, lactateThresholdHr: profile.lactate_threshold_hr, rpe: n(f.rpe) })
     : { tss: 0, intensityFactor: 0, method: 'none' as const }
 
   const submit = async (e: React.FormEvent) => {
@@ -75,9 +76,7 @@ export function NewActivityPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <Field id="title" label="Titre" placeholder="Sortie longue, fractionné…" value={f.title} onChange={set('title')} required className="sm:col-span-2" />
           <SelectField id="sport" label="Sport" value={f.sport} onChange={set('sport')}>
-            <option value="run">Course à pied</option>
-            <option value="ride">Vélo</option>
-            <option value="swim">Natation</option>
+            <SportOptions />
           </SelectField>
           <Field id="start" label="Date et heure" type="datetime-local" value={f.start} onChange={set('start')} required />
         </div>
@@ -105,7 +104,7 @@ export function NewActivityPage() {
           <div>
             <p className="text-sm text-muted-foreground">TSS estimé</p>
             <p className="text-xs text-muted-foreground">
-              {tss.method === 'power' ? 'Calculé sur la puissance' : tss.method === 'heart_rate' ? 'Calculé sur la FC' : 'Renseignez la FC moyenne ou la puissance'}
+              {tss.method === 'power' ? 'Calculé sur la puissance' : tss.method === 'heart_rate' ? 'Calculé sur la FC' : tss.method === 'rpe' ? 'Estimé d’après l’effort ressenti' : 'Renseignez la FC moyenne, la puissance ou l’effort ressenti'}
             </p>
           </div>
           <p className="text-3xl font-bold tabular-nums">{tss.tss}</p>

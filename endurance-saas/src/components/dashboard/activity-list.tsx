@@ -1,12 +1,12 @@
 import Link from 'next/link'
-import { Bike, Footprints, Waves } from 'lucide-react'
+import { SPORT_BY_KEY } from '@/lib/sports'
 import type { SportType } from '@/types/database'
 
-export const SPORT_LABELS: Record<SportType, { label: string; icon: typeof Bike }> = {
-  run: { label: 'Course', icon: Footprints },
-  ride: { label: 'Vélo', icon: Bike },
-  swim: { label: 'Natation', icon: Waves },
-}
+/** Libellé court + icône par sport (alias historique du catalogue src/lib/sports.ts). */
+export const SPORT_LABELS = Object.fromEntries(Object.values(SPORT_BY_KEY).map((s) => [s.key, { label: s.short, icon: s.icon }])) as Record<
+  keyof typeof SPORT_BY_KEY,
+  { label: string; icon: (typeof SPORT_BY_KEY)['run']['icon'] }
+>
 
 export function formatDuration(seconds: number) {
   // Arrondi à la minute AVANT découpage (sinon 3598 s donnerait « 0 h 60 »)

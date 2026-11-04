@@ -5,10 +5,11 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { fieldErrors, optionalNumber, optionalText, type FormState } from '@/lib/form-utils'
+import { SPORT_KEYS } from '@/lib/sports'
 
 const PlannedSchema = z.object({
   scheduled_date: z.iso.date({ message: 'Date obligatoire' }),
-  sport_type: z.enum(['run', 'ride', 'swim'], { message: 'Sport invalide' }),
+  sport_type: z.enum(SPORT_KEYS, { message: 'Sport invalide' }),
   title: z.string().trim().min(1, 'Titre obligatoire').max(120),
   description: optionalText(2000),
   target_minutes: optionalNumber(z.number().int().min(1, 'Durée invalide').max(1440, 'Durée invalide')),

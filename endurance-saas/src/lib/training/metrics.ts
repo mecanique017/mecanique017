@@ -12,12 +12,14 @@ export interface ActivityInput {
   hrRest?: number | null
   /** FC au seuil lactique (LTHR) : référence de l'hrTSS */
   lactateThresholdHr?: number | null
+  /** Effort ressenti 1-10 : dernier recours quand il n'y a ni puissance ni FC */
+  rpe?: number | null
 }
 
 export interface TssResult {
   tss: number
   intensityFactor: number
-  method: 'power' | 'heart_rate' | 'none'
+  method: 'power' | 'heart_rate' | 'rpe' | 'none'
 }
 
 const round = (value: number, decimals: number) => Number(value.toFixed(decimals))
@@ -54,8 +56,16 @@ export function calculateTSS(input: ActivityInput): TssResult {
     }
   }
 
+  // Effort ressenti (échelle 1-10) → facteur d'intensité estimé : 8/10 ≈ allure seuil ~1 h
+  if (input.rpe && input.rpe >= 1 && input.rpe <= 10) {
+    const intensityFactor = RPE_IF[Math.round(input.rpe) - 1]
+    return { tss: Math.round(hours * intensityFactor ** 2 * 100), intensityFactor, method: 'rpe' }
+  }
+
   return { tss: 0, intensityFactor: 0, method: 'none' }
 }
+
+const RPE_IF = [0.5, 0.55, 0.62, 0.7, 0.76, 0.82, 0.88, 0.94, 1.0, 1.06]
 
 export interface TrainingLoad {
   ctl: number

@@ -7,6 +7,7 @@ import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { FormAlert } from '@/components/auth/form-alert'
 import { calculateTSS } from '@/lib/training/metrics'
 import { createActivity } from '../actions'
+import { SportOptions } from '@/components/ui/sport-options'
 
 interface Props {
   profile: { ftp: number; hr_rest: number; lactate_threshold_hr: number }
@@ -26,6 +27,7 @@ export function ActivityForm({ profile }: Props) {
   const [minutes, setMinutes] = useState('0')
   const [avgHr, setAvgHr] = useState('')
   const [avgWatts, setAvgWatts] = useState('')
+  const [rpe, setRpe] = useState('')
 
   // L'heure par défaut dépend du fuseau du navigateur : calculée après hydratation
   // (setState dans un effet voulu : la valeur n'existe que côté navigateur)
@@ -43,6 +45,7 @@ export function ActivityForm({ profile }: Props) {
     avgHr: Number(avgHr) || null,
     hrRest: profile.hr_rest,
     lactateThresholdHr: profile.lactate_threshold_hr,
+    rpe: Number(rpe) || null,
   })
 
   const e = state.errors ?? {}
@@ -54,9 +57,7 @@ export function ActivityForm({ profile }: Props) {
       <div className="grid gap-4 sm:grid-cols-2">
         <Field id="title" label="Titre" placeholder="Sortie longue, fractionné…" required error={e.title} className="sm:col-span-2" />
         <SelectField id="sport_type" label="Sport" defaultValue="run" error={e.sport_type}>
-          <option value="run">Course à pied</option>
-          <option value="ride">Vélo</option>
-          <option value="swim">Natation</option>
+          <SportOptions />
         </SelectField>
         <Field
           id="local_start"
@@ -87,7 +88,7 @@ export function ActivityForm({ profile }: Props) {
           <Field id="avg_hr" label="FC moyenne (bpm)" type="number" inputMode="numeric" min={25} max={250} value={avgHr} onChange={(ev) => setAvgHr(ev.target.value)} error={e.avg_hr} />
           <Field id="max_hr" label="FC max (bpm)" type="number" inputMode="numeric" min={25} max={250} error={e.max_hr} />
           <Field id="avg_watts" label="Puissance moy. (W)" type="number" inputMode="numeric" min={0} value={avgWatts} onChange={(ev) => setAvgWatts(ev.target.value)} error={e.avg_watts} hint="Vélo avec capteur" />
-          <SelectField id="rpe_score" label="Effort ressenti (RPE)" defaultValue="" error={e.rpe_score}>
+          <SelectField id="rpe_score" label="Effort ressenti (RPE)" value={rpe} onChange={(ev) => setRpe(ev.target.value)} error={e.rpe_score}>
             <option value="">—</option>
             {Array.from({ length: 10 }, (_, i) => (
               <option key={i + 1} value={i + 1}>
@@ -107,7 +108,8 @@ export function ActivityForm({ profile }: Props) {
           <p className="text-xs text-muted-foreground">
             {preview.method === 'power' && `Calculé sur la puissance (FTP ${profile.ftp} W)`}
             {preview.method === 'heart_rate' && `Calculé sur la FC (seuil ${profile.lactate_threshold_hr} bpm)`}
-            {preview.method === 'none' && 'Renseignez la FC moyenne ou la puissance'}
+            {preview.method === 'rpe' && 'Estimé d’après l’effort ressenti'}
+            {preview.method === 'none' && 'Renseignez la FC moyenne, la puissance ou l’effort ressenti'}
           </p>
         </div>
         <p className="text-3xl font-bold tabular-nums">{preview.tss}</p>

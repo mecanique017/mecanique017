@@ -4,6 +4,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 import type { SportType } from '@/types/database'
+import { sportFamily } from '@/lib/sports'
 
 /**
  * Profil d'une séance importée : un graphique par mesure (FC, puissance, allure/vitesse),
@@ -29,12 +30,13 @@ interface Metric {
 
 export function SessionProfileChart({ points, sport }: { points: TelemetryPoint[]; sport: SportType }) {
   // Allure pour la course (min/km, axe inversé : plus haut = plus rapide), vitesse sinon
+  const pace = sportFamily(sport) === 'run'
   const data = points.map((p) => ({
     t: p.t,
     hr: p.hr ?? null,
     w: p.w ?? null,
-    pace: sport === 'run' && p.v && p.v > 0.5 ? 1000 / p.v : null,
-    kmh: sport !== 'run' && p.v != null ? p.v * 3.6 : null,
+    pace: pace && p.v && p.v > 0.5 ? 1000 / p.v : null,
+    kmh: !pace && p.v != null ? p.v * 3.6 : null,
   }))
 
   const allMetrics: Metric[] = [

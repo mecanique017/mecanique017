@@ -5,12 +5,13 @@ import { parseFitActivity, type ParsedFitActivity } from './parse-fit'
 import { parseTrackActivity } from './parse-track'
 import { calculateTSS } from '@/lib/training/metrics'
 import { linkPlannedWorkout } from '@/lib/training/planned'
+import { sportInfo } from '@/lib/sports'
 
 export type ImportResult =
   | { status: 'created'; id: string; linkedPlannedWorkout: string | null }
   | { status: 'duplicate'; id: string }
 
-const TITLES = { run: 'Course', ride: 'Sortie vélo', swim: 'Natation' } as const
+
 
 export type ActivityFileFormat = 'fit' | 'gpx' | 'tcx'
 
@@ -69,7 +70,7 @@ export async function importActivityFile(
     .from('activities')
     .insert({
       user_id: userId,
-      title: `${TITLES[parsed.sportType]} (${options.source === 'polar' ? 'Polar' : 'import'})`,
+      title: `${sportInfo(parsed.sportType).short} (${options.source === 'polar' ? 'Polar' : 'import'})`,
       sport_type: parsed.sportType,
       start_time: parsed.startTime,
       duration_seconds: parsed.durationSeconds,

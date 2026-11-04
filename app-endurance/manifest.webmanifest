@@ -15,6 +15,7 @@
     { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
+    { "name": "Enregistrer une séance", "short_name": "Enregistrer", "url": "./#/dashboard/record", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
     { "name": "Bien-être du matin", "short_name": "Bien-être", "url": "./#/dashboard/wellness", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
     { "name": "Nouvelle séance", "short_name": "Séance", "url": "./#/dashboard/activities/new", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
     { "name": "Calendrier", "url": "./#/dashboard/calendar", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }

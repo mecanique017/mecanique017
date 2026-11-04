@@ -7,6 +7,7 @@ import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { FormAlert } from '@/components/auth/form-alert'
 import type { FormState } from '@/lib/form-utils'
 import { createPlannedWorkout } from './actions'
+import { SportOptions } from '@/components/ui/sport-options'
 
 interface Props {
   defaultDate: string
@@ -43,9 +44,7 @@ export function PlannedForm({ defaultDate, action = createPlannedWorkout, athlet
       <div className="grid grid-cols-2 gap-4">
         <Field id="scheduled_date" label="Date" type="date" defaultValue={defaultDate} required error={e.scheduled_date} />
         <SelectField id="sport_type" label="Sport" defaultValue="run" error={e.sport_type}>
-          <option value="run">Course à pied</option>
-          <option value="ride">Vélo</option>
-          <option value="swim">Natation</option>
+          <SportOptions />
         </SelectField>
       </div>
       <Field id="title" label="Séance" placeholder="Ex. 5 × 1000 m à allure 10 km" required error={e.title} />
