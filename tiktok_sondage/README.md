@@ -2,7 +2,7 @@
 
 Vidéo verticale 1080×1920 d'environ 1 min 30. Le commentaire animé alterne avec 2 courts extraits LCI (sondage Ifop-Fiducial des 27-29 octobre 2026).
 
-**Voix off gratuite et hors ligne :** Piper, voix « Gilles » (fr), générée par `generer_voix_piper.py`. Pour la remplacer par ta propre voix, enregistre le texte de `script_voix_off_sondage.txt` en laissant environ 1 seconde de silence entre chaque phrase, puis relance :
+**Voix off gratuite et hors ligne :** Kokoro (voix française « ff_siwis »), générée par `generer_voix_kokoro.py`. La première version utilisait Piper (`generer_voix_piper.py`), dont la voix « Gilles » était trop peu compréhensible. Pour la remplacer par ta propre voix, enregistre le texte de `script_voix_off_sondage.txt` en laissant environ 1 seconde de silence entre chaque phrase, puis relance :
 
 ```bash
 python3 montage_sondage.py --voice-file ma_voix.m4a
