@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Endurance SaaS — Performance & Coaching
 
-## Getting Started
+Plateforme de suivi et de planification pour athlètes d'endurance.
 
-First, run the development server:
+## Stack
+- **Next.js 16** (App Router, `src/`, TypeScript, Cache Components)
+- **Tailwind CSS v4** + **shadcn/ui** (style new-york, thème neutre, mode sombre)
+- **Supabase** (`@supabase/ssr`) — auth + base de données
+- Zod, Lucide, Recharts, clsx / tailwind-merge / CVA
 
+## Démarrage
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd endurance-saas
+npm install
+cp .env.example .env.local   # puis renseigner les clés
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+> Les variables `NEXT_PUBLIC_*` sont intégrées **au build** : les définir avant `npm run build` (et sur l'hébergeur).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Structure
+```
+src/
+├── app/
+│   ├── (auth)/          layout partagé + login/ + register/
+│   ├── (dashboard)/     dashboard/ (protégé) + actions.ts (déconnexion)
+│   ├── auth/callback/   échange du code (confirmation email / OAuth)
+│   └── layout.tsx, page.tsx, globals.css (tokens shadcn)
+├── components/
+│   ├── ui/              composants shadcn → npx shadcn@latest add <composant>
+│   └── auth/            FormField, FormAlert
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts    client navigateur
+│   │   ├── server.ts    client Server Components / Server Actions
+│   │   └── proxy.ts     rafraîchissement de session + protection des routes
+│   ├── auth-errors.ts   traduction FR des erreurs Supabase Auth
+│   └── utils.ts         cn()
+├── proxy.ts             proxy Next 16 (ex-middleware) → updateSession
+└── types/database.ts    types Supabase (à régénérer)
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Authentification
+- Inscription email + mot de passe, confirmation par email via `/auth/callback`
+- Connexion, déconnexion (Server Action), dashboard protégé
+- `src/proxy.ts` : `/dashboard*` sans session → `/login` ; `/login` ou `/register` connecté → `/dashboard`
+- Paramètre `next` du callback limité aux chemins internes (pas de redirection ouverte)
 
-## Learn More
+**Configuration Supabase** (Dashboard → Authentication → URL Configuration) :
+- *Site URL* : `http://localhost:3000` (puis l'URL de prod)
+- *Redirect URLs* : `http://localhost:3000/auth/callback` et `https://<domaine>/auth/callback`
 
-To learn more about Next.js, take a look at the following resources:
+Régénérer les types après création du schéma :
+```bash
+npx supabase gen types typescript --project-id <id> > src/types/database.ts
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Notes
+- Next.js 16 renomme `middleware.ts` en `proxy.ts`. Sans variables Supabase définies, le proxy laisse passer (dev local sans compte).
+- Avec Cache Components, toute lecture de session (`cookies()`) doit être placée derrière un `<Suspense>` (voir `dashboard/page.tsx`).
+- `ANTHROPIC_API_KEY` et `STRIPE_SECRET_KEY` : **serveur uniquement**, jamais préfixées `NEXT_PUBLIC_`.
