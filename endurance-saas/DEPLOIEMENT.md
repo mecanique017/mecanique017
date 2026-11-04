@@ -12,6 +12,7 @@ Objectif : l'application en ligne en HTTPS (indispensable pour l'installer sur u
    3. `20261104020000_phase7.sql`
    4. `20261104030000_phase8.sql`
    5. `20261104040000_trial_demo.sql`
+   6. `20261104050000_harden_function_privileges.sql`
 3. **Project Settings → API** : notez `Project URL`, la clé `anon public` et la clé `service_role`. **Gardez cette dernière secrète** : elle contourne toutes les règles d'accès.
 
 ## 2. Hébergement : Vercel

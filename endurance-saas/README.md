@@ -103,6 +103,7 @@ Exécuter les migrations **dans l'ordre** dans le SQL Editor Supabase (ou `supab
 3. `supabase/migrations/20261104020000_phase7.sql` (connexion Polar, préférences de notification)
 4. `supabase/migrations/20261104030000_phase8.sql` (espace coach, formats .gpx / .tcx)
 5. `supabase/migrations/20261104040000_trial_demo.sql` (essai Premium, données de démonstration)
+6. `supabase/migrations/20261104050000_harden_function_privileges.sql` (privilèges des fonctions)
 
 **Mise en ligne pas à pas et installation sur téléphone : voir [`DEPLOIEMENT.md`](./DEPLOIEMENT.md).**
 
