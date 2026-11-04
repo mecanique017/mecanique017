@@ -75,8 +75,10 @@ export interface LiveSession {
 }
 
 const STORAGE_KEY = 'endurance-live-session'
-export const GOOD_ACCURACY_M = 15 // signal de bonne qualité (affichage « GPS prêt »)
-const MAX_ACCURACY_M = 25 // au-delà, le point est rejeté
+export const GOOD_ACCURACY_M = 20 // signal de bonne qualité (affichage « GPS prêt »)
+// Au-delà, le point est rejeté. En deçà, le filtre de Kalman pondère chaque point par sa précision :
+// un point à ± 40 m (fréquent sur iPhone au démarrage ou en ville) pèse peu mais n'est pas perdu.
+const MAX_ACCURACY_M = 50
 const MAX_SPEED_MS = 45 // ~160 km/h : au-delà c'est un saut GPS
 const ALT_THRESHOLD_M = 5 // seuil d'hystérésis du dénivelé (sur altitude lissée)
 const HR_EVERY_S = 5

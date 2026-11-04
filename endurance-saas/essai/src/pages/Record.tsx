@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AlertTriangle, Bluetooth, BluetoothOff, Flag, Heart, Loader2, MapPin, Pause, Play, Square, Trash2, Volume2, VolumeX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { SportOptions } from '@/components/ui/sport-options'
 import { FormAlert } from '@/components/auth/form-alert'
-import { RouteMap } from '@/components/dashboard/route-map'
 import { LapTable } from '@/components/dashboard/lap-table'
 import { calculateTSS } from '@/lib/training/metrics'
 import { linkPlannedWorkout } from '@/lib/training/planned'
@@ -15,6 +14,7 @@ import {
   parseHeartRate, pause, resume, saveSession, toTelemetry, type Lap, type LiveSession,
 } from '@/lib/live/recorder'
 import { cn } from '@/lib/utils'
+import { TrackMap } from '../components/TrackMap'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -83,7 +83,7 @@ export function RecordPage() {
   const prefsRef = useRef(prefs)
   const [sport, setSport] = useState<SportKey>((session?.sport as SportKey) ?? 'run')
   const [now, setNow] = useState(() => Date.now())
-  const [gps, setGps] = useState<{ accuracy: number; at: number } | { error: string } | null>(null)
+  const [gps, setGps] = useState<{ accuracy: number; at: number; lat: number; lng: number } | { error: string } | null>(null)
   const [gap, setGap] = useState<number | null>(null)
   const [hr, setHr] = useState<number | null>(null)
   const [hrDevice, setHrDevice] = useState<string | null>(null)
@@ -148,7 +148,7 @@ export function RecordPage() {
     const id = navigator.geolocation.watchPosition(
       (p) => {
         const at = p.timestamp || Date.now()
-        setGps({ accuracy: Math.round(p.coords.accuracy), at })
+        setGps({ accuracy: Math.round(p.coords.accuracy), at, lat: p.coords.latitude, lng: p.coords.longitude })
         const s = sessionRef.current
         if (!s) return
         const r = addFix(s, { lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy, altitude: p.coords.altitude, at }, hrRef.current)
@@ -245,10 +245,20 @@ export function RecordPage() {
           ? `GPS prêt (± ${gps.accuracy} m)`
           : `Signal GPS en cours d’affinage (± ${gps.accuracy} m)…`
 
+  // Tracé (≤ 2000 points affichés) et position pour la carte
+  const points = session?.points
+  const route = useMemo(() => {
+    const r = (points ?? []).filter((p) => p.lat != null).map((p) => [p.lat!, p.lng!] as [number, number])
+    const k = Math.max(1, Math.ceil(r.length / 2000))
+    return k === 1 ? r : r.filter((_, i) => i % k === 0 || i === r.length - 1)
+  }, [points])
+  const position = gps && 'lat' in gps ? { lat: gps.lat, lng: gps.lng, accuracy: gps.accuracy } : null
+
   if (!session) {
     return (
       <div className="max-w-md mx-auto space-y-5">
         <h1 className="text-2xl font-bold">Enregistrer une séance</h1>
+        {useGps && <TrackMap route={[]} position={position} live className="h-64" />}
         <SelectField id="sport" label="Sport" value={sport} onChange={(e) => setSport(e.target.value as SportKey)}>
           <SportOptions />
         </SelectField>
@@ -303,9 +313,6 @@ export function RecordPage() {
   const avgSpeed = seconds > 0 ? session.distance / seconds : null
   const isRun = sportFamily(session.sport) === 'run'
   const cur = currentLap(session, Math.max(now, session.lastFix?.at ?? 0))
-  const route = session.points.filter((p) => p.lat != null).map((p) => [p.lat!, p.lng!] as [number, number])
-  const step = Math.max(1, Math.ceil(route.length / 300))
-  const shownRoute = route.filter((_, i) => i % step === 0 || i === route.length - 1)
 
   if (finishing && profile) {
     return (
@@ -338,6 +345,8 @@ export function RecordPage() {
           </span>
         </p>
       )}
+
+      {useGps && <TrackMap route={route} position={position} live className="h-[42vh] min-h-64 -mx-4 rounded-none border-x-0 sm:mx-0 sm:rounded-xl sm:border-x" />}
 
       <div className="text-center">
         <p className="text-6xl font-bold tabular-nums tracking-tight">{clock(seconds)}</p>
@@ -383,11 +392,6 @@ export function RecordPage() {
         {prefs.voice ? <Volume2 className="size-3.5" /> : <VolumeX className="size-3.5" />} Annonces vocales {prefs.voice ? 'activées' : 'désactivées'}
       </button>
 
-      {shownRoute.length >= 2 && (
-        <div className="rounded-xl border bg-card p-2">
-          <RouteMap route={shownRoute} />
-        </div>
-      )}
       {session.laps.length > 0 && <LapTable laps={session.laps} sport={session.sport} />}
       {!hrDevice && <HrButton device={hrDevice} hr={hr} onConnect={connectHr} />}
     </div>
