@@ -1,9 +1,12 @@
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Sparkles, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, Share2, Sparkles, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDuration, SPORT_LABELS } from '@/components/dashboard/activity-list'
 import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
 import { TrackMap } from '../components/TrackMap'
+import { ShareActivity } from '../components/ShareActivity'
+import { sportInfo } from '@/lib/sports'
 import { LapTable, type LapRow } from '@/components/dashboard/lap-table'
 import { sportFamily } from '@/lib/sports'
 
@@ -17,6 +20,9 @@ const dateTime = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'full', timeStyle
 export function ActivityPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  // Juste après l'enregistrement d'une séance (?partager=1), le partage s'ouvre directement
+  const [params] = useSearchParams()
+  const [sharing, setSharing] = useState(params.get('partager') === '1')
   const { data, error } = useData(async () => {
     const { data } = await supabase.from('activities').select('*').eq('id', id!).maybeSingle()
     return { activity: data } // enveloppe : distingue « en chargement » (null) de « introuvable »
@@ -63,10 +69,37 @@ export function ActivityPage() {
           <h1 className="text-2xl font-bold">{a.title}</h1>
           <p className="text-sm text-muted-foreground mt-1">{dateTime.format(new Date(a.start_time))}</p>
         </div>
-        <Button variant="ghost" size="sm" onClick={remove}>
-          <Trash2 className="h-4 w-4" /> Supprimer
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => setSharing(true)}>
+            <Share2 className="h-4 w-4" /> Partager
+          </Button>
+          <Button variant="ghost" size="sm" onClick={remove}>
+            <Trash2 className="h-4 w-4" /> Supprimer
+          </Button>
+        </div>
       </div>
+      {sharing && (
+        <ShareActivity
+          onClose={() => setSharing(false)}
+          data={{
+            title: a.title,
+            sport: sportInfo(a.sport_type).label,
+            date: new Intl.DateTimeFormat('fr-FR', { dateStyle: 'long', timeZone: 'Europe/Paris' }).format(new Date(a.start_time)),
+            route,
+            stats: [
+              ...(km > 0 ? [{ label: 'Distance', value: `${km.toLocaleString('fr-FR', { maximumFractionDigits: 2 })} km` }] : []),
+              { label: 'Durée', value: formatDuration(a.duration_seconds) },
+              ...(km > 0
+                ? [sportFamily(a.sport_type) === 'run'
+                    ? { label: 'Allure', value: `${paceOf(a.duration_seconds / km)} /km` }
+                    : { label: 'Vitesse', value: `${((km / a.duration_seconds) * 3600).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km/h` }]
+                : []),
+              ...(Number(a.elevation_gain_meters) > 0 ? [{ label: 'Dénivelé', value: `${Math.round(Number(a.elevation_gain_meters))} m` }] : []),
+              ...(a.avg_hr ? [{ label: 'FC moyenne', value: `${a.avg_hr} bpm` }] : []),
+            ],
+          }}
+        />
+      )}
       <dl className="grid grid-cols-2 sm:grid-cols-3 overflow-hidden rounded-xl border bg-card">
         {stats.map((s) => (
           <div key={s.label} className="-mb-px border-b p-4">

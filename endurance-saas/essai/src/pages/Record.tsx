@@ -326,7 +326,7 @@ export function RecordPage() {
             userId={user.id}
             onBack={() => setFinishing(false)}
             onDiscard={() => { apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
-            onSaved={(id) => { apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}`) }}
+            onSaved={(id) => { apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
           />
         </div>
       </FullScreen>
