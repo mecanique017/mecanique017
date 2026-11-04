@@ -3,7 +3,7 @@ import { ArrowLeft, Sparkles, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { formatDuration, SPORT_LABELS } from '@/components/dashboard/activity-list'
 import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
-import { RouteMap } from '@/components/dashboard/route-map'
+import { TrackMap } from '../components/TrackMap'
 import { LapTable, type LapRow } from '@/components/dashboard/lap-table'
 import { sportFamily } from '@/lib/sports'
 
@@ -78,7 +78,7 @@ export function ActivityPage() {
       {route.length > 1 && (
         <section className="rounded-xl border bg-card p-4 md:p-6 space-y-3">
           <h2 className="font-semibold">Parcours</h2>
-          <RouteMap route={route} />
+          <TrackMap route={route} className="h-80" />
         </section>
       )}
       {points.length > 1 && (
