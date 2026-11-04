@@ -39,7 +39,7 @@ export function ShareActivity({ data, onClose }: { data: ShareData; onClose: () 
     if (format === 'sticker') setFormat('story')
   }
 
-  const fileName = `endurance-${data.title.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${format}.png`
+  const fileName = `kronofit-${data.title.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${format}.png`
 
   const share = async () => {
     if (!canvas.current) return

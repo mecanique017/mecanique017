@@ -1,6 +1,6 @@
 {
-  "name": "Endurance — version d'essai",
-  "short_name": "Endurance",
+  "name": "KronoFit — version d'essai",
+  "short_name": "KronoFit",
   "description": "Suivi de charge, bien-être et calendrier pour athlètes d'endurance (version d'essai)",
   "lang": "fr",
   "start_url": "./#/dashboard",

@@ -47,7 +47,7 @@ function Protected() {
         <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <NavLink to="/dashboard" className="flex items-center gap-2 font-bold">
             <Activity className="size-5 text-red-600" aria-hidden />
-            Endurance
+            KronoFit
             <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">ESSAI</span>
           </NavLink>
           <nav className="hidden sm:flex -mx-2 gap-1 overflow-x-auto text-sm">
