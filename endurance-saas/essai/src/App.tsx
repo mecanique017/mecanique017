@@ -15,6 +15,7 @@ import { ProfilePage } from './pages/Profile'
 import { RecordPage } from './pages/Record'
 import { PerformancePage } from './pages/Performance'
 import { StatsPage } from './pages/Stats'
+import { LiveViewPage } from './pages/LiveView'
 
 const NAV = [
   { to: '/dashboard', label: 'Tableau de bord', end: true },
@@ -33,6 +34,7 @@ export function App() {
       <HashRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/suivi/:token" element={<LiveViewPage />} />
           <Route path="/dashboard/*" element={<Protected />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

@@ -156,6 +156,40 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['activities']['Insert']>
         Relationships: []
       }
+      live_shares: {
+        Row: {
+          token: string
+          user_id: string
+          display_name: string | null
+          sport: string
+          status: 'running' | 'paused' | 'ended'
+          started_at: string
+          updated_at: string
+          lat: number | null
+          lng: number | null
+          accuracy: number | null
+          distance_meters: number
+          moving_seconds: number
+          track: Json
+        }
+        Insert: {
+          token?: string
+          user_id: string
+          display_name?: string | null
+          sport: string
+          status?: 'running' | 'paused' | 'ended'
+          started_at?: string
+          updated_at?: string
+          lat?: number | null
+          lng?: number | null
+          accuracy?: number | null
+          distance_meters?: number
+          moving_seconds?: number
+          track?: Json
+        }
+        Update: Partial<Database['public']['Tables']['live_shares']['Insert']>
+        Relationships: []
+      }
       planned_workouts: {
         Row: {
           id: string
@@ -271,6 +305,7 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      get_live_share: { Args: { p_token: string }; Returns: Json }
       is_coach_of: { Args: { athlete: string }; Returns: boolean }
       expire_premium_trials: { Args: Record<string, never>; Returns: number }
       coached_athletes: {
