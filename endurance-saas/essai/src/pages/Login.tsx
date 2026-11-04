@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
-import { Activity, Loader2, Lock, Mail } from 'lucide-react'
+import { Loader2, Lock, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { FormField } from '@/components/auth/form-field'
 import { FormAlert } from '@/components/auth/form-alert'
@@ -27,9 +27,7 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center p-6">
       <div className="w-full max-w-sm space-y-6">
-        <div className="flex items-center justify-center gap-2 text-xl font-bold">
-          <Activity className="h-6 w-6 text-red-600" /> KronoFit
-        </div>
+        <img src={`${import.meta.env.BASE_URL}logo-kronofit.jpg`} alt="KronoFit" width={832} height={397} className="mx-auto w-full max-w-xs rounded-xl" />
         <div className="space-y-1 text-center">
           <h1 className="text-2xl font-bold">Se connecter</h1>
           <p className="text-sm text-muted-foreground">Version d’essai : utilisez le compte qui vous a été fourni.</p>

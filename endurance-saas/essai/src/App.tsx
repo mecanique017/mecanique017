@@ -1,5 +1,5 @@
 import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { Activity, CalendarDays, Circle, HeartPulse, LayoutDashboard, LogOut, User } from 'lucide-react'
+import { CalendarDays, Circle, HeartPulse, LayoutDashboard, LogOut, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { supabase } from './supabase'
@@ -46,7 +46,7 @@ function Protected() {
       <header className="border-b">
         <div className="max-w-6xl mx-auto flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <NavLink to="/dashboard" className="flex items-center gap-2 font-bold">
-            <Activity className="size-5 text-red-600" aria-hidden />
+            <img src={`${import.meta.env.BASE_URL}icons/mark-64.png`} alt="" width={28} height={28} className="size-7 rounded-md" />
             KronoFit
             <span className="rounded bg-accent px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">ESSAI</span>
           </NavLink>

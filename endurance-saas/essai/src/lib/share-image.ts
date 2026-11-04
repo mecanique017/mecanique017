@@ -77,7 +77,7 @@ function drawCover(ctx: CanvasRenderingContext2D, img: CanvasImageSource & { wid
   ctx.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh)
 }
 
-export function renderShareImage(canvas: HTMLCanvasElement, data: ShareData, format: ShareFormat, photo?: ImageBitmap | HTMLImageElement | null) {
+export function renderShareImage(canvas: HTMLCanvasElement, data: ShareData, format: ShareFormat, photo?: ImageBitmap | HTMLImageElement | null, mark?: HTMLImageElement | null) {
   const [W, H] = SIZES[format]
   canvas.width = W
   canvas.height = H
@@ -165,7 +165,21 @@ export function renderShareImage(canvas: HTMLCanvasElement, data: ShareData, for
   ctx.fillStyle = RED
   ctx.font = `900 40px ${FONT}`
   const brand = 'KRONOFIT'
-  ctx.fillText(brand, W - pad - ctx.measureText(brand).width, format === 'story' ? H - 80 : H - 70)
+  const bw = ctx.measureText(brand).width
+  const by = format === 'story' ? H - 80 : H - 70
+  ctx.fillText(brand, W - pad - bw, by)
+  // Emblème K du logo, devant le nom
+  if (mark?.complete && mark.naturalWidth) {
+    const s = 64
+    const x = W - pad - bw - s - 16
+    const y = by - s + 12
+    ctx.save()
+    ctx.beginPath()
+    ctx.roundRect(x, y, s, s, 14)
+    ctx.clip()
+    ctx.drawImage(mark, x, y, s, s)
+    ctx.restore()
+  }
   shadow(false)
 }
 
