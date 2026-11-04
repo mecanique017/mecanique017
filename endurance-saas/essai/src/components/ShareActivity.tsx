@@ -22,9 +22,17 @@ export function ShareActivity({ data, onClose }: { data: ShareData; onClose: () 
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
+  // Emblème KronoFit (même origine : l'image reste exportable)
+  const [mark, setMark] = useState<HTMLImageElement | null>(null)
   useEffect(() => {
-    if (canvas.current) renderShareImage(canvas.current, data, format, format === 'sticker' ? null : photo)
-  }, [data, format, photo])
+    const img = new Image()
+    img.onload = () => setMark(img)
+    img.src = `${import.meta.env.BASE_URL}icons/icon-192.png`
+  }, [])
+
+  useEffect(() => {
+    if (canvas.current) renderShareImage(canvas.current, data, format, format === 'sticker' ? null : photo, mark)
+  }, [data, format, photo, mark])
 
   const pickPhoto = async (file: File | undefined) => {
     if (!file) return
