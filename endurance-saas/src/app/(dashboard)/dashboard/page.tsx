@@ -2,9 +2,10 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { AlertTriangle, CheckCircle2, Plus, Sparkles } from 'lucide-react'
+import { AlertTriangle, CalendarDays, CheckCircle2, HeartPulse, Plus, Sparkles, Upload } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { getTrainingLoad } from '@/lib/training/load'
+import { getTrainingLoad, localDate } from '@/lib/training/load'
+import { getWellnessContext } from '@/lib/training/wellness'
 import { getCoachUsage } from '@/lib/coach-quota'
 import { getPlan } from '@/lib/plans'
 import { Button } from '@/components/ui/button'
@@ -24,11 +25,18 @@ export default function DashboardPage({ searchParams }: PageProps<'/dashboard'>)
           <h1 className="text-2xl md:text-3xl font-bold">Tableau de bord</h1>
           <p className="text-muted-foreground text-sm mt-1">Votre charge d’entraînement sur les 90 derniers jours.</p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/activities/new">
-            <Plus className="h-4 w-4" /> Nouvelle séance
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/activities/import">
+              <Upload className="h-4 w-4" /> Importer .fit
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/activities/new">
+              <Plus className="h-4 w-4" /> Nouvelle séance
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Tout ce qui lit la session (cookies) ou l'URL est rendu à la requête, derrière Suspense */}
@@ -46,7 +54,8 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const [{ subscription }, series, { data: profile }, { data: activities }] = await Promise.all([
+  const today = localDate(new Date())
+  const [{ subscription }, series, { data: profile }, { data: activities }, { data: todayPlanned }, wellness] = await Promise.all([
     searchParams,
     getTrainingLoad(supabase),
     supabase.from('profiles').select('full_name, subscription_tier').eq('id', user.id).single(),
@@ -55,6 +64,8 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
       .select('id, title, sport_type, start_time, duration_seconds, distance_meters, tss')
       .order('start_time', { ascending: false })
       .limit(8),
+    supabase.from('planned_workouts').select('id, title, is_completed').eq('scheduled_date', today),
+    getWellnessContext(supabase, today),
   ])
   const tier = profile?.subscription_tier ?? 'free'
   const usage = await getCoachUsage(supabase, user.id, tier)
@@ -80,6 +91,43 @@ async function DashboardContent({ searchParams }: { searchParams: PageProps<'/da
         </div>
 
         <div className="space-y-6">
+          <div className="rounded-xl border bg-card p-4 space-y-3">
+            <h2 className="font-semibold">Aujourd’hui</h2>
+            <div className="flex items-start gap-2 text-sm">
+              <CalendarDays className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              {todayPlanned && todayPlanned.length > 0 ? (
+                <ul className="space-y-0.5">
+                  {todayPlanned.map((p) => (
+                    <li key={p.id} className={p.is_completed ? 'line-through text-muted-foreground' : ''}>
+                      {p.title}
+                      {p.is_completed && <span className="sr-only"> (réalisée)</span>}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <Link href="/dashboard/calendar" className="text-muted-foreground hover:text-foreground">
+                  Rien au programme · planifier
+                </Link>
+              )}
+            </div>
+            <div className="flex items-start gap-2 text-sm">
+              <HeartPulse className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+              {wellness.today ? (
+                <p>
+                  VFC {wellness.today.hrv ?? '—'} ms
+                  {wellness.hrvBaseline && wellness.today.hrv && (
+                    <span className="text-muted-foreground"> (réf. {wellness.hrvBaseline})</span>
+                  )}
+                  {' · '}sommeil {wellness.today.sleep_score ?? '—'} · fatigue {wellness.today.perceived_fatigue ?? '—'}/10
+                </p>
+              ) : (
+                <Link href="/dashboard/wellness" className="font-medium underline underline-offset-4">
+                  Renseigner mon bien-être du matin
+                </Link>
+              )}
+            </div>
+          </div>
+
           <div className="rounded-xl border bg-card p-4 space-y-2">
             <div className="flex items-center gap-2 font-semibold">
               <Sparkles className="size-4 text-emerald-500" aria-hidden /> Coach IA

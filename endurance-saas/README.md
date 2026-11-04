@@ -25,10 +25,12 @@ src/
 │   ├── (auth)/          layout partagé + login/ + register/
 │   ├── (dashboard)/     layout (menu) + dashboard/ protégé :
 │   │                      page (indicateurs + courbes), activities/new (saisie),
-│   │                      activities/[id] (détail + coach IA), profile (paramètres)
+│   │                      activities/[id] (détail + courbes + coach IA), activities/import (.fit),
+│   │                      calendar (séances prévues), wellness (VFC, sommeil), profile
 │   ├── pricing/         page Tarifs (prix lus dans Stripe)
 │   ├── auth/callback/   échange du code (confirmation email / OAuth)
 │   ├── api/activities/[id]/analyze/  analyse IA d'une séance (POST)
+│   ├── api/activities/import/        import d'un fichier .fit (POST multipart)
 │   ├── api/stripe/checkout/          création d'une session de paiement (POST)
 │   ├── api/stripe/webhook/           synchronisation de l'abonnement (Stripe → Supabase)
 │   ├── api/stripe/portal/            portail client Stripe (changer d'offre, résilier)
@@ -47,6 +49,10 @@ src/
 │   │   └── admin.ts     client service role (serveur uniquement, contourne la RLS)
 │   ├── training/metrics.ts  TSS, CTL / ATL / TSB (fonctions pures)
 │   ├── training/load.ts     série de charge de l'utilisateur (depuis ses séances)
+│   ├── training/planned.ts  validation auto des séances prévues
+│   ├── training/wellness.ts relevés de bien-être, référence de VFC sur 7 jours
+│   ├── fit/parse-fit.ts     lecture des fichiers .fit (serveur uniquement)
+│   ├── dates.ts         opérations sur les jours (semaines, lundi…)
 │   ├── plans.ts         offres et quotas du coach IA (source unique)
 │   ├── coach-quota.ts   analyses consommées ce mois-ci
 │   ├── stripe-prices.ts prix affichés, lus dans Stripe (cache 1 h)
@@ -92,6 +98,14 @@ npx supabase gen types typescript --project-id <id> > src/types/database.ts
 - **Charge calculée à la volée** à partir des séances (365 jours d'historique). La table `daily_metrics` reste disponible pour la VFC, le sommeil et la fatigue ressentie.
 - **Saisie de séance** avec aperçu du TSS en direct ; le serveur le recalcule. Jours rattachés au fuseau `Europe/Paris` (`lib/training/load.ts`).
 - **Profil** : paramètres de calcul (FC repos, seuil, max, FTP, VMA), avec les mêmes règles que la base de données.
+
+## Phase 5 : import, calendrier, bien-être
+- **Import .fit** (`/dashboard/activities/import`) : glisser-déposer de plusieurs fichiers (Garmin, Wahoo, Coros, Polar, Suunto…). Le fichier est analysé côté serveur avec `fit-file-parser` (licence MIT), puis il est **supprimé** : seuls le résumé et une courbe allégée (720 points maximum, dans `raw_telemetry`) sont conservés. Le TSS vélo utilise la **puissance normalisée** (NP). Un doublon (même heure de départ) est refusé ; 4 Mo maximum par fichier.
+- **Profil de la séance** : FC, puissance, allure (course) ou vitesse, sur des graphiques séparés avec un curseur synchronisé.
+- **Calendrier** (`/dashboard/calendar`) : semaine du lundi au dimanche, séances prévues (durée, TSS visé, consignes), bilan prévu / réalisé. **Automatisation** : une séance saisie ou importée valide la séance prévue du même jour et du même sport.
+- **Bien-être** (`/dashboard/wellness`) : VFC, FC au repos, sommeil et fatigue ressentie, une ligne par jour dans `daily_metrics`. Courbe de VFC sur 30 jours avec sa moyenne sur 7 jours. **Le coach IA en tient compte** : VFC comparée à la référence des 7 jours précédents.
+
+> Les colonnes `atl`, `ctl` et `tsb` de `daily_metrics` ne sont pas utilisées : la charge est recalculée depuis les séances.
 
 ## Offres et quotas (`lib/plans.ts`)
 | Offre | Analyses du coach IA / mois |

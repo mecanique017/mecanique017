@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { formatDuration, SPORT_LABELS } from '@/components/dashboard/activity-list'
 import { deleteActivity } from '../actions'
 import { AnalyzeButton } from './analyze-button'
+import { SessionProfileChart } from '@/components/dashboard/session-profile-chart'
+import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 
 export const metadata: Metadata = { title: 'Séance — Endurance SaaS' }
 
@@ -51,6 +53,8 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
   const usage = await getCoachUsage(supabase, user.id, profile?.subscription_tier ?? 'free')
 
   const sport = SPORT_LABELS[activity.sport_type]
+  const telemetry = activity.raw_telemetry as { normalizedPower?: number | null; points?: TelemetryPoint[] } | null
+  const points = Array.isArray(telemetry?.points) ? telemetry.points : []
   const km = Number(activity.distance_meters) / 1000
   const stats = [
     { label: 'Durée', value: formatDuration(activity.duration_seconds) },
@@ -60,6 +64,7 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
     { label: 'FC moyenne', value: activity.avg_hr ? `${activity.avg_hr} bpm` : '—' },
     { label: 'FC max', value: activity.max_hr ? `${activity.max_hr} bpm` : '—' },
     { label: 'Puissance moy.', value: activity.avg_watts ? `${activity.avg_watts} W` : '—' },
+    ...(telemetry?.normalizedPower ? [{ label: 'Puissance normalisée', value: `${telemetry.normalizedPower} W` }] : []),
     { label: 'Dénivelé +', value: Number(activity.elevation_gain_meters) > 0 ? `${Math.round(Number(activity.elevation_gain_meters))} m` : '—' },
     { label: 'Effort ressenti', value: activity.rpe_score ? `${activity.rpe_score} / 10` : '—' },
   ]
@@ -80,14 +85,22 @@ async function ActivityDetail({ params }: { params: PageProps<'/dashboard/activi
         </form>
       </div>
 
-      <dl className="grid grid-cols-2 sm:grid-cols-3 gap-px overflow-hidden rounded-xl border bg-border">
-        {stats.map((s) => (
-          <div key={s.label} className="bg-card p-4">
+      {/* Seules les mesures disponibles sont affichées ; séparateurs horizontaux (pas de case vide) */}
+      <dl className="grid grid-cols-2 sm:grid-cols-3 overflow-hidden rounded-xl border bg-card">
+        {stats.filter((s) => s.value !== '—').map((s) => (
+          <div key={s.label} className="-mb-px border-b p-4">
             <dt className="text-sm text-muted-foreground">{s.label}</dt>
             <dd className="mt-1 text-xl font-semibold tabular-nums">{s.value}</dd>
           </div>
         ))}
       </dl>
+
+      {points.length > 1 && (
+        <section className="rounded-xl border bg-card p-4 md:p-6 space-y-4">
+          <h2 className="font-semibold">Profil de la séance</h2>
+          <SessionProfileChart points={points} sport={activity.sport_type} />
+        </section>
+      )}
 
       {activity.athlete_notes && (
         <div className="rounded-xl border bg-card p-4">

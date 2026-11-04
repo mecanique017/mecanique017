@@ -114,3 +114,26 @@ export function computeTrainingLoadSeries(
   }
   return series
 }
+
+/**
+ * Puissance normalisée (NP, Coggan) à partir d'échantillons à 1 Hz :
+ * moyenne glissante sur 30 s, puissance 4, moyenne, racine 4e.
+ * Plus juste que la puissance moyenne pour le TSS des séances irrégulières (intervalles).
+ * Retourne null si moins de 30 s de données.
+ */
+export function normalizedPower(watts1Hz: number[]): number | null {
+  const WINDOW = 30
+  if (watts1Hz.length < WINDOW) return null
+  let windowSum = 0
+  let sumFourth = 0
+  let count = 0
+  for (let i = 0; i < watts1Hz.length; i++) {
+    windowSum += watts1Hz[i]
+    if (i >= WINDOW) windowSum -= watts1Hz[i - WINDOW]
+    if (i >= WINDOW - 1) {
+      sumFourth += (windowSum / WINDOW) ** 4
+      count++
+    }
+  }
+  return Math.round((sumFourth / count) ** 0.25)
+}

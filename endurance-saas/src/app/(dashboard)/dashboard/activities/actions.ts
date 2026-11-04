@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { calculateTSS } from '@/lib/training/metrics'
+import { linkPlannedWorkout } from '@/lib/training/planned'
 import { fieldErrors, optionalNumber, optionalText, requiredNumber, type FormState } from '@/lib/form-utils'
 
 const ActivitySchema = z.object({
@@ -77,7 +78,7 @@ export async function createActivity(_prev: FormState, formData: FormData): Prom
       tss,
       intensity_factor: intensityFactor,
     })
-    .select('id')
+    .select('id, sport_type, start_time')
     .single()
 
   if (error || !activity) {
@@ -85,6 +86,8 @@ export async function createActivity(_prev: FormState, formData: FormData): Prom
     return { message: "Impossible d'enregistrer la séance. Réessayez." }
   }
 
+  // Valide automatiquement la séance prévue correspondante dans le calendrier
+  await linkPlannedWorkout(supabase, activity)
   redirect(`/dashboard/activities/${activity.id}`)
 }
 

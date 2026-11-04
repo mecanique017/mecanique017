@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { analyzeWorkoutWithClaude, CoachRefusalError } from '@/lib/ai/coach'
 import { getCoachUsage } from '@/lib/coach-quota'
 import { getTrainingLoad, localDate } from '@/lib/training/load'
+import { getWellnessContext } from '@/lib/training/wellness'
 
 /**
  * POST /api/activities/:id/analyze
@@ -47,7 +48,10 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
 
   // État de charge le jour de la séance, calculé à partir des séances (séance du jour incluse)
   const activityDay = localDate(activity.start_time)
-  const series = await getTrainingLoad(supabase, new Date(activity.start_time))
+  const [series, wellness] = await Promise.all([
+    getTrainingLoad(supabase, new Date(activity.start_time)),
+    getWellnessContext(supabase, activityDay),
+  ])
   const metrics = series.findLast((d) => d.date <= activityDay)
 
   try {
@@ -73,6 +77,15 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
         ctl: metrics?.ctl ?? 0,
         tsb: metrics?.tsb ?? 0,
       },
+      wellness: wellness.today
+        ? {
+            hrv: wellness.today.hrv,
+            hrvBaseline: wellness.hrvBaseline,
+            restingHr: wellness.today.resting_hr,
+            sleepScore: wellness.today.sleep_score,
+            perceivedFatigue: wellness.today.perceived_fatigue,
+          }
+        : null,
     })
 
     const { data: insight, error } = await supabase
