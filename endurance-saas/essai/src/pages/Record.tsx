@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AlertTriangle, BarChart3, Bluetooth, BluetoothOff, ChevronDown, Compass, Flag, Heart, Layers, Loader2, LocateFixed, Map as MapIcon, MapPin, Maximize2, Pause, Play, Settings, Square, Trash2, Volume2, VolumeX, X } from 'lucide-react'
+import { AlertTriangle, BarChart3, Bluetooth, BluetoothOff, ChevronDown, Compass, Flag, Heart, Layers, Loader2, LocateFixed, Map as MapIcon, MapPin, Maximize2, Pause, Play, Radio, Settings, Square, Trash2, Volume2, VolumeX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { SportOptions } from '@/components/ui/sport-options'
@@ -16,6 +16,7 @@ import {
 import { elevationFromProfile, fetchIgnElevations, refineDistance, resample, smoothedRoute, smoothedRouteTimes, smoothTrack, withIgnAltitude } from '@/lib/live/refine'
 import { cn } from '@/lib/utils'
 import { TrackMap, type BaseLayer } from '../components/TrackMap'
+import { endShare, loadShare, pushShare, saveShare, shareUrl, type ShareState } from '../liveShare'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -118,7 +119,7 @@ function lapAnnouncement(lap: Lap, s: LiveSession) {
 export function RecordPage() {
   const user = useUser()
   const navigate = useNavigate()
-  const { data: profile } = useData(async () => (await supabase.from('profiles').select('ftp, hr_rest, lactate_threshold_hr').eq('id', user.id).single()).data, [user.id])
+  const { data: profile } = useData(async () => (await supabase.from('profiles').select('ftp, hr_rest, lactate_threshold_hr, full_name').eq('id', user.id).single()).data, [user.id])
   // « Mes passages » : tracés des 150 dernières séances (seule la colonne du tracé est lue)
   const { data: heatRows } = useData(async () => {
     const { data } = await supabase.from('activities').select('route:raw_telemetry->route').eq('user_id', user.id).not('raw_telemetry', 'is', null).order('start_time', { ascending: false }).limit(150)
@@ -149,6 +150,12 @@ export function RecordPage() {
   const [follow, setFollow] = useState(true)
   const [panel, setPanel] = useState<'none' | 'settings' | 'layers'>('none')
   const [pickSport, setPickSport] = useState(false)
+  // Suivi en direct partagé (lien envoyé à un proche)
+  const [share, setShare] = useState<ShareState | null>(() => {
+    const sh = loadShare()
+    return sh && session && sh.sessionStartedAt === session.startedAt ? sh : null
+  })
+  const [shareMsg, setShareMsg] = useState<string | null>(null)
   // Séance restée ouverte (appli quittée sans « Terminer ») : on demande quoi en faire
   const [leftover, setLeftover] = useState(() => !!session && Date.now() - (session.lastFix?.at ?? session.startedAt) > 15 * 60_000)
   const [dataView, setDataView] = useState(false)
@@ -255,6 +262,30 @@ export function RecordPage() {
 
   useEffect(() => () => deviceRef.current?.gatt?.disconnect(), [])
 
+  // Envoi de la position aux proches toutes les 20 s (et tout de suite au démarrage du partage)
+  const gpsRef = useRef(gps)
+  useEffect(() => {
+    gpsRef.current = gps
+  }, [gps])
+  useEffect(() => {
+    if (!share || !active) return
+    const send = () => {
+      const s = sessionRef.current
+      const g = gpsRef.current
+      if (!s) return
+      pushShare(share, s, user.id, profile?.full_name ?? null, g && 'lat' in g ? { lat: g.lat, lng: g.lng, accuracy: g.accuracy } : null).then((ok) => {
+        if (ok && !share.created) {
+          const next = { ...share, created: true }
+          saveShare(next)
+          setShare(next)
+        }
+      })
+    }
+    send()
+    const id = setInterval(send, 20_000)
+    return () => clearInterval(id)
+  }, [share, active, user.id, profile?.full_name])
+
   const connectHr = async () => {
     try {
       const device = await nav.bluetooth!.requestDevice({ filters: [{ services: ['heart_rate'] }] })
@@ -298,6 +329,31 @@ export function RecordPage() {
     apply(r.session)
     navigator.vibrate?.(100)
     if (prefs.voice) say(lapAnnouncement(r.lap, r.session))
+  }
+
+  /** Lien créé sur le téléphone puis feuille de partage ouverte dans le même geste (exigence iPhone). */
+  const startShare = async () => {
+    const s = sessionRef.current
+    if (!s) return
+    const next: ShareState = share ?? { token: crypto.randomUUID(), sessionStartedAt: s.startedAt, created: false }
+    saveShare(next)
+    setShare(next)
+    const url = shareUrl(next.token)
+    const text = `Suis ma séance de ${sportInfo(s.sport).label.toLowerCase()} en direct sur KronoFit :`
+    try {
+      if (navigator.share) await navigator.share({ title: 'Ma séance en direct', text, url })
+      else {
+        await navigator.clipboard.writeText(`${text} ${url}`)
+        setShareMsg('Lien copié : collez-le dans un SMS ou WhatsApp.')
+      }
+    } catch (e) {
+      if ((e as Error)?.name !== 'AbortError') setShareMsg(`Lien de suivi : ${url}`)
+    }
+  }
+  const stopShare = async () => {
+    if (share) await endShare(share).catch(() => {})
+    saveShare(null)
+    setShare(null)
   }
 
   const gpsReady = gps && 'accuracy' in gps && gps.accuracy <= GOOD_ACCURACY_M
@@ -344,7 +400,7 @@ export function RecordPage() {
           <Button size="lg" variant="outline" className="h-14 rounded-full text-base" onClick={() => { apply(pause(session)); setLeftover(false) }}>
             <Play className="size-5" /> Reprendre cette séance
           </Button>
-          <Button size="lg" variant="ghost" className="h-14 rounded-full text-base text-destructive" onClick={() => { if (confirm('Supprimer cette séance sans l’enregistrer ?')) { apply(null); setLeftover(false) } }}>
+          <Button size="lg" variant="ghost" className="h-14 rounded-full text-base text-destructive" onClick={() => { if (confirm('Supprimer cette séance sans l’enregistrer ?')) { stopShare(); apply(null); setLeftover(false) } }}>
             <Trash2 className="size-5" /> Supprimer et en commencer une nouvelle
           </Button>
         </div>
@@ -361,8 +417,8 @@ export function RecordPage() {
             profile={profile}
             userId={user.id}
             onBack={() => setFinishing(false)}
-            onDiscard={() => { apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
-            onSaved={(id) => { apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
+            onDiscard={() => { stopShare(); apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
+            onSaved={(id) => { stopShare(); apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
           />
         </div>
       </FullScreen>
@@ -413,6 +469,11 @@ export function RecordPage() {
               {dataView ? <MapIcon className="size-5" /> : <BarChart3 className="size-5" />}
             </button>
           ) : null}
+          {session && useGps && (
+            <button className={cn(roundBtn, share && 'bg-primary text-white')} onClick={startShare} aria-label={share ? 'Suivi en direct partagé : renvoyer le lien' : 'Partager ma position en direct'}>
+              <Radio className="size-5" />
+            </button>
+          )}
         </div>
 
         {/* Haut : état GPS */}
@@ -453,6 +514,17 @@ export function RecordPage() {
           </div>
         )}
 
+        {share && session && (
+          <p className="absolute left-1/2 top-14 -translate-x-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-full bg-primary px-3 py-1 text-xs font-medium text-white shadow-lg">
+            <Radio className="size-3.5" /> Position partagée en direct
+          </p>
+        )}
+        {shareMsg && (
+          <div role="status" className="absolute inset-x-3 top-24 z-10 flex items-start gap-2 rounded-xl bg-neutral-900 p-3 text-sm text-white shadow-lg">
+            <span className="flex-1 break-all">{shareMsg}</span>
+            <button onClick={() => setShareMsg(null)} aria-label="Fermer"><X className="size-4" /></button>
+          </div>
+        )}
         {gap && (
           <div role="alert" className="absolute inset-x-3 top-20 flex items-start gap-2 rounded-xl bg-amber-500 p-3 text-sm text-neutral-950 shadow-lg">
             <AlertTriangle className="size-4 shrink-0" />
@@ -527,6 +599,16 @@ export function RecordPage() {
                   {prefs.voice ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />} Annonces vocales à chaque tour
                 </label>
                 <HrButton device={hrDevice} hr={hr} onConnect={connectHr} />
+                {session && useGps && (
+                  <div className="rounded-xl border p-3 space-y-2">
+                    <p className="text-sm font-semibold">Suivi en direct (sécurité)</p>
+                    <p className="text-xs text-muted-foreground">Un proche suit votre position sur une carte, sans compte. Le lien expire 24 h après la fin de la séance.</p>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={startShare}><Radio className="size-4" /> {share ? 'Renvoyer le lien' : 'Partager ma position'}</Button>
+                      {share && <Button size="sm" variant="outline" onClick={stopShare}>Arrêter le partage</Button>}
+                    </div>
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
                   L’écran reste allumé pendant l’enregistrement. Ne le verrouillez pas et restez dans l’application : sur iPhone, une application web ne reçoit plus le GPS écran éteint.
                 </p>
