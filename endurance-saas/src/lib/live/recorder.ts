@@ -13,6 +13,7 @@
  */
 import type { TelemetryPoint } from '@/lib/fit/parse-fit'
 import { sportFamily } from '@/lib/sports'
+import type { RawFix } from './refine'
 
 export interface LivePoint {
   t: number // secondes de temps en mouvement depuis le départ
@@ -63,6 +64,8 @@ export interface LiveSession {
   altSmooth: number | null
   altRef: number | null
   points: LivePoint[]
+  /** Points GPS bruts retenus (pour l'affinage de fin de séance) */
+  raw: RawFix[]
   laps: Lap[]
   lapEvery: number // m (0 = pas de tours automatiques)
   autoPause: boolean
@@ -110,6 +113,7 @@ export function newSession(sport: string, now = Date.now(), options: { lapEvery?
     altSmooth: null,
     altRef: null,
     points: [],
+    raw: [],
     laps: [],
     lapEvery: options.lapEvery ?? (sportFamily(sport) === 'ride' ? 5000 : sportFamily(sport) === 'swim' ? 100 : 1000),
     autoPause: options.autoPause ?? defaultAutoPause(sport),
@@ -272,6 +276,7 @@ export function addFix(
   if (altSmooth != null) point.alt = Math.round(altSmooth)
   if (hr) point.hr = hr
   const points = [...next.points, point]
+  const raw: RawFix[] = [...(next.raw ?? []), [t, round(fix.lat, 7), round(fix.lng, 7), Math.round(fix.accuracy * 10) / 10, fix.at]]
 
   // --- Tours automatiques ---
   let laps = next.laps
@@ -288,7 +293,7 @@ export function addFix(
     }
   }
 
-  return { session: { ...next, distance, maxSpeed, lastFix, elevationGain, elevationLoss, altSmooth, altRef, points, laps }, event }
+  return { session: { ...next, distance, maxSpeed, lastFix, elevationGain, elevationLoss, altSmooth, altRef, points, raw, laps }, event }
 }
 
 /** FC seule (sport sans GPS ou GPS indisponible) : un point toutes les 5 s. */
@@ -382,7 +387,7 @@ export function loadSession(): LiveSession | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     const s = raw ? (JSON.parse(raw) as LiveSession) : null
-    return s?.version === 2 ? s : null
+    return s?.version === 2 ? { ...s, raw: s.raw ?? [] } : null
   } catch {
     return null
   }
