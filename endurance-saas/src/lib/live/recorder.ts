@@ -192,6 +192,9 @@ const stopped = (k: Kalman): Kalman => ({ ...k, x: { ...k.x, v: 0 }, y: { ...k.y
 export function tick(s: LiveSession, now = Date.now()): FixResult {
   if (!s.autoPause || s.status !== 'running' || !s.kalman || !s.lastFix) return { session: s }
   if (now - s.kalman.at < 8000) return { session: s }
+  // Plus d'une minute sans position : c'est une coupure GPS (écran verrouillé, appli suspendue),
+  // pas un arrêt — le chrono continue et la coupure sera reconstituée à la fin
+  if (now - s.kalman.at > 60_000) return { session: s }
   const since = Math.max(s.kalman.at, s.resumedAt ?? 0)
   return { session: { ...s, ...stopClock(s, since), status: 'autopaused', still: null, kalman: stopped(s.kalman) }, event: { type: 'autopause' } }
 }
