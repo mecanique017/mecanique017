@@ -8,6 +8,38 @@ window.addEventListener('load', () => {
     }
 });
 
+// ========== SECURITE : ECHAPPEMENT HTML ==========
+// Tout texte venant de content.json ou d'un visiteur passe par ces fonctions
+// avant d'etre insere dans la page (protection contre l'injection de code / XSS).
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Icones : emoji ou entites HTML (&#127873;) autorisees, aucune balise.
+function safeIcon(value) {
+    return String(value == null ? '' : value).replace(/[<>"']/g, '');
+}
+
+// URL d'image : uniquement chemin relatif, https ou image encodee (data:image/...).
+function safeImageSrc(value) {
+    const src = String(value || '').trim();
+    if (/^(https:\/\/|data:image\/(png|jpe?g|webp|gif);base64,|images\/|\.\/|\/)/i.test(src)) {
+        return escapeHtml(src);
+    }
+    return '';
+}
+
+// Note sur 5, toujours un entier entre 0 et 5.
+function safeRating(value) {
+    const n = parseInt(value, 10);
+    return isNaN(n) ? 5 : Math.min(5, Math.max(0, n));
+}
+
 // Le contenu dynamique (content.json) se charge pour tous les visiteurs, des que
 // tout ce fichier a ete evalue. L'administration se fait directement sur admin.html.
 document.addEventListener('DOMContentLoaded', () => loadDynamicContent());
@@ -48,7 +80,7 @@ async function loadDynamicContent() {
         if (main) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;';
-            overlay.innerHTML = '<img src="images/LOGO.jpg" alt="MECANIQUE 17" style="width:80px;border-radius:12px;margin-bottom:20px;"><h1 style="color:#e8a800;font-family:Montserrat,sans-serif;margin-bottom:12px;">Site en maintenance</h1><p style="color:rgba(255,255,255,0.7);max-width:400px;">Nous effectuons des am\u00e9liorations. Le site sera de retour tr\u00e8s bient\u00f4t.</p><p style="color:rgba(255,255,255,0.5);margin-top:20px;">T\u00e9l : <a href="tel:+33651550001" style="color:#e8a800;">06 51 55 00 01</a></p>';
+            overlay.innerHTML = '<img src="images/logo-240.jpg" alt="MECANIQUE 17" style="width:80px;border-radius:12px;margin-bottom:20px;"><h1 style="color:#e8a800;font-family:Montserrat,sans-serif;margin-bottom:12px;">Site en maintenance</h1><p style="color:rgba(255,255,255,0.7);max-width:400px;">Nous effectuons des am\u00e9liorations. Le site sera de retour tr\u00e8s bient\u00f4t.</p><p style="color:rgba(255,255,255,0.5);margin-top:20px;">T\u00e9l : <a href="tel:+33651550001" style="color:#e8a800;">06 51 55 00 01</a></p>';
             document.body.appendChild(overlay);
             return;
         }
@@ -61,10 +93,10 @@ async function loadDynamicContent() {
             if (galerieGrid) {
                 let html = '';
                 data.galerie.forEach(photo => {
-                    if (photo.src && !photo.placeholder) {
+                    if (photo.src && !photo.placeholder && safeImageSrc(photo.src)) {
                         html += `
                             <div class="galerie-item" data-animate>
-                                <img src="${photo.src}" alt="${photo.alt || 'Photo garage'}" loading="lazy">
+                                <img src="${safeImageSrc(photo.src)}" alt="${escapeHtml(photo.alt || 'Photo garage')}" loading="lazy">
                             </div>
                         `;
                     } else {
@@ -72,7 +104,7 @@ async function loadDynamicContent() {
                             <div class="galerie-item" data-animate>
                                 <div class="galerie-placeholder">
                                     <span>&#128247;</span>
-                                    <p>${photo.alt || 'Photo'}</p>
+                                    <p>${escapeHtml(photo.alt || 'Photo')}</p>
                                 </div>
                             </div>
                         `;
@@ -106,12 +138,12 @@ async function loadDynamicContent() {
                 data.actualites.forEach(actu => {
                     html += `
                         <article class="actu-card" data-animate>
-                            <div class="actu-badge">${actu.badge}</div>
-                            <div class="actu-placeholder">${actu.icon || '&#128197;'}</div>
+                            <div class="actu-badge">${escapeHtml(actu.badge)}</div>
+                            <div class="actu-placeholder">${safeIcon(actu.icon) || '&#128197;'}</div>
                             <div class="actu-content">
-                                <h3>${actu.titre}</h3>
-                                <p>${actu.texte}</p>
-                                <span class="actu-date">${actu.date}</span>
+                                <h3>${escapeHtml(actu.titre)}</h3>
+                                <p>${escapeHtml(actu.texte)}</p>
+                                <span class="actu-date">${escapeHtml(actu.date)}</span>
                             </div>
                         </article>
                     `;
@@ -130,13 +162,15 @@ async function loadDynamicContent() {
             if (avisGrid) {
                 let html = '';
                 data.avis.forEach(avis => {
-                    const stars = '★'.repeat(avis.rating) + '☆'.repeat(5 - avis.rating);
+                    const rating = safeRating(avis.rating);
+                    const name = String(avis.name || 'Client');
+                    const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
                     html += `
                         <div class="avis-card" data-animate>
-                            <div class="avis-avatar">${avis.initial || avis.name.charAt(0).toUpperCase()}</div>
+                            <div class="avis-avatar">${escapeHtml(avis.initial || name.charAt(0).toUpperCase())}</div>
                             <div class="avis-stars">${stars}</div>
-                            <p class="avis-text">${avis.text}</p>
-                            <p class="avis-name">${avis.name}</p>
+                            <p class="avis-text">${escapeHtml(avis.text)}</p>
+                            <p class="avis-name">${escapeHtml(name)}</p>
                         </div>
                     `;
                 });
@@ -156,8 +190,8 @@ async function loadDynamicContent() {
                 data.faq.forEach(item => {
                     html += `
                         <div class="faq-item" data-animate>
-                            <div class="faq-question">${item.question}</div>
-                            <div class="faq-answer">${item.answer}</div>
+                            <div class="faq-question">${escapeHtml(item.question)}</div>
+                            <div class="faq-answer">${escapeHtml(item.answer)}</div>
                         </div>
                     `;
                 });
@@ -182,7 +216,7 @@ async function loadDynamicContent() {
             if (promoTrack) {
                 let html = '';
                 data.bandeau.forEach(item => {
-                    html += `<span class="promo-item">${item.icon || ''} ${item.text}</span>`;
+                    html += `<span class="promo-item">${safeIcon(item.icon)} ${escapeHtml(item.text)}</span>`;
                 });
                 // Dupliquer pour l'effet de defilement continu
                 promoTrack.innerHTML = html + html;
@@ -552,7 +586,7 @@ function checkForNotifications(reg) {
             if (latest.id && latest.id !== lastNotif) {
                 reg.showNotification(latest.title || 'MECANIQUE 17', {
                     body: latest.body || 'Nouvelle offre disponible !',
-                    icon: 'images/LOGO.jpg'
+                    icon: 'images/icon-192.png'
                 });
                 localStorage.setItem('m17_last_notif', latest.id);
             }
@@ -578,7 +612,7 @@ if (notifBtn) {
             notifBtn.style.opacity = '0.6';
             new Notification('MECANIQUE 17', {
                 body: 'Vous recevrez nos prochaines offres !',
-                icon: 'images/LOGO.jpg'
+                icon: 'images/icon-192.png'
             });
         }
     });
@@ -645,36 +679,10 @@ function submitAvis(e) {
         return;
     }
 
-    // Publier l'avis directement (sans validation admin)
-    const newAvis = {
-        name: nom,
-        initial: nom.charAt(0).toUpperCase(),
-        rating: note,
-        text: message,
-        date: new Date().toISOString(),
-        id: Date.now()
-    };
-
-    // Ajouter au contenu existant
-    const contentData = JSON.parse(localStorage.getItem('m17_content') || '{}');
-    if (!contentData.avis) contentData.avis = [];
-    contentData.avis.push(newAvis);
-    localStorage.setItem('m17_content', JSON.stringify(contentData));
-
-    // Ajouter la carte visuellement dans la grille
-    const grid = document.getElementById('avisGrid');
-    if (grid) {
-        const stars = '&#9733;'.repeat(note) + '&#9734;'.repeat(5 - note);
-        const card = document.createElement('div');
-        card.className = 'avis-card fade-in';
-        card.innerHTML = '<div class="avis-stars">' + stars + '</div>' +
-            '<p class="avis-text">&laquo; ' + message.replace(/</g, '&lt;').replace(/>/g, '&gt;') + ' &raquo;</p>' +
-            '<div class="avis-author"><div class="avis-avatar">' + newAvis.initial + '</div>' +
-            '<div><strong>' + nom.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</strong><span>Client</span></div></div>';
-        grid.appendChild(card);
-        // Trigger animation
-        setTimeout(() => card.classList.add('visible'), 50);
-    }
+    // L'avis est envoye au garage par e-mail (FormSubmit) pour moderation.
+    // Il n'est PAS publie automatiquement : l'administrateur l'ajoute depuis
+    // admin.html apres verification (evite faux avis, spam, propos diffamatoires).
+    sendAvisToGarage({ nom: nom, note: note, message: message });
 
     // Afficher le message de succes
     document.getElementById('avisFormSuccess').classList.add('show');
@@ -687,7 +695,50 @@ function submitAvis(e) {
 
     setTimeout(() => {
         document.getElementById('avisFormSuccess').classList.remove('show');
-    }, 5000);
+    }, 15000);
+}
+
+// Envoi de l'avis par formulaire cache vers FormSubmit (meme service que le
+// formulaire de rendez-vous), dans un iframe pour ne pas quitter la page.
+function sendAvisToGarage(avis) {
+    const iframeId = 'avis-form-iframe';
+    let iframe = document.getElementById(iframeId);
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = iframeId;
+        iframe.name = iframeId;
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+    }
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://formsubmit.co/mecanique017@gmail.com';
+    form.target = iframeId;
+    form.style.display = 'none';
+
+    const fields = {
+        '_subject': '⭐ Nouvel avis client à valider — Mécanique 17',
+        '_captcha': 'false',
+        '_template': 'table',
+        '_honey': '',
+        'Nom': avis.nom,
+        'Note': avis.note + '/5',
+        'Avis': avis.message,
+        'Date': new Date().toLocaleString('fr-FR'),
+        'A faire': 'Verifier puis publier depuis admin.html > Avis'
+    };
+    Object.entries(fields).forEach(([name, value]) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    });
+
+    document.body.appendChild(form);
+    form.submit();
+    setTimeout(() => form.remove(), 1000);
 }
 
 // ========== EFFET PARALLAXE HERO ==========

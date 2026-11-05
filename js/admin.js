@@ -11,12 +11,71 @@ const ADMIN_PASS_HASH = 'a1b2c3'; // placeholder - sera verifie cote client
 let contentData = { galerie: [], actualites: [], avis: [], faq: [], bandeau: [], services: [], infos: {} };
 let currentPhotoData = null;
 
+// ========== ECHAPPEMENT HTML ==========
+// Les textes saisis (souvent copies d'un e-mail client) sont echappes avant affichage.
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function safeIcon(value) {
+    return String(value == null ? '' : value).replace(/[<>"']/g, '');
+}
+
 // ========== HASH FUNCTION ==========
 async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Empreinte du mot de passe : PBKDF2-SHA256, 200 000 iterations, sel aleatoire.
+// Bien plus lent a casser qu'un simple SHA-256 si l'empreinte est copiee.
+// Format stocke : "pbkdf2$<iterations>$<sel hex>$<empreinte hex>"
+const PBKDF2_ITERATIONS = 200000;
+
+function bytesToHex(bytes) {
+    return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function hexToBytes(hex) {
+    return new Uint8Array((hex.match(/.{2}/g) || []).map(h => parseInt(h, 16)));
+}
+
+async function pbkdf2Hash(password, saltHex, iterations) {
+    const salt = saltHex ? hexToBytes(saltHex) : crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: salt, iterations: iterations }, key, 256);
+    return 'pbkdf2$' + iterations + '$' + bytesToHex(salt) + '$' + bytesToHex(new Uint8Array(bits));
+}
+
+// Verifie un mot de passe contre l'empreinte stockee (nouveau format ou ancien SHA-256)
+async function verifyPassword(password, stored) {
+    if (stored && stored.startsWith('pbkdf2$')) {
+        const parts = stored.split('$');
+        return (await pbkdf2Hash(password, parts[2], parseInt(parts[1], 10))) === stored;
+    }
+    return (await sha256(password)) === stored;
+}
+
+// ========== VERROUILLAGE AUTOMATIQUE ==========
+// Apres 30 min sans activite, la session admin se ferme (poste partage a l'atelier).
+const ADMIN_IDLE_LIMIT_MS = 30 * 60 * 1000;
+let adminIdleTimer = null;
+
+function resetAdminIdleTimer() {
+    clearTimeout(adminIdleTimer);
+    adminIdleTimer = setTimeout(() => {
+        sessionStorage.removeItem('m17_admin_logged');
+        alert('Session fermee apres 30 minutes d\'inactivite.');
+        window.location.reload();
+    }, ADMIN_IDLE_LIMIT_MS);
+}
+
+function startAdminIdleWatch() {
+    ['click', 'keydown', 'mousemove', 'touchstart', 'scroll'].forEach(evt =>
+        document.addEventListener(evt, resetAdminIdleTimer, { passive: true }));
+    resetAdminIdleTimer();
 }
 
 // ========== LOGIN ==========
@@ -31,8 +90,7 @@ async function attemptLogin() {
     const storedHash = localStorage.getItem('m17_admin_hash');
     const storedEmailHash = localStorage.getItem('m17_admin_email_hash');
 
-    const passHash = await sha256(password);
-    const emailHash = await sha256(email);
+    const emailHash = await sha256(email.toLowerCase());
 
     // Premiere connexion sur ce navigateur : l'administrateur CHOISIT son mot de
     // passe (10 caracteres minimum). Seule son empreinte SHA-256 est gardee dans
@@ -45,16 +103,21 @@ async function attemptLogin() {
             error.style.display = 'block';
             return;
         }
-        localStorage.setItem('m17_admin_hash', passHash);
+        localStorage.setItem('m17_admin_hash', await pbkdf2Hash(password, null, PBKDF2_ITERATIONS));
         localStorage.setItem('m17_admin_email_hash', emailHash);
         loginSuccess();
         return;
     }
 
-    const targetPassHash = storedHash;
-    const targetEmailHash = storedEmailHash;
+    // L'e-mail etait autrefois compare sans mise en minuscules : on accepte les deux.
+    const emailOk = emailHash === storedEmailHash || (await sha256(email)) === storedEmailHash;
 
-    if (passHash === targetPassHash && emailHash === targetEmailHash) {
+    if (emailOk && await verifyPassword(password, storedHash)) {
+        // Migration automatique de l'ancien format SHA-256 vers PBKDF2
+        if (!storedHash.startsWith('pbkdf2$')) {
+            localStorage.setItem('m17_admin_hash', await pbkdf2Hash(password, null, PBKDF2_ITERATIONS));
+        }
+        if (emailHash !== storedEmailHash) localStorage.setItem('m17_admin_email_hash', emailHash);
         loginSuccess();
     } else {
         error.style.display = 'block';
@@ -69,6 +132,7 @@ function loginSuccess() {
     document.getElementById('adminPanel').style.display = 'block';
     loadContent();
     checkGithubToken();
+    startAdminIdleWatch();
 }
 
 // Verifier session au chargement
@@ -149,7 +213,7 @@ function renderGallery() {
                 <div class="gallery-card">
                     <div class="gallery-placeholder">
                         <span>&#128247;</span>
-                        <p>${photo.alt}</p>
+                        <p>${escapeHtml(photo.alt)}</p>
                     </div>
                     <div class="gallery-card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditPhotoModal(${photo.id})">Changer</button>
@@ -160,7 +224,7 @@ function renderGallery() {
         } else if (photo.src) {
             html += `
                 <div class="gallery-card">
-                    <img src="${photo.src}" alt="${photo.alt}">
+                    <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.alt)}">
                     <div class="gallery-card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditPhotoModal(${photo.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deletePhoto(${photo.id})">Supprimer</button>
@@ -292,16 +356,16 @@ function renderActualites() {
             <div class="admin-card">
                 <div class="card-header">
                     <div>
-                        <span class="card-badge ${badgeClasses[actu.badge] || 'badge-info'}">${actu.badge}</span>
-                        <h3 style="margin-top:8px">${actu.titre}</h3>
+                        <span class="card-badge ${badgeClasses[actu.badge] || 'badge-info'}">${escapeHtml(actu.badge)}</span>
+                        <h3 style="margin-top:8px">${escapeHtml(actu.titre)}</h3>
                     </div>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditActuModal(${actu.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteActu(${actu.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${actu.texte}</p>
-                <p class="card-date">${actu.date}</p>
+                <p class="card-text">${escapeHtml(actu.texte)}</p>
+                <p class="card-date">${escapeHtml(actu.date)}</p>
             </div>
         `;
     });
@@ -400,12 +464,13 @@ function renderAvis() {
 
     let html = '';
     contentData.avis.forEach(avis => {
-        const stars = '★'.repeat(avis.rating) + '☆'.repeat(5 - avis.rating);
+        const r = Math.min(5, Math.max(0, parseInt(avis.rating, 10) || 0));
+        const stars = '★'.repeat(r) + '☆'.repeat(5 - r);
         html += `
             <div class="admin-card">
                 <div class="card-header">
                     <div>
-                        <h3>${avis.initial || avis.name.charAt(0).toUpperCase()} — ${avis.name}</h3>
+                        <h3>${escapeHtml(avis.initial || String(avis.name || 'C').charAt(0).toUpperCase())} — ${escapeHtml(avis.name)}</h3>
                         <span style="color:var(--gold);font-size:1.1rem;">${stars}</span>
                     </div>
                     <div class="card-actions">
@@ -413,7 +478,7 @@ function renderAvis() {
                         <button class="btn btn-danger btn-sm" onclick="deleteAvis(${avis.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${avis.text}</p>
+                <p class="card-text">${escapeHtml(avis.text)}</p>
             </div>
         `;
     });
@@ -504,13 +569,13 @@ function renderFaq() {
         html += `
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>${item.question}</h3>
+                    <h3>${escapeHtml(item.question)}</h3>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditFaqModal(${item.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteFaq(${item.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${item.answer}</p>
+                <p class="card-text">${escapeHtml(item.answer)}</p>
             </div>
         `;
     });
@@ -593,7 +658,7 @@ function renderBandeau() {
         html += `
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>${item.icon || ''} ${item.text}</h3>
+                    <h3>${safeIcon(item.icon)} ${escapeHtml(item.text)}</h3>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditBandeauModal(${item.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteBandeau(${item.id})">Supprimer</button>
@@ -681,13 +746,13 @@ function renderServices() {
         html += `
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>${service.icon || ''} ${service.title}</h3>
+                    <h3>${safeIcon(service.icon)} ${escapeHtml(service.title)}</h3>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditServiceModal(${service.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${service.description}</p>
+                <p class="card-text">${escapeHtml(service.description)}</p>
             </div>
         `;
     });
@@ -810,23 +875,44 @@ function saveContentLocal() {
 }
 
 // ========== GITHUB API ==========
+// Par defaut le token n'est garde que pour la session du navigateur (sessionStorage).
+// Il n'est garde durablement (localStorage) que si l'administrateur coche
+// "Se souvenir du token sur cet appareil".
 function getGithubToken() {
-    return localStorage.getItem('m17_github_token') || '';
+    return sessionStorage.getItem('m17_github_token') || localStorage.getItem('m17_github_token') || '';
 }
 
 function saveGithubToken() {
     const token = document.getElementById('githubToken').value.trim();
-    if (token) {
+    if (!token) return;
+    const remember = document.getElementById('githubTokenRemember');
+    localStorage.removeItem('m17_github_token');
+    sessionStorage.removeItem('m17_github_token');
+    if (remember && remember.checked) {
         localStorage.setItem('m17_github_token', token);
-        showToast('Token GitHub sauvegard\u00e9 !');
-        checkGithubToken();
+    } else {
+        sessionStorage.setItem('m17_github_token', token);
     }
+    showToast('Token GitHub sauvegard\u00e9 !');
+    checkGithubToken();
+}
+
+function forgetGithubToken() {
+    localStorage.removeItem('m17_github_token');
+    sessionStorage.removeItem('m17_github_token');
+    const tokenInput = document.getElementById('githubToken');
+    if (tokenInput) tokenInput.placeholder = 'github_pat_xxxxxxxxxxxx';
+    checkGithubToken();
+    showToast('Token oubli\u00e9 sur cet appareil');
 }
 
 async function checkGithubToken() {
     const token = getGithubToken();
     const status = document.getElementById('githubStatus');
     const tokenInput = document.getElementById('githubToken');
+
+    const remember = document.getElementById('githubTokenRemember');
+    if (remember) remember.checked = !!localStorage.getItem('m17_github_token');
 
     if (!token) {
         if (status) status.innerHTML = '<span class="status-dot status-disconnected"></span>Non configur\u00e9';
@@ -839,7 +925,7 @@ async function checkGithubToken() {
         });
         if (response.ok) {
             const user = await response.json();
-            if (status) status.innerHTML = `<span class="status-dot status-connected"></span>Connect\u00e9 en tant que ${user.login}`;
+            if (status) status.innerHTML = `<span class="status-dot status-connected"></span>Connect\u00e9 en tant que ${escapeHtml(user.login)}`;
             if (tokenInput) tokenInput.value = '';
             if (tokenInput) tokenInput.placeholder = 'Token enregistr\u00e9 ✓';
         } else {
@@ -1032,8 +1118,9 @@ async function changePassword() {
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
 
-    if (!newPass || newPass.length < 6) {
-        showToast('Le mot de passe doit faire au moins 6 caract\u00e8res', 'error');
+    // Meme exigence qu'a la premiere connexion (10 caracteres minimum)
+    if (!newPass || newPass.length < 10) {
+        showToast('Le mot de passe doit faire au moins 10 caract\u00e8res', 'error');
         return;
     }
 
@@ -1042,8 +1129,7 @@ async function changePassword() {
         return;
     }
 
-    const hash = await sha256(newPass);
-    localStorage.setItem('m17_admin_hash', hash);
+    localStorage.setItem('m17_admin_hash', await pbkdf2Hash(newPass, null, PBKDF2_ITERATIONS));
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
     showToast('Mot de passe chang\u00e9 avec succ\u00e8s !');
@@ -1183,14 +1269,15 @@ function renderPendingAvis() {
     }
 
     container.innerHTML = pending.map(a => {
-        const stars = '\u2605'.repeat(a.rating) + '\u2606'.repeat(5 - a.rating);
+        const r = Math.min(5, Math.max(0, parseInt(a.rating, 10) || 0));
+        const stars = '\u2605'.repeat(r) + '\u2606'.repeat(5 - r);
         const date = new Date(a.date).toLocaleDateString('fr-FR');
         return `
             <div class="pending-avis-card">
                 <div class="pending-avis-info">
                     <div class="pending-avis-stars">${stars}</div>
-                    <div class="pending-avis-text">\u00ab ${a.text} \u00bb</div>
-                    <div class="pending-avis-author">${a.name} <span class="pending-avis-date">- ${date}</span></div>
+                    <div class="pending-avis-text">\u00ab ${escapeHtml(a.text)} \u00bb</div>
+                    <div class="pending-avis-author">${escapeHtml(a.name)} <span class="pending-avis-date">- ${date}</span></div>
                 </div>
                 <div class="pending-avis-actions">
                     <button class="btn btn-gold btn-sm" onclick="approveAvis(${a.id})">Valider</button>
@@ -1236,6 +1323,59 @@ function rejectAvis(id) {
     renderPendingAvis();
     addHistory('Avis de ' + (avis ? avis.name : 'inconnu') + ' refus\u00e9');
     showToast('Avis refus\u00e9');
+}
+
+// ========== IMPORT D'UN AVIS RECU PAR E-MAIL ==========
+// Lit le texte copie d'un e-mail "Nouvel avis client a valider" (FormSubmit,
+// tableau Nom / Note / Avis / Date) et l'ajoute aux avis en attente.
+const AVIS_EMAIL_LABELS = ['A faire', 'Nom', 'Note', 'Avis', 'Date'];
+
+function parseAvisEmail(text) {
+    const fields = {};
+    let current = null;
+    text.split(/\r?\n/).forEach(rawLine => {
+        const line = rawLine.trim();
+        if (!line) return;
+        const label = AVIS_EMAIL_LABELS.find(l => {
+            const start = line.slice(0, l.length).toLowerCase() === l.toLowerCase();
+            const next = line.charAt(l.length);
+            return start && (next === '' || /[\s:]/.test(next));
+        });
+        if (label) {
+            current = label;
+            fields[label] = line.slice(label.length).replace(/^[\s:]+/, '');
+        } else if (current) {
+            fields[current] = (fields[current] ? fields[current] + ' ' : '') + line;
+        }
+    });
+    const noteMatch = (fields['Note'] || '').match(/[0-5]/);
+    return {
+        name: (fields['Nom'] || '').trim(),
+        rating: noteMatch ? parseInt(noteMatch[0], 10) : 5,
+        text: (fields['Avis'] || '').trim()
+    };
+}
+
+function importAvisFromEmail() {
+    const area = document.getElementById('avisEmailPaste');
+    const parsed = parseAvisEmail(area.value || '');
+    if (!parsed.name || !parsed.text) {
+        showToast('Nom ou avis introuvable : copiez tout le tableau de l\'e-mail', 'error');
+        return;
+    }
+    const pending = JSON.parse(localStorage.getItem('m17_pending_avis') || '[]');
+    pending.push({
+        id: Date.now(),
+        name: parsed.name,
+        initial: parsed.name.charAt(0).toUpperCase(),
+        rating: parsed.rating,
+        text: parsed.text,
+        date: new Date().toISOString()
+    });
+    localStorage.setItem('m17_pending_avis', JSON.stringify(pending));
+    area.value = '';
+    renderPendingAvis();
+    showToast('Avis de ' + parsed.name + ' ajouté en attente');
 }
 
 // ========== IMPORT DONNEES ==========

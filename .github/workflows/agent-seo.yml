@@ -47,8 +47,9 @@ jobs:
           RAPPORT=$(echo "$RESPONSE" | python3 -c "import sys,json; data=json.load(sys.stdin); print(data['content'][0]['text'])" 2>/dev/null || echo "Rapport non disponible - configurer ANTHROPIC_API_KEY")
 
           # Sauvegarder le rapport
-          mkdir -p data
-          cat > "data/rapport-seo-$DATE.md" << EOF
+          # Dossier prefixe par "_" : ignore par GitHub Pages (Jekyll), donc non public
+          mkdir -p _rapports-seo
+          cat > "_rapports-seo/rapport-seo-$DATE.md" << EOF
           # 📊 Rapport SEO — Mécanique 17
           **Date :** $DATE
           **Généré par :** Agent SEO automatique
@@ -56,7 +57,11 @@ jobs:
           $RAPPORT
           EOF
 
-          echo "RAPPORT_FILE=data/rapport-seo-$DATE.md" >> $GITHUB_ENV
+          echo "RAPPORT_FILE=_rapports-seo/rapport-seo-$DATE.md" >> $GITHUB_ENV
+
+          # Garder les 8 derniers rapports (les anciens restent dans l'historique git
+          # et dans les issues GitHub)
+          ls _rapports-seo/rapport-seo-*.md | sort | head -n -8 | xargs -r rm -f
           echo "$RAPPORT" > /tmp/rapport.txt
 
       - name: Créer une issue GitHub avec le rapport
@@ -79,6 +84,6 @@ jobs:
         run: |
           git config user.name "Agent SEO - Mécanique 17"
           git config user.email "mecanique017@gmail.com"
-          git add data/
+          git add -A _rapports-seo/ data/
           git diff --staged --quiet || git commit -m "🤖 Agent SEO : rapport du $(date +%Y-%m-%d)"
           git push 2>/dev/null || echo "Push non nécessaire"
