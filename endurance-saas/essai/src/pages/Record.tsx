@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { AlertTriangle, BarChart3, Bluetooth, BluetoothOff, ChevronDown, Compass, Flag, Heart, Layers, Loader2, LocateFixed, Map as MapIcon, MapPin, Maximize2, Pause, Play, Radio, Settings, Square, Trash2, Volume2, VolumeX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField, TextareaField } from '@/components/ui/field'
@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils'
 import { TrackMap, type BaseLayer } from '../components/TrackMap'
 import { endShare, loadShare, pushShare, saveShare, shareUrl, type ShareState } from '../liveShare'
 import { publicRoute, VISIBILITY_LABEL, type Visibility } from '../social'
+import { cumulative, guide, type Guidance, type LatLng } from '@/lib/routes/geo'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -120,6 +121,38 @@ function lapAnnouncement(lap: Lap, s: LiveSession) {
 export function RecordPage() {
   const user = useUser()
   const navigate = useNavigate()
+  // Parcours à suivre : choisi depuis la page d'un parcours (?parcours=…), mémorisé pour la séance
+  const [searchParams] = useSearchParams()
+  const [followRoute, setFollowRoute] = useState<{ id: string; name: string; points: LatLng[]; cum: number[] } | null>(null)
+  const [guidance, setGuidance] = useState<Guidance | null>(null)
+  const guideRef = useRef<{ route: { points: LatLng[]; cum: number[] } | null; hint: number | null; offSince: number | null; off: boolean }>({ route: null, hint: null, offSince: null, off: false })
+  useEffect(() => {
+    let id = searchParams.get('parcours')
+    try {
+      if (id) localStorage.setItem('kronofit-follow-route', id)
+      else id = localStorage.getItem('kronofit-follow-route')
+    } catch {
+      // stockage indisponible
+    }
+    if (!id) return
+    supabase.from('routes').select('id, name, points').eq('id', id).maybeSingle().then(({ data }) => {
+      if (!data) return
+      const points = data.points as unknown as LatLng[]
+      const fr = { id: data.id, name: data.name, points, cum: cumulative(points) }
+      guideRef.current.route = fr
+      setFollowRoute(fr)
+    })
+  }, [searchParams])
+  const stopFollow = () => {
+    try {
+      localStorage.removeItem('kronofit-follow-route')
+    } catch {
+      // stockage indisponible
+    }
+    guideRef.current = { route: null, hint: null, offSince: null, off: false }
+    setFollowRoute(null)
+    setGuidance(null)
+  }
   const { data: profile } = useData(async () => (await supabase.from('profiles').select('ftp, hr_rest, lactate_threshold_hr, full_name').eq('id', user.id).single()).data, [user.id])
   // « Mes passages » : tracés des 150 dernières séances (seule la colonne du tracé est lue)
   const { data: heatRows } = useData(async () => {
@@ -220,6 +253,27 @@ export function RecordPage() {
       (p) => {
         const at = p.timestamp || Date.now()
         setGps({ accuracy: Math.round(p.coords.accuracy), at, lat: p.coords.latitude, lng: p.coords.longitude, heading: p.coords.heading, speed: p.coords.speed })
+        // Guidage sur le parcours : distance restante, alerte vocale en cas d'écart prolongé
+        const gr = guideRef.current
+        if (gr.route && p.coords.accuracy <= 50) {
+          const g = guide(gr.route.points, gr.route.cum, [p.coords.latitude, p.coords.longitude], gr.hint)
+          gr.hint = g.along
+          setGuidance(g)
+          if (sessionRef.current?.status === 'running') {
+            if (g.offRoute > 50) {
+              gr.offSince ??= at
+              if (!gr.off && at - gr.offSince > 8000) {
+                gr.off = true
+                navigator.vibrate?.([300, 150, 300])
+                if (prefsRef.current.voice) say('Attention, vous êtes sorti du parcours')
+              }
+            } else if (g.offRoute < 25) {
+              if (gr.off && prefsRef.current.voice) say('Vous êtes de retour sur le parcours')
+              gr.off = false
+              gr.offSince = null
+            }
+          }
+        }
         const s = sessionRef.current
         if (!s) return
         const r = addFix(s, { lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy, altitude: p.coords.altitude, at }, hrRef.current)
@@ -418,8 +472,8 @@ export function RecordPage() {
             profile={profile}
             userId={user.id}
             onBack={() => setFinishing(false)}
-            onDiscard={() => { stopShare(); apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
-            onSaved={(id) => { stopShare(); apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
+            onDiscard={() => { stopShare(); stopFollow(); apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
+            onSaved={(id) => { stopShare(); stopFollow(); apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
           />
         </div>
       </FullScreen>
@@ -447,6 +501,7 @@ export function RecordPage() {
             onUserPan={() => setFollow(false)}
             layer={prefs.layer}
             heat={prefs.heat ? heatRows ?? undefined : undefined}
+            guideRoute={followRoute?.points}
             threeD={prefs.threeD}
             headingUp={prefs.headingUp}
             className="absolute inset-0 rounded-none border-0"
@@ -544,6 +599,11 @@ export function RecordPage() {
               {hrDevice && hr ? <span>♥ {hr} bpm</span> : null}
               <button onClick={() => setDataView(true)} aria-label="Agrandir les données"><Maximize2 className="size-4" /></button>
             </div>
+            {followRoute && guidance && (
+              <p className={cn('mt-1 rounded-lg px-2 py-1 text-center text-xs font-medium', guidance.offRoute > 50 ? 'bg-amber-500 text-neutral-950' : 'bg-neutral-800')}>
+                {guidance.offRoute > 50 ? `Hors parcours (${Math.round(guidance.offRoute)} m) · ` : ''}{followRoute.name} : reste {km(guidance.remaining)} km sur {km(guidance.total)}
+              </p>
+            )}
             <div className="mt-1 grid grid-cols-3 items-end text-center">
               <Mini value={clock(t)} label="Temps" />
               <Mini value={isRun ? pace(speed) : kmh(speed)} label={isRun ? 'Allure (/km)' : 'Vitesse (km/h)'} big />
@@ -650,6 +710,14 @@ export function RecordPage() {
               </span>
               <span className="text-sm font-medium text-[#e10600]">Changer</span>
             </button>
+            {followRoute ? (
+              <p className="flex items-center justify-between gap-2 rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-sm">
+                <span className="min-w-0 truncate">Parcours suivi : <strong>{followRoute.name}</strong> ({km(followRoute.cum.at(-1) ?? 0)} km)</span>
+                <button onClick={stopFollow} className="shrink-0 text-[#e10600]">Retirer</button>
+              </p>
+            ) : (
+              <Link to="/dashboard/routes" className="block rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-center text-sm text-neutral-300">Suivre un parcours…</Link>
+            )}
             <button onClick={start} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#e10600] text-lg font-semibold active:scale-[.98]">
               <Play className="size-6 fill-current" /> {useGps && !gpsReady ? 'Démarrer (GPS en recherche)' : 'Démarrer'}
             </button>

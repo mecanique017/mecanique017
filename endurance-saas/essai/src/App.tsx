@@ -20,6 +20,8 @@ import { FeedPage } from './pages/Feed'
 import { AthletePage } from './pages/Athlete'
 import { ClubPage, ClubsPage } from './pages/Clubs'
 import { ChallengesPage } from './pages/Challenges'
+import { RouteDetailPage, RouteEditorPage, RoutesPage } from './pages/Routes'
+import { SegmentPage } from './pages/Segment'
 
 const NAV = [
   { to: '/dashboard', label: 'Tableau de bord', end: true },
@@ -27,6 +29,7 @@ const NAV = [
   { to: '/dashboard/feed', label: 'Fil' },
   { to: '/dashboard/clubs', label: 'Clubs' },
   { to: '/dashboard/challenges', label: 'Défis' },
+  { to: '/dashboard/routes', label: 'Parcours' },
   { to: '/dashboard/calendar', label: 'Calendrier' },
   { to: '/dashboard/activities/import', label: 'Importer' },
   { to: '/dashboard/wellness', label: 'Bien-être' },
@@ -97,6 +100,10 @@ function Protected() {
           <Route path="clubs" element={<ClubsPage />} />
           <Route path="clubs/:id" element={<ClubPage />} />
           <Route path="challenges" element={<ChallengesPage />} />
+          <Route path="routes" element={<RoutesPage />} />
+          <Route path="routes/new" element={<RouteEditorPage />} />
+          <Route path="routes/:id" element={<RouteDetailPage />} />
+          <Route path="segments/:id" element={<SegmentPage />} />
           <Route path="stats" element={<StatsPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

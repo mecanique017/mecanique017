@@ -18,6 +18,7 @@ import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 import { SharedActivityView } from './SharedActivity'
 import { SocialPanel } from '../components/Social'
+import { ActivitySegments } from '../components/Segments'
 import type { Visibility } from '../social'
 
 const dateTime = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Europe/Paris' })
@@ -169,6 +170,14 @@ export function ActivityPage() {
           <h2 className="text-sm text-muted-foreground mb-1">Notes</h2>
           <p className="whitespace-pre-line">{a.athlete_notes}</p>
         </div>
+      )}
+      {route.length > 2 && (
+        <>
+          <ActivitySegments activity={a} route={route} times={telemetry?.route_t && telemetry.route_t.length === route.length ? telemetry.route_t : null} userId={user.id} />
+          <Button variant="outline" asChild>
+            <Link to={`/dashboard/routes/new?depuis=${a.id}`}>Enregistrer ce tracé comme parcours</Link>
+          </Button>
+        </>
       )}
       <SocialPanel activityId={a.id} userId={user.id} mine visibility={a.visibility} onVisibility={setVisibility} />
       <p className="flex items-center gap-2 rounded-xl border bg-card p-4 text-sm text-muted-foreground">
