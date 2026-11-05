@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { ArrowLeft, CloudDownload, Download, FileUp, Loader2, Navigation, Pencil, Trash2, Undo2 } from 'lucide-react'
+import { ArrowLeft, ArrowLeftRight, CloudDownload, Download, FileUp, Loader2, Navigation, Pencil, Repeat, Trash2, Undo2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField } from '@/components/ui/field'
 import { cumulative, parseGpxPoints, routeLength, simplify, type LatLng } from '@/lib/routes/geo'
 import { elevationFromProfile, fetchIgnElevations } from '@/lib/live/refine'
+import { gainFromElevations, routeLeg, ROUTING_PROFILES, type RoutedLeg, type RoutingProfile } from '@/lib/routes/router'
 import { toGpx } from '@/lib/training/performance'
 import { cn } from '@/lib/utils'
 import { TrackMap } from '../components/TrackMap'
@@ -58,12 +59,17 @@ function RouteList({ title, rows, empty }: { title: string; rows: RouteRow[]; em
   )
 }
 
-/** Création : tracé au doigt sur la carte, import GPX, ou depuis une séance (?depuis=<id séance>). */
+/** Création : tracé qui suit routes et chemins (BRouter / IGN), import GPX, ou depuis une séance (?depuis=<id>). */
 export function RouteEditorPage() {
   const user = useUser()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const [points, setPoints] = useState<LatLng[]>([])
+  const [waypoints, setWaypoints] = useState<LatLng[]>([])
+  const [legs, setLegs] = useState<RoutedLeg[]>([])
+  const [imported, setImported] = useState<LatLng[] | null>(null)
+  const [snap, setSnap] = useState(true)
+  const [profile, setProfile] = useState<RoutingProfile>('foot')
+  const [busy, setBusy] = useState(false)
   const [f, setF] = useState({ name: '', sport_family: 'run', visibility: 'private' as 'public' | 'private' })
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -80,7 +86,7 @@ export function RouteEditorPage() {
     if (!fromActivity) return
     supabase.from('activities').select('title, sport_type, route:raw_telemetry->route').eq('id', fromActivity).single().then(({ data }) => {
       if (data && Array.isArray(data.route)) {
-        setPoints(simplify(data.route as LatLng[]))
+        setImported(simplify(data.route as LatLng[]))
         setF((x) => ({ ...x, name: data.title }))
       }
     })
@@ -90,7 +96,7 @@ export function RouteEditorPage() {
     if (!file) return
     try {
       const g = parseGpxPoints(await file.text())
-      setPoints(simplify(g.points))
+      setImported(simplify(g.points))
       setF((x) => ({ ...x, name: x.name || g.name || file.name.replace(/\.gpx$/i, '') }))
       setError(null)
     } catch (e) {
@@ -98,25 +104,64 @@ export function RouteEditorPage() {
     }
   }
 
+  // Tracé complet = tracé importé, ou enchaînement des tronçons calculés
+  const points = useMemo<LatLng[]>(() => {
+    if (imported) return imported
+    if (!legs.length) return waypoints
+    const out: LatLng[] = []
+    for (const l of legs) out.push(...(out.length ? l.points.slice(1) : l.points))
+    return out
+  }, [imported, legs, waypoints])
   const distance = useMemo(() => routeLength(points), [points])
+  const routedGain = useMemo(() => {
+    const ele = legs.flatMap((l) => l.ele)
+    return ele.some((z) => z != null) ? gainFromElevations(ele) : null
+  }, [legs])
+  const straight = legs.some((l) => l.source === 'direct')
+
+  const addPoint = async (p: LatLng) => {
+    if (imported || busy) return
+    const pt: LatLng = [Math.round(p[0] * 1e6) / 1e6, Math.round(p[1] * 1e6) / 1e6]
+    if (!waypoints.length) return setWaypoints([pt])
+    const from = waypoints[waypoints.length - 1]
+    setBusy(true)
+    const leg = snap ? await routeLeg(from, pt, profile) : { points: [from, pt] as LatLng[], ele: [null, null], distance: 0, source: 'direct' as const }
+    setBusy(false)
+    setLegs((l) => [...l, leg])
+    setWaypoints((w) => [...w, pt])
+  }
+  const undo = () => {
+    if (imported) return setImported(null)
+    setLegs((l) => l.slice(0, -1))
+    setWaypoints((w) => w.slice(0, -1))
+  }
+  const loop = () => waypoints.length > 1 && addPoint(waypoints[0])
+  const outAndBack = () => {
+    if (legs.length === 0) return
+    const back = [...legs].reverse().map((l) => ({ ...l, points: [...l.points].reverse(), ele: [...l.ele].reverse() }))
+    setLegs((l) => [...l, ...back])
+    setWaypoints((w) => [...w, ...[...w].reverse().slice(1)])
+  }
 
   const save = async () => {
     if (points.length < 2) return setError('Touchez la carte au moins deux fois pour tracer le parcours.')
     if (!f.name.trim()) return setError('Donnez un nom au parcours.')
     setSaving(true)
-    // Dénivelé du parcours sur le relief IGN (France) — facultatif
-    let gain: number | null = null
-    const cum = cumulative(points)
-    const sampled: LatLng[] = []
-    let next = 0
-    points.forEach((p, i) => {
-      if (cum[i] >= next) {
-        sampled.push(p)
-        next += 25
-      }
-    })
-    const z = await fetchIgnElevations(sampled.map(([lat, lng]) => ({ lat, lng }))).catch(() => null)
-    if (z) gain = elevationFromProfile(z).gain
+    // Dénivelé : celui du calcul d'itinéraire, sinon relief IGN (France)
+    let gain: number | null = routedGain
+    if (gain == null) {
+      const cum = cumulative(points)
+      const sampled: LatLng[] = []
+      let next = 0
+      points.forEach((p, i) => {
+        if (cum[i] >= next) {
+          sampled.push(p)
+          next += 25
+        }
+      })
+      const z = await fetchIgnElevations(sampled.map(([lat, lng]) => ({ lat, lng }))).catch(() => null)
+      if (z) gain = elevationFromProfile(z).gain
+    }
     const { data, error } = await supabase
       .from('routes')
       .insert({ user_id: user.id, name: f.name.trim().slice(0, 80), sport_family: f.sport_family, visibility: f.visibility, points: simplify(points, 5000), distance_meters: Math.round(distance), elevation_gain_meters: gain })
@@ -131,25 +176,50 @@ export function RouteEditorPage() {
     <div className="max-w-xl mx-auto space-y-4">
       <Link to="/dashboard/routes" className="inline-flex items-center gap-1 text-sm text-muted-foreground"><ArrowLeft className="size-4" /> Parcours</Link>
       <h1 className="text-2xl font-bold">Nouveau parcours</h1>
-      {params.get('gpx') && points.length === 0 && (
+      {params.get('gpx') && !imported && (
         <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed p-4 text-sm font-medium">
           <FileUp className="size-4" /> Choisir un fichier GPX (Komoot, Garmin, Strava, Visorando…)
           <input type="file" accept=".gpx,application/gpx+xml" className="sr-only" onChange={(e) => importGpx(e.target.files?.[0])} />
         </label>
       )}
-      <p className="text-sm text-muted-foreground">{fromActivity || params.get('gpx') ? 'Vérifiez le tracé, nommez-le puis enregistrez.' : 'Touchez la carte pour placer les points du parcours, dans l’ordre.'}</p>
+      {!imported && (
+        <div className="space-y-2 rounded-xl border bg-card p-3">
+          <label className="flex items-center justify-between gap-2 text-sm font-medium">
+            Suivre les routes et chemins
+            <input type="checkbox" className="size-5 accent-primary" checked={snap} onChange={(e) => setSnap(e.target.checked)} />
+          </label>
+          {snap && (
+            <div className="flex flex-wrap gap-1.5">
+              {ROUTING_PROFILES.map((p) => (
+                <button key={p.key} onClick={() => { setProfile(p.key); setF((x) => ({ ...x, sport_family: p.key === 'foot' ? 'run' : 'ride' })) }} className={cn('rounded-full border px-3 py-1 text-xs', profile === p.key && 'border-primary bg-primary text-white')}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      <p className="text-sm text-muted-foreground">
+        {imported ? 'Vérifiez le tracé, nommez-le puis enregistrez.' : snap ? 'Touchez la carte : chaque point est relié au précédent par le meilleur chemin.' : 'Touchez la carte : les points sont reliés en ligne droite.'}
+      </p>
       {here === undefined && points.length === 0 ? (
         <div className="flex h-[50vh] items-center justify-center rounded-xl border bg-card text-sm text-muted-foreground"><Loader2 className="mr-2 size-4 animate-spin" /> Localisation…</div>
       ) : (
-        <TrackMap route={[]} position={here ?? null} guideRoute={points} onMapClick={(p) => setPoints((x) => [...x, [Math.round(p[0] * 1e6) / 1e6, Math.round(p[1] * 1e6) / 1e6]])} className="h-[50vh]" />
+        <div className="relative">
+          <TrackMap route={points} position={here ?? null} onMapClick={addPoint} className="h-[50vh]" />
+          {busy && <p className="absolute left-1/2 top-3 -translate-x-1/2 flex items-center gap-1.5 rounded-full bg-neutral-900/90 px-3 py-1.5 text-xs text-white"><Loader2 className="size-3.5 animate-spin" /> Calcul de l’itinéraire…</p>}
+        </div>
       )}
-      <div className="flex items-center justify-between text-sm">
-        <span><strong className="tabular-nums">{km(distance)}</strong> · {points.length} point(s)</span>
-        <span className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={() => setPoints((x) => x.slice(0, -1))} disabled={!points.length}><Undo2 className="size-4" /> Annuler</Button>
-          <Button size="sm" variant="ghost" onClick={() => setPoints([])} disabled={!points.length}>Effacer</Button>
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
+        <span><strong className="tabular-nums">{km(distance)}</strong>{routedGain != null ? ` · D+ ${routedGain} m` : ''}</span>
+        <span className="flex flex-wrap gap-2">
+          {!imported && <Button size="sm" variant="outline" onClick={loop} disabled={waypoints.length < 2 || busy}><Repeat className="size-4" /> Boucle</Button>}
+          {!imported && <Button size="sm" variant="outline" onClick={outAndBack} disabled={legs.length === 0 || busy}><ArrowLeftRight className="size-4" /> Aller-retour</Button>}
+          <Button size="sm" variant="outline" onClick={undo} disabled={(!waypoints.length && !imported) || busy}><Undo2 className="size-4" /> Annuler</Button>
+          <Button size="sm" variant="ghost" onClick={() => { setLegs([]); setWaypoints([]); setImported(null) }} disabled={(!waypoints.length && !imported) || busy}>Effacer</Button>
         </span>
       </div>
+      {straight && snap && <p className="text-xs text-amber-500">Itinéraire indisponible pour un tronçon (réseau ou zone non couverte) : il est tracé en ligne droite.</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Field id="route-name" label="Nom" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} maxLength={80} />
       <div className="grid grid-cols-2 gap-3">
@@ -163,7 +233,8 @@ export function RouteEditorPage() {
           <option value="public">Tout le monde</option>
         </SelectField>
       </div>
-      <Button className="w-full" size="lg" onClick={save} disabled={saving}>{saving && <Loader2 className="size-4 animate-spin" />} Enregistrer le parcours</Button>
+      <Button className="w-full" size="lg" onClick={save} disabled={saving || busy}>{saving && <Loader2 className="size-4 animate-spin" />} Enregistrer le parcours</Button>
+      <p className="text-[11px] text-muted-foreground">Itinéraires : BRouter (données © contributeurs OpenStreetMap) et IGN Géoplateforme.</p>
     </div>
   )
 }
