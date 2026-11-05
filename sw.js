@@ -1,7 +1,10 @@
-const CACHE_NAME = 'm17-cache-v2';
+const CACHE_NAME = 'm17-cache-v3';
 const ASSETS = [
     './',
     './index.html',
+    './tarifs.html',
+    './depannage.html',
+    './404.html',
     './css/style.css',
     './js/main.js',
     './images/LOGO.jpg',
@@ -62,20 +65,32 @@ self.addEventListener('notificationclick', (e) => {
 });
 
 // Fetch - network first, fallback to cache
+// Seules les requetes GET du site lui-meme passent par le cache : les formulaires
+// (FormSubmit), les statistiques et les API externes vont directement au reseau.
 self.addEventListener('fetch', (e) => {
+    const req = e.request;
+    if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) {
+        return;
+    }
+
     e.respondWith(
-        fetch(e.request)
+        fetch(req)
             .then((response) => {
                 // Video plays through partial (206) responses, which the cache rejects;
-                // only complete GET responses are kept for offline use.
-                if (e.request.method === 'GET' && response.status === 200) {
+                // only complete responses are kept for offline use.
+                if (response.status === 200 && !req.headers.has('range')) {
                     const clone = response.clone();
-                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, clone));
+                    caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
                 }
                 return response;
             })
-            .catch(() => {
-                return caches.match(e.request);
-            })
+            .catch(() =>
+                caches.match(req, { ignoreSearch: req.mode === 'navigate' }).then((cached) => {
+                    if (cached) return cached;
+                    // Hors ligne sur une page jamais visitee : page d'accueil en cache
+                    if (req.mode === 'navigate') return caches.match('./index.html');
+                    return Response.error();
+                })
+            )
     );
 });

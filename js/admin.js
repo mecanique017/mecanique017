@@ -11,6 +11,17 @@ const ADMIN_PASS_HASH = 'a1b2c3'; // placeholder - sera verifie cote client
 let contentData = { galerie: [], actualites: [], avis: [], faq: [], bandeau: [], services: [], infos: {} };
 let currentPhotoData = null;
 
+// ========== ECHAPPEMENT HTML ==========
+// Les textes saisis (souvent copies d'un e-mail client) sont echappes avant affichage.
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function safeIcon(value) {
+    return String(value == null ? '' : value).replace(/[<>"']/g, '');
+}
+
 // ========== HASH FUNCTION ==========
 async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
@@ -149,7 +160,7 @@ function renderGallery() {
                 <div class="gallery-card">
                     <div class="gallery-placeholder">
                         <span>&#128247;</span>
-                        <p>${photo.alt}</p>
+                        <p>${escapeHtml(photo.alt)}</p>
                     </div>
                     <div class="gallery-card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditPhotoModal(${photo.id})">Changer</button>
@@ -160,7 +171,7 @@ function renderGallery() {
         } else if (photo.src) {
             html += `
                 <div class="gallery-card">
-                    <img src="${photo.src}" alt="${photo.alt}">
+                    <img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.alt)}">
                     <div class="gallery-card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditPhotoModal(${photo.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deletePhoto(${photo.id})">Supprimer</button>
@@ -292,16 +303,16 @@ function renderActualites() {
             <div class="admin-card">
                 <div class="card-header">
                     <div>
-                        <span class="card-badge ${badgeClasses[actu.badge] || 'badge-info'}">${actu.badge}</span>
-                        <h3 style="margin-top:8px">${actu.titre}</h3>
+                        <span class="card-badge ${badgeClasses[actu.badge] || 'badge-info'}">${escapeHtml(actu.badge)}</span>
+                        <h3 style="margin-top:8px">${escapeHtml(actu.titre)}</h3>
                     </div>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditActuModal(${actu.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteActu(${actu.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${actu.texte}</p>
-                <p class="card-date">${actu.date}</p>
+                <p class="card-text">${escapeHtml(actu.texte)}</p>
+                <p class="card-date">${escapeHtml(actu.date)}</p>
             </div>
         `;
     });
@@ -400,12 +411,13 @@ function renderAvis() {
 
     let html = '';
     contentData.avis.forEach(avis => {
-        const stars = '★'.repeat(avis.rating) + '☆'.repeat(5 - avis.rating);
+        const r = Math.min(5, Math.max(0, parseInt(avis.rating, 10) || 0));
+        const stars = '★'.repeat(r) + '☆'.repeat(5 - r);
         html += `
             <div class="admin-card">
                 <div class="card-header">
                     <div>
-                        <h3>${avis.initial || avis.name.charAt(0).toUpperCase()} — ${avis.name}</h3>
+                        <h3>${escapeHtml(avis.initial || String(avis.name || 'C').charAt(0).toUpperCase())} — ${escapeHtml(avis.name)}</h3>
                         <span style="color:var(--gold);font-size:1.1rem;">${stars}</span>
                     </div>
                     <div class="card-actions">
@@ -413,7 +425,7 @@ function renderAvis() {
                         <button class="btn btn-danger btn-sm" onclick="deleteAvis(${avis.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${avis.text}</p>
+                <p class="card-text">${escapeHtml(avis.text)}</p>
             </div>
         `;
     });
@@ -504,13 +516,13 @@ function renderFaq() {
         html += `
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>${item.question}</h3>
+                    <h3>${escapeHtml(item.question)}</h3>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditFaqModal(${item.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteFaq(${item.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${item.answer}</p>
+                <p class="card-text">${escapeHtml(item.answer)}</p>
             </div>
         `;
     });
@@ -593,7 +605,7 @@ function renderBandeau() {
         html += `
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>${item.icon || ''} ${item.text}</h3>
+                    <h3>${safeIcon(item.icon)} ${escapeHtml(item.text)}</h3>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditBandeauModal(${item.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteBandeau(${item.id})">Supprimer</button>
@@ -681,13 +693,13 @@ function renderServices() {
         html += `
             <div class="admin-card">
                 <div class="card-header">
-                    <h3>${service.icon || ''} ${service.title}</h3>
+                    <h3>${safeIcon(service.icon)} ${escapeHtml(service.title)}</h3>
                     <div class="card-actions">
                         <button class="btn btn-gold btn-sm" onclick="openEditServiceModal(${service.id})">Modifier</button>
                         <button class="btn btn-danger btn-sm" onclick="deleteService(${service.id})">Supprimer</button>
                     </div>
                 </div>
-                <p class="card-text">${service.description}</p>
+                <p class="card-text">${escapeHtml(service.description)}</p>
             </div>
         `;
     });
@@ -1032,8 +1044,9 @@ async function changePassword() {
     const newPass = document.getElementById('newPassword').value;
     const confirmPass = document.getElementById('confirmPassword').value;
 
-    if (!newPass || newPass.length < 6) {
-        showToast('Le mot de passe doit faire au moins 6 caract\u00e8res', 'error');
+    // Meme exigence qu'a la premiere connexion (10 caracteres minimum)
+    if (!newPass || newPass.length < 10) {
+        showToast('Le mot de passe doit faire au moins 10 caract\u00e8res', 'error');
         return;
     }
 
@@ -1189,8 +1202,8 @@ function renderPendingAvis() {
             <div class="pending-avis-card">
                 <div class="pending-avis-info">
                     <div class="pending-avis-stars">${stars}</div>
-                    <div class="pending-avis-text">\u00ab ${a.text} \u00bb</div>
-                    <div class="pending-avis-author">${a.name} <span class="pending-avis-date">- ${date}</span></div>
+                    <div class="pending-avis-text">\u00ab ${escapeHtml(a.text)} \u00bb</div>
+                    <div class="pending-avis-author">${escapeHtml(a.name)} <span class="pending-avis-date">- ${date}</span></div>
                 </div>
                 <div class="pending-avis-actions">
                     <button class="btn btn-gold btn-sm" onclick="approveAvis(${a.id})">Valider</button>

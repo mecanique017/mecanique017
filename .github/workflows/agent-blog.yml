@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout du dépôt
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # historique complet : dates <lastmod> exactes du sitemap
 
       - name: Générer l'article avec Claude API
         env:
@@ -115,10 +117,13 @@ jobs:
               json.dump(articles, f, ensure_ascii=False, indent=2)
           "
 
+      - name: Mettre à jour le sitemap
+        run: python3 .github/scripts/generate_sitemap.py
+
       - name: Commit et push
         run: |
           git config user.name "Agent Blog - Mécanique 17"
           git config user.email "mecanique017@gmail.com"
-          git add blog/ data/blog-index.json
+          git add blog/ data/blog-index.json sitemap.xml
           git diff --staged --quiet || git commit -m "🤖 Agent Blog : ${{ env.SUJET }}"
           git push
