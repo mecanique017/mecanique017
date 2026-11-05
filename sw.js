@@ -1,4 +1,4 @@
-const CACHE_NAME = 'm17-cache-v3';
+const CACHE_NAME = 'm17-cache-v4';
 const ASSETS = [
     './',
     './index.html',
@@ -7,7 +7,8 @@ const ASSETS = [
     './404.html',
     './css/style.css',
     './js/main.js',
-    './images/LOGO.jpg',
+    './images/logo-240.jpg',
+    './images/icon-192.png',
     './manifest.json'
 ];
 
@@ -40,8 +41,8 @@ self.addEventListener('push', (e) => {
     e.waitUntil(
         self.registration.showNotification(data.title || 'MECANIQUE 17', {
             body: data.body || '',
-            icon: './images/LOGO.jpg',
-            badge: './images/LOGO.jpg',
+            icon: './images/icon-192.png',
+            badge: './images/favicon-48.png',
             vibrate: [200, 100, 200],
             data: { url: data.url || './' }
         })

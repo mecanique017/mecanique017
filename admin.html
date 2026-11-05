@@ -742,7 +742,7 @@
     <!-- LOGIN SCREEN -->
     <div class="login-screen" id="loginScreen">
         <div class="login-box">
-            <img src="images/LOGO.jpg" alt="MECANIQUE 17">
+            <img src="images/logo-240.jpg" alt="MECANIQUE 17">
             <h1>Administration</h1>
             <p>Connectez-vous pour g&eacute;rer votre site</p>
             <div class="login-error" id="loginError">Identifiants incorrects</div>
@@ -758,7 +758,7 @@
         <!-- HEADER -->
         <div class="admin-header">
             <div class="admin-header-left">
-                <img src="images/LOGO.jpg" alt="MECANIQUE 17">
+                <img src="images/logo-240.jpg" alt="MECANIQUE 17">
                 <h1>MECANIQUE 17 <span>| Administration</span></h1>
             </div>
             <div class="admin-header-right">
@@ -992,7 +992,15 @@
                 <div class="section-header">
                     <h2>Avis en attente de validation</h2>
                 </div>
-                <p style="color:var(--text-muted);margin-bottom:20px;">Les avis soumis par les clients apparaissent ici. Validez-les pour les afficher sur le site.</p>
+                <p style="color:var(--text-muted);margin-bottom:20px;">Les avis laiss&eacute;s sur le site arrivent par e-mail (&laquo; Nouvel avis client &agrave; valider &raquo;). Copiez le contenu de l'e-mail ci-dessous, puis validez ou refusez l'avis.</p>
+                <div class="config-card" style="margin-bottom:20px;">
+                    <h3>Importer un avis re&ccedil;u par e-mail</h3>
+                    <div class="form-group">
+                        <label for="avisEmailPaste">Contenu de l'e-mail (copier-coller)</label>
+                        <textarea id="avisEmailPaste" rows="5" placeholder="Nom    Jean&#10;Note   5/5&#10;Avis   Tr&egrave;s bon accueil, travail rapide..."></textarea>
+                    </div>
+                    <button class="btn btn-gold" onclick="importAvisFromEmail()">Ajouter aux avis en attente</button>
+                </div>
                 <div id="pendingAvisList">
                     <p style="color:var(--text-muted);">Aucun avis en attente</p>
                 </div>
@@ -1087,7 +1095,12 @@
                 <div class="config-card">
                     <h3>Connexion GitHub</h3>
                     <p>N&eacute;cessaire pour sauvegarder les modifications sur votre site en ligne. <br>
-                       Cr&eacute;ez un token sur <a href="https://github.com/settings/tokens" target="_blank" style="color: var(--gold);">github.com/settings/tokens</a> (cocher "repo")</p>
+                       Cr&eacute;ez un token <strong>&agrave; port&eacute;e limit&eacute;e</strong> (&laquo; Fine-grained &raquo;) sur
+                       <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener" style="color: var(--gold);">github.com/settings/personal-access-tokens/new</a> :<br>
+                       &bull; Repository access : <em>Only select repositories</em> &rarr; <code>mecanique017</code><br>
+                       &bull; Permissions &rarr; Contents : <em>Read and write</em> (rien d'autre)<br>
+                       &bull; Expiration : 90 jours conseill&eacute;s<br>
+                       Ainsi, m&ecirc;me vol&eacute;, le token ne donne acc&egrave;s qu'au site, pas &agrave; vos autres d&eacute;p&ocirc;ts ni &agrave; votre compte.</p>
                     <div class="config-row">
                         <div class="form-group">
                             <label>Token GitHub (Personal Access Token)</label>
@@ -1095,6 +1108,10 @@
                         </div>
                         <button class="btn btn-gold" onclick="saveGithubToken()">Sauvegarder</button>
                     </div>
+                    <label style="display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--text-muted);font-size:0.9rem;">
+                        <input type="checkbox" id="githubTokenRemember"> Se souvenir du token sur cet appareil (sinon il est oubli&eacute; &agrave; la fermeture du navigateur)
+                    </label>
+                    <button class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="forgetGithubToken()">Oublier le token sur cet appareil</button>
                     <p style="margin-top: 12px;">
                         Statut : <span id="githubStatus"><span class="status-dot status-disconnected"></span>Non configur&eacute;</span>
                     </p>

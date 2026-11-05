@@ -80,7 +80,7 @@ async function loadDynamicContent() {
         if (main) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#0a0a0a;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px;';
-            overlay.innerHTML = '<img src="images/LOGO.jpg" alt="MECANIQUE 17" style="width:80px;border-radius:12px;margin-bottom:20px;"><h1 style="color:#e8a800;font-family:Montserrat,sans-serif;margin-bottom:12px;">Site en maintenance</h1><p style="color:rgba(255,255,255,0.7);max-width:400px;">Nous effectuons des am\u00e9liorations. Le site sera de retour tr\u00e8s bient\u00f4t.</p><p style="color:rgba(255,255,255,0.5);margin-top:20px;">T\u00e9l : <a href="tel:+33651550001" style="color:#e8a800;">06 51 55 00 01</a></p>';
+            overlay.innerHTML = '<img src="images/logo-240.jpg" alt="MECANIQUE 17" style="width:80px;border-radius:12px;margin-bottom:20px;"><h1 style="color:#e8a800;font-family:Montserrat,sans-serif;margin-bottom:12px;">Site en maintenance</h1><p style="color:rgba(255,255,255,0.7);max-width:400px;">Nous effectuons des am\u00e9liorations. Le site sera de retour tr\u00e8s bient\u00f4t.</p><p style="color:rgba(255,255,255,0.5);margin-top:20px;">T\u00e9l : <a href="tel:+33651550001" style="color:#e8a800;">06 51 55 00 01</a></p>';
             document.body.appendChild(overlay);
             return;
         }
@@ -586,7 +586,7 @@ function checkForNotifications(reg) {
             if (latest.id && latest.id !== lastNotif) {
                 reg.showNotification(latest.title || 'MECANIQUE 17', {
                     body: latest.body || 'Nouvelle offre disponible !',
-                    icon: 'images/LOGO.jpg'
+                    icon: 'images/icon-192.png'
                 });
                 localStorage.setItem('m17_last_notif', latest.id);
             }
@@ -612,7 +612,7 @@ if (notifBtn) {
             notifBtn.style.opacity = '0.6';
             new Notification('MECANIQUE 17', {
                 body: 'Vous recevrez nos prochaines offres !',
-                icon: 'images/LOGO.jpg'
+                icon: 'images/icon-192.png'
             });
         }
     });
@@ -695,7 +695,7 @@ function submitAvis(e) {
 
     setTimeout(() => {
         document.getElementById('avisFormSuccess').classList.remove('show');
-    }, 5000);
+    }, 15000);
 }
 
 // Envoi de l'avis par formulaire cache vers FormSubmit (meme service que le
