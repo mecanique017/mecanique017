@@ -284,6 +284,24 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['challenge_participants']['Insert']>
         Relationships: []
       }
+      routes: {
+        Row: { id: string; user_id: string; name: string; sport_family: string; points: Json; distance_meters: number; elevation_gain_meters: number | null; visibility: 'public' | 'private'; created_at: string }
+        Insert: { id?: string; user_id: string; name: string; sport_family?: string; points: Json; distance_meters?: number; elevation_gain_meters?: number | null; visibility?: 'public' | 'private'; created_at?: string }
+        Update: Partial<Database['public']['Tables']['routes']['Insert']>
+        Relationships: []
+      }
+      segments: {
+        Row: { id: string; creator_id: string; name: string; sport_family: string; points: Json; distance_meters: number; min_lat: number; max_lat: number; min_lng: number; max_lng: number; created_at: string }
+        Insert: { id?: string; creator_id: string; name: string; sport_family: string; points: Json; distance_meters: number; min_lat: number; max_lat: number; min_lng: number; max_lng: number; created_at?: string }
+        Update: Partial<Database['public']['Tables']['segments']['Insert']>
+        Relationships: []
+      }
+      segment_efforts: {
+        Row: { id: string; segment_id: string; activity_id: string; user_id: string; elapsed_seconds: number; start_time: string; created_at: string }
+        Insert: { id?: string; segment_id: string; activity_id: string; user_id: string; elapsed_seconds: number; start_time: string; created_at?: string }
+        Update: Partial<Database['public']['Tables']['segment_efforts']['Insert']>
+        Relationships: []
+      }
       live_shares: {
         Row: {
           token: string
@@ -433,6 +451,8 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      segment_leaderboard: { Args: { p_segment: string }; Returns: Json }
+      segments_in_box: { Args: { p_min_lat: number; p_max_lat: number; p_min_lng: number; p_max_lng: number }; Returns: Database['public']['Tables']['segments']['Row'][] }
       get_feed: { Args: { p_before?: string | null; p_limit?: number }; Returns: Json }
       get_shared_activity: { Args: { p_activity: string }; Returns: Json }
       search_athletes: { Args: { p_query: string }; Returns: Json }

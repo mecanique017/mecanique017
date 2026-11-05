@@ -87,6 +87,14 @@ export function DashboardPage() {
               <p className="font-semibold">Statistiques</p>
               <p className="text-xs text-muted-foreground">Bilan annuel, carte de mes passages</p>
             </Link>
+            <Link to="/dashboard/routes" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Parcours</p>
+              <p className="text-xs text-muted-foreground">Tracer, importer, suivre, hors ligne</p>
+            </Link>
+            <Link to="/dashboard/challenges" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Défis du mois</p>
+              <p className="text-xs text-muted-foreground">Objectifs et classements</p>
+            </Link>
             <Link to="/dashboard/calendar" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Calendrier</p>
               <p className="text-xs text-muted-foreground">Programme de la semaine</p>

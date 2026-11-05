@@ -76,6 +76,9 @@ export function TrackMap({
   heat,
   threeD = false,
   headingUp = false,
+  guideRoute,
+  highlight,
+  onMapClick,
   className,
 }: {
   route: LatLng[]
@@ -91,6 +94,12 @@ export function TrackMap({
   /** Carte orientée dans le sens du déplacement */
   headingUp?: boolean
   className?: string
+  /** Parcours à suivre (pointillés bleus) */
+  guideRoute?: LatLng[]
+  /** Portion mise en valeur (segment) */
+  highlight?: LatLng[]
+  /** Toucher la carte (tracé d'un parcours) */
+  onMapClick?: (p: LatLng) => void
 }) {
   const el = useRef<HTMLDivElement>(null)
   const map = useRef<MlMap | null>(null)
@@ -98,6 +107,10 @@ export function TrackMap({
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
   const fitted = useRef(false)
+  const onClick = useRef(onMapClick)
+  useEffect(() => {
+    onClick.current = onMapClick
+  }, [onMapClick])
   const onPan = useRef(onUserPan)
   useEffect(() => {
     onPan.current = onUserPan
@@ -119,6 +132,13 @@ export function TrackMap({
           attributionControl: { compact: true },
           cooperativeGestures: !live, // page de séance : un doigt fait défiler la page, deux doigts la carte
           maxPitch: 70,
+          locale: {
+            'CooperativeGesturesHandler.WindowsHelpText': 'Ctrl + molette pour zoomer',
+            'CooperativeGesturesHandler.MacHelpText': '⌘ + molette pour zoomer',
+            'CooperativeGesturesHandler.MobileHelpText': 'Utilisez deux doigts pour déplacer la carte',
+            'NavigationControl.ZoomIn': 'Zoomer',
+            'NavigationControl.ZoomOut': 'Dézoomer',
+          },
         })
         map.current = created
         created.addControl(new ml.ScaleControl({ unit: 'metric' }), 'bottom-left')
@@ -131,6 +151,7 @@ export function TrackMap({
         })
         // Geste de l'utilisateur (pas un déplacement programmé) : le suivi s'interrompt
         created.on('dragstart', () => onPan.current?.())
+        created.on('click', (e) => onClick.current?.([e.lngLat.lat, e.lngLat.lng]))
         created.on('load', () => {
           const m = created!
           const firstSymbol = m.getStyle().layers.find((l) => l.type === 'symbol')?.id
@@ -139,12 +160,16 @@ export function TrackMap({
           m.addLayer({ id: 'ign-ortho', type: 'raster', source: 'ign-ortho', layout: { visibility: 'none' } }, firstSymbol)
           m.addLayer({ id: 'ign-plan', type: 'raster', source: 'ign-plan', layout: { visibility: 'none' } }, firstSymbol)
           m.addSource('heat', { type: 'geojson', data: collection([]) })
+          m.addSource('guide', { type: 'geojson', data: collection([]) })
+          m.addSource('highlight', { type: 'geojson', data: collection([]) })
           m.addSource('track', { type: 'geojson', data: collection([]) })
           m.addSource('accuracy', { type: 'geojson', data: collection([]) })
           m.addSource('marks', { type: 'geojson', data: collection([]) })
+          m.addLayer({ id: 'guide', type: 'line', source: 'guide', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#1a73e8', 'line-width': 6, 'line-opacity': 0.75, 'line-dasharray': [1.5, 1] } })
           m.addLayer({ id: 'heat', type: 'line', source: 'heat', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#7c3aed', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 16, 7], 'line-opacity': 0.5, 'line-blur': 1 } })
           m.addLayer({ id: 'track-casing', type: 'line', source: 'track', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#ffffff', 'line-width': 8, 'line-opacity': 0.9 } })
           m.addLayer({ id: 'track-line', type: 'line', source: 'track', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': ORANGE, 'line-width': 5 } })
+          m.addLayer({ id: 'highlight', type: 'line', source: 'highlight', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#facc15', 'line-width': 7 } })
           m.addLayer({ id: 'accuracy', type: 'fill', source: 'accuracy', paint: { 'fill-color': '#1a73e8', 'fill-opacity': 0.15 } })
           m.addLayer({
             id: 'marks',
@@ -173,6 +198,14 @@ export function TrackMap({
     m.setLayoutProperty('ign-ortho', 'visibility', layer === 'satellite' ? 'visible' : 'none')
     m.setLayoutProperty('ign-plan', 'visibility', layer === 'topo' ? 'visible' : 'none')
   }, [ready, layer])
+
+  // Parcours à suivre et segment mis en valeur
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m) return
+    ;(m.getSource('guide') as GeoJSONSource | undefined)?.setData(guideRoute && guideRoute.length > 1 ? collection([line(guideRoute)]) : collection([]))
+    ;(m.getSource('highlight') as GeoJSONSource | undefined)?.setData(highlight && highlight.length > 1 ? collection([line(highlight)]) : collection([]))
+  }, [ready, guideRoute, highlight])
 
   // Mes passages
   useEffect(() => {
@@ -212,15 +245,15 @@ export function TrackMap({
         pitch: threeD ? 60 : 0,
         duration: 700,
       })
-    } else if (!live && !fitted.current && (route.length > 1 || (heat?.flat().length ?? 0) > 1)) {
-      // Séance : cadrage sur son tracé ; carte des passages : cadrage sur tous les parcours
+    } else if (!live && !fitted.current && (route.length > 1 || (heat?.flat().length ?? 0) > 1 || (guideRoute?.length ?? 0) > 1)) {
+      // Séance : cadrage sur son tracé ; carte des passages : sur tous les parcours ; parcours : sur le parcours
       fitted.current = true
-      const all = route.length > 1 ? route : heat!.flat()
+      const all = route.length > 1 ? route : (guideRoute?.length ?? 0) > 1 ? guideRoute! : heat!.flat()
       const lats = all.map((p) => p[0])
       const lngs = all.map((p) => p[1])
       m.fitBounds([[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]], { padding: 32, duration: 0 })
     }
-  }, [ready, route, position, live, follow, headingUp, threeD, heat])
+  }, [ready, route, position, live, follow, headingUp, threeD, heat, guideRoute])
 
   // 3D et orientation quand on ne suit pas la position (on regarde la carte librement)
   useEffect(() => {
