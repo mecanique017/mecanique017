@@ -13,7 +13,7 @@ import {
   addFix, addHeartRate, tick, currentLap, currentSpeed, defaultAutoPause, GOOD_ACCURACY_M, heartRateStats, loadSession, manualLap, movingSeconds, newSession,
   parseHeartRate, pause, resume, saveSession, toTelemetry, type Lap, type LiveSession,
 } from '@/lib/live/recorder'
-import { elevationFromProfile, fetchIgnElevations, refineDistance, resample, smoothedRoute, smoothedRouteTimes, smoothTrack, withIgnAltitude } from '@/lib/live/refine'
+import { elevationFromProfile, fetchIgnElevations, reconstructGaps, refineDistance, resample, smoothedRoute, smoothedRouteTimes, smoothTrack, withIgnAltitude, type Reconstruction } from '@/lib/live/refine'
 import { cn } from '@/lib/utils'
 import { TrackMap, type BaseLayer } from '../components/TrackMap'
 import { endShare, loadShare, pushShare, saveShare, shareUrl, type ShareState } from '../liveShare'
@@ -881,19 +881,38 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
 
   // Affinage de fin de séance : lissage avant/arrière de tous les points + dénivelé sur le relief IGN
   const smoothed = useMemo(() => smoothTrack(session.raw ?? [], session.sport), [session])
-  const distance = refineDistance(session.distance, smoothed)
+  // Coupures GPS (écran verrouillé…) : tronçon reconstitué par l'itinéraire le plus probable
+  const [recon, setRecon] = useState<Reconstruction | null>(null)
+  const [reconBusy, setReconBusy] = useState(!!smoothed?.gaps.length)
+  const track = recon?.track ?? smoothed
+  const distance = refineDistance(session.distance, smoothed) + (recon?.delta ?? 0)
   const [ign, setIgn] = useState<{ state: 'loading' | 'ok' | 'off'; profile?: { t: number; z: number }[]; gain?: number }>({ state: smoothed ? 'loading' : 'off' })
   useEffect(() => {
     if (!smoothed) return
+    let stop = false
     const ctrl = new AbortController()
-    const pts = resample(smoothed.points, 15)
-    fetchIgnElevations(pts, ctrl.signal).then((z) => {
-      if (ctrl.signal.aborted) return
+    ;(async () => {
+      let t = smoothed
+      if (smoothed.gaps.length) {
+        const r = await reconstructGaps(smoothed, session.sport).catch(() => null)
+        if (stop) return
+        if (r) {
+          setRecon(r)
+          t = r.track
+        }
+        setReconBusy(false)
+      }
+      const pts = resample(t.points, 15)
+      const z = await fetchIgnElevations(pts, ctrl.signal)
+      if (stop || ctrl.signal.aborted) return
       if (!z) return setIgn({ state: 'off' })
       setIgn({ state: 'ok', profile: pts.map((p, i) => ({ t: p.t, z: z[i] })), gain: elevationFromProfile(z).gain })
-    })
-    return () => ctrl.abort()
-  }, [smoothed])
+    })()
+    return () => {
+      stop = true
+      ctrl.abort()
+    }
+  }, [smoothed, session.sport])
   const elevation = ign.state === 'ok' ? ign.gain! : Math.round(session.elevationGain)
 
   const save = async (e: React.FormEvent) => {
@@ -902,11 +921,11 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
     setSaving(true)
     setError(null)
     const base = toTelemetry(session)
-    const route = smoothedRoute(smoothed)
+    const route = smoothedRoute(track)
     const telemetry = {
       ...base,
       route: route.length > 1 ? route : base.route,
-      route_t: route.length > 1 ? smoothedRouteTimes(smoothed) : undefined,
+      route_t: route.length > 1 ? smoothedRouteTimes(track) : undefined,
       points: ign.state === 'ok' ? withIgnAltitude(base.points, ign.profile!) : base.points,
       elevation_source: ign.state === 'ok' ? 'ign' : 'gps',
     }
@@ -953,6 +972,15 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
       {smoothed && (
         <p className="text-xs text-muted-foreground" aria-live="polite">
           Trace affinée sur {smoothed.points.length} points GPS.{' '}
+          {smoothed.gaps.length > 0 && (
+            <span className="block text-amber-500">
+              {reconBusy
+                ? `Coupure GPS de ${Math.round(smoothed.gaps.reduce((a, g) => a + g.seconds, 0) / 60)} min : reconstitution du tronçon par l’itinéraire le plus probable…`
+                : recon && recon.legs.length
+                  ? `Coupure GPS de ${Math.round(recon.legs.reduce((a, g) => a + g.seconds, 0) / 60)} min : tronçon reconstitué par l’itinéraire le plus probable (${(recon.legs.reduce((a, g) => a + g.distance, 0) / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km au lieu de ${(smoothed.gaps.reduce((a, g) => a + g.straight, 0) / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 1 })} km en ligne droite).`
+                  : 'Coupure GPS : tronçon compté en ligne droite (itinéraire indisponible).'}
+            </span>
+          )}
           {ign.state === 'loading' ? 'Correction du dénivelé avec le relief IGN…' : ign.state === 'ok' ? `Dénivelé corrigé avec le relief IGN (GPS seul : ${Math.round(session.elevationGain)} m).` : 'Dénivelé calculé par le GPS (relief IGN indisponible : hors de France ou sans réseau).'}
         </p>
       )}
@@ -980,7 +1008,7 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
         </p>
         <p className="text-3xl font-bold tabular-nums">{tss.tss}</p>
       </div>
-      <Button type="submit" size="lg" className="w-full h-14 text-base" disabled={saving}>
+      <Button type="submit" size="lg" className="w-full h-14 text-base" disabled={saving || reconBusy}>
         {saving && <Loader2 className="h-4 w-4 animate-spin" />} Enregistrer la séance
       </Button>
       <div className="flex justify-between">

@@ -8,6 +8,8 @@
  */
 import { haversine } from './recorder'
 import { sportFamily } from '@/lib/sports'
+import { routeLeg, type RoutingProfile } from '@/lib/routes/router'
+import { routeLength } from '@/lib/routes/geo'
 
 /** Point GPS brut retenu pendant l'enregistrement : [t (s en mouvement), lat, lng, précision (m), epoch ms] */
 export type RawFix = [number, number, number, number, number]
@@ -79,9 +81,18 @@ function smoothAxis(z: number[], r: number[], dt: number[], qa: number): number[
   return out
 }
 
+export interface TrackGap {
+  /** index (dans points) du dernier point avant la coupure */
+  after: number
+  seconds: number
+  /** distance à vol d'oiseau entre les deux bords de la coupure (m), comptée comme en direct */
+  straight: number
+}
 export interface RefinedTrack {
   points: { t: number; lat: number; lng: number }[]
   distance: number
+  /** Coupures GPS pendant que le chrono tournait (écran verrouillé, appli quittée) */
+  gaps: TrackGap[]
 }
 
 /** Lisse la trace complète. Les pauses (écart > 30 s) découpent la trace en segments indépendants. */
@@ -97,9 +108,22 @@ export function smoothTrack(raw: RawFix[], sport: string): RefinedTrack | null {
   const lng0 = raw[0][2]
   const kx = Math.cos((lat0 * Math.PI) / 180) * M
   const points: RefinedTrack['points'] = []
+  const gaps: TrackGap[] = []
   let distance = 0
   for (const seg of segments) {
     if (!seg.length) continue
+    // Entre deux segments : pause (le chrono s'arrête) ou coupure GPS (le chrono continue)
+    if (points.length) {
+      const prevRaw = raw[raw.indexOf(seg[0]) - 1]
+      const wall = (seg[0][4] - prevRaw[4]) / 1000
+      const moving = seg[0][0] - prevRaw[0]
+      if (wall > 30 && moving >= wall * 0.8) {
+        const a = points[points.length - 1]
+        const straight = haversine(a.lat, a.lng, seg[0][1], seg[0][2])
+        gaps.push({ after: points.length - 1, seconds: Math.round(wall), straight })
+        distance += straight // comme le calcul en direct, qui relie les deux bords
+      }
+    }
     const dt = seg.map((f, i) => (i ? Math.min(60, Math.max(0.001, (f[4] - seg[i - 1][4]) / 1000)) : 0))
     const r = seg.map((f) => Math.max(f[3], 3) ** 2)
     const xs = seg.length > 1 ? smoothAxis(seg.map((f) => (f[2] - lng0) * kx), r, dt, qa) : [(seg[0][2] - lng0) * kx]
@@ -117,9 +141,47 @@ export function smoothTrack(raw: RawFix[], sport: string): RefinedTrack | null {
         }
       }
     }
-    // Liaison entre segments (pause) : non comptée, comme en direct
   }
-  return { points, distance }
+  return { points, distance, gaps }
+}
+
+export interface Reconstruction {
+  track: RefinedTrack
+  /** tronçons reconstitués : durée, distance (m) et moteur utilisé */
+  legs: { seconds: number; distance: number; source: 'brouter' | 'ign' }[]
+  /** écart à appliquer à la distance (m) : itinéraire probable − ligne droite */
+  delta: number
+}
+
+/**
+ * Coupures GPS : le tronçon manquant est reconstitué par l'itinéraire le plus probable entre les deux
+ * bords (même moteur que les parcours : BRouter, puis IGN) au lieu d'une ligne droite à travers champs.
+ */
+export async function reconstructGaps(track: RefinedTrack, sport: string): Promise<Reconstruction> {
+  const fam = sportFamily(sport)
+  const profile: RoutingProfile = fam === 'ride' ? (sport === 'mtb' || sport === 'gravel' ? 'gravel' : 'road') : 'foot'
+  const out = { track, legs: [] as Reconstruction['legs'], delta: 0 }
+  if (!track.gaps.length) return out
+  const points = [...track.points]
+  let shift = 0
+  for (const g of track.gaps) {
+    if (g.straight < 150) continue
+    const i = g.after + shift
+    const a = points[i]
+    const b = points[i + 1]
+    if (!a || !b) continue
+    const leg = await routeLeg([a.lat, a.lng], [b.lat, b.lng], profile)
+    if (leg.source === 'direct' || leg.points.length < 3) continue
+    // Temps interpolés le long du tronçon reconstitué
+    const inner = leg.points.slice(1, -1).map(([lat, lng], k, arr) => ({ t: a.t + ((b.t - a.t) * (k + 1)) / (arr.length + 1), lat, lng }))
+    points.splice(i + 1, 0, ...inner)
+    shift += inner.length
+    const legDistance = leg.distance || routeLength(leg.points)
+    out.legs.push({ seconds: g.seconds, distance: legDistance, source: leg.source })
+    out.delta += legDistance - g.straight
+  }
+  out.track = { ...track, points, distance: track.distance + out.delta }
+  return out
 }
 
 /** Rééchantillonne la trace tous les `step` mètres (pour l'altitude IGN). */
