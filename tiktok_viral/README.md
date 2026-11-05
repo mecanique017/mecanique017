@@ -25,8 +25,9 @@ Toute la presse a repris « les casseurs sont nécessaires ». La vidéo montre 
 ## Rendu
 
 ```bash
-python3 generer_voix_kokoro.py /chemin/vers/kokoro     # voix off -> build/voix_kokoro.wav
-python3 montage_viral.py --voice-file build/voix_kokoro.wav
+python3 generer_voix_edge.py                          # voix off (edge-tts, Henri) -> build/voix_edge.wav
+# (secours hors ligne : python3 generer_voix_kokoro.py /chemin/vers/kokoro -> build/voix_kokoro.wav)
+python3 montage_viral.py --voice-file build/voix_edge.wav
 ```
 
 La vidéo source (`build/src/source.mp4`) et les MP4 ne sont pas versionnés, car ils contiennent des extraits TV de tiers.
