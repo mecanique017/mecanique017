@@ -1,0 +1,28 @@
+SCRIPT : « CNEWS, BFM, RMC : LE CASTING DE LA HAINE » (≈ 1 min 50)
+(** = pavé rouge + impact · * = surligné jaune · [EXTRAIT] = son d'origine)
+
+01. [LES ARCHIVES] VOIX : Elles sont sur vos écrans chaque semaine. CNews, RMC, BFM. Écoutez ce qu'elles disaient avant d'avoir un micro.
+    [EXTRAIT 12.4 s] vidéo source 11.0–23.4 s · ARCHIVE · émission sur les « jeunes zemmouristes »
+
+02. [QUI SONT-ELLES ?] VOIX : Ces archives circulent sur les réseaux. Alice Cordier, fondatrice du collectif identitaire Némésis, invitée régulière de CNews. Et Juliette Briens, chroniqueuse sur RMC, passée par BFMTV.
+    source : Wikipédia « Alice Cordier » · cnews.fr · rmc.bfmtv.com · Libération (29/11/2023)
+    [EXTRAIT 10.8 s] vidéo source 53.0–63.8 s · ARCHIVE · émission sur les « jeunes zemmouristes »
+
+03. [LES ARCHIVES] VOIX : Le Gabon blanc. Le Japon maghrébin. Une France qui doit rester blanche. Et ça continue.
+    [EXTRAIT 7.5 s] vidéo source 87.5–95.0 s · ARCHIVE · émission sur les « jeunes zemmouristes »
+
+04. [DÉCRYPTAGE] VOIX : Le grand remplacement, récité mot pour mot. Une théorie complotiste et raciste.
+
+05. [AUJOURD'HUI] VOIX : Et aujourd'hui ? Ce discours a un micro, un salaire, et des heures d'antenne.
+    [EXTRAIT 10.5 s] vidéo source 76.5–87.0 s · RMC · plateau, avec Juliette Briens
+
+06. [LE CASTING] VOIX : Ce n'est pas un dérapage. C'est un casting. Dès deux mille vingt-trois, Libération la surnommait : la nouvelle égérie d'extrême droite de BFM.
+    source : Libération, « Juliette Briens, la nouvelle égérie d'extrême droite de BFM », 29/11/2023
+
+07. [CETTE SEMAINE] VOIX : Et cette semaine, l'Arcom saisit la justice pour des propos racistes d'Éric Zemmour, tenus sur LCI, BFM et CNews.
+    source : Libération, 03/11/2026 — l'Arcom saisit la justice
+
+08. [CONCLUSION] VOIX : CNews, BFM, RMC : quand on donne l'antenne à la haine, on la fabrique.
+
+09. [CONCLUSION] VOIX : Ne détournez pas le regard. Partagez, et signalez à l'Arcom.
+

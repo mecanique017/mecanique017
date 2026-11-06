@@ -1,0 +1,76 @@
+SCRIPT VOIX OFF : « LE PROGRAMME DU RN, DÉBOISÉ » (≈ 1 min 25)
+(** = encadré rouge + impact · * = surligné jaune · [gag] = effet visuel/sonore)
+
+01. [LE MYTHE] Le Rassemblement national se peint en champion des pauvres.
+    écran : Le Rassemblement national se peint en *champion* *des* *pauvres*.
+    gag : emoji / son : chuckle
+
+02. [LE MYTHE] Mais dès qu'on gratte un peu… c'est le grand vide. Et le service après-vente du MEDEF !
+    écran : Mais dès qu'on gratte un peu… c'est le grand *VIDE*. Et le service après-vente du *MEDEF* !
+    gag : receipt / son : kaching
+
+03. [LE MYTHE] Parlons de leur programme, et de leurs contradictions lunaires.
+    écran : Parlons de leur programme, et de leurs contradictions *lunaires*.
+    gag : emoji / son : chuckle
+
+04. [GAG N°1] Premier gag : la crédibilité économique.
+    écran : Premier gag : la crédibilité **ÉCONOMIQUE**.
+    gag : title / son : rimshot
+
+05. [GAG N°1] Leur programme ? Soixante et onze milliards d'euros de déficit en plus chaque année, selon l'Institut Montaigne.
+    écran : Leur programme ? *+71* *milliards* d'euros de déficit en plus chaque année, selon l'Institut Montaigne.
+    gag : counter / son : tick
+    source : Institut Montaigne — chiffrage du programme RN (législatives 2024)
+
+06. [GAG N°1] Des économies fantômes, des affichages magiques… même les économistes n'y croient pas.
+    écran : Des économies *fantômes*, des affichages *magiques*… même les *économistes* n'y croient pas.
+    gag : emoji / son : ghost
+    source : La Grande Conversation · Revue Politique et Parlementaire (contre-budget RN)
+
+07. [GAG N°1] Et quand il faut passer aux actes, à l'Assemblée ? Ne cherchez plus personne.
+    écran : Et quand il faut passer aux actes, à l'Assemblée ? Ne cherchez plus *personne*.
+    gag : emoji / son : crickets
+
+08. [À L'ASSEMBLÉE] Seize octobre. Retour de l'ISF ? Le RN vote contre.
+    écran : 16 octobre. Retour de l'**ISF** ? Le RN vote *contre*.
+    gag : vote / son : buzzer
+    source : Assemblée nationale — scrutin public n°8870 (PLF 2027)
+
+09. [À L'ASSEMBLÉE] La taxe Zucman sur les ultra-riches ? Le RN vote encore contre.
+    écran : La taxe **ZUCMAN** sur les ultra-riches ? Le RN vote *encore* *contre*.
+    gag : vote / son : buzzer
+    source : Assemblée nationale — scrutin public n°8859 (PLF 2027)
+
+10. [À L'ASSEMBLÉE] Quand il s'agit de protéger les milliardaires, y a plus de patriotes !
+    écran : Quand il s'agit de protéger les *milliardaires*, y a plus de **PATRIOTES** !
+    gag : rain / son : scratch
+
+11. [GAG N°2] Deuxième aberration : les rétropédalages en série.
+    écran : Deuxième aberration : les *rétropédalages* en série.
+    gag : rewind / son : rewind
+
+12. [GAG N°2] Abroger la réforme des retraites ? Promis… puis, « dans un second temps ».
+    écran : Abroger la réforme des *retraites* ? Promis… puis, « dans *un* *second* *temps* ».
+    gag : quote / son : trombone
+    source : L'Express · Le Parisien (juin 2024)
+
+13. [GAG N°2] Le pouvoir d'achat ? Ça change d'avis selon la météo médiatique.
+    écran : Le pouvoir d'achat ? Ça change d'avis selon la *météo* *médiatique*.
+    gag : carousel / son : chuckle
+
+14. [GAG N°2] Ils surfent sur la colère de la vie chère, pour un projet qui ne touche pas un cheveu du CAC quarante.
+    écran : Ils surfent sur la colère de la *vie* *chère*, pour un projet qui ne touche pas un cheveu du **CAC** **40**.
+    gag : emoji / son : whoosh
+
+15. [LA VÉRITÉ] Leur seule vraie mesure, c'est la division. La haine de l'autre, pour masquer le vide de leur projet social.
+    écran : Leur seule vraie mesure, c'est la **DIVISION**. La *haine* *de* *l'autre*, pour masquer le vide de leur projet social.
+    gag : error404 / son : glitch
+
+16. [LA VÉRITÉ] Ne vous faites pas avoir.
+    écran : Ne vous faites pas **AVOIR**.
+    gag : — / son : —
+
+17. [LA VÉRITÉ] La vraie rupture face à l'austérité, elle est à gauche. Pas dans l'imposture brune.
+    écran : La vraie rupture face à l'austérité, elle est à *gauche*. Pas dans l'**IMPOSTURE** brune.
+    gag : cta / son : —
+
