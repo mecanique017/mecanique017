@@ -31,7 +31,8 @@ Grille à 120 BPM : il se passe quelque chose sur chaque temps.
 0-2 s : accroche (question ou chiffre choc).
 Puis une séquence par idée du script, chacune avec son geste visuel (compteur, carte de vote, frise, balance…).
 Drop musical sur la révélation principale.
-Fin : appel à l'action et logo. La dernière image rejoint la première pour boucler.
+Fin : appel à l'action et logo.
+Logo Canal Rouge (branding/badge_canal_rouge.png) en haut à droite sous l'en-tête, sur TOUTES les images, extraits compris (anti-vol). La dernière image rejoint la première pour boucler.
 </structure>
 
 <build>

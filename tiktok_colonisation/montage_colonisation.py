@@ -44,6 +44,8 @@ W, H, FPS, SR = 1080, 1920, 30, 44100
 GAP, INTRO_PAD, OUTRO_PAD = 0.50, 0.15, 1.8
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, "..", "branding"))
+from canal_rouge import appliquer_logo                      # logo Canal Rouge (anti-vol)
 BUILD = os.path.join(HERE, "build")
 OUT_AUDIO = os.path.join(HERE, "voix_off_colonisation.mp3")
 OUT_VIDEO = os.path.join(HERE, "tiktok_colonisation_reponse.mp4")
@@ -1212,9 +1214,8 @@ def render_extract(ex, t, total):
 
 def render_frame(t, total):
     ex = extract_at(t)
-    if ex:
-        return render_extract(ex, t, total)
-    return render_frame_narr(t, total)
+    arr = render_extract(ex, t, total) if ex else render_frame_narr(t, total)
+    return appliquer_logo(arr)                                   # logo sur TOUTES les images
 
 
 def render_frame_narr(t, total):
