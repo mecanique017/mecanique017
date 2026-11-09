@@ -24,7 +24,8 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 SOURCE = os.path.join(HERE, "logo_canal_rouge_original.jpg")   # logo fourni (fond noir)
 LOGO_PNG = os.path.join(HERE, "logo_canal_rouge.png")          # rond seul, fond transparent
-BADGE_PNG = os.path.join(HERE, "badge_canal_rouge.png")        # rond + nom, prêt à incruster
+BADGE_PNG = os.path.join(HERE, "badge_canal_rouge.png")        # rond + nom, prêt à incruster (fonds sombres)
+BADGE_CLAIR_PNG = os.path.join(HERE, "badge_canal_rouge_clair.png")  # variante pour fonds clairs (texte bleu nuit)
 FONT = "/usr/share/fonts/opentype/inter/Inter-ExtraBold.otf"
 
 # --- réglages (modifiables) -------------------------------------------------
@@ -57,8 +58,9 @@ def creer_logo():
     return rond
 
 
-def creer_badge():
-    """Rond + « CANAL ROUGE » dessous, avec une ombre pour rester lisible sur tous les fonds."""
+def creer_badge(clair=False):
+    """Rond + « CANAL ROUGE » dessous, avec une ombre pour rester lisible sur tous les fonds.
+    clair=True : variante pour fond blanc (nom en bleu nuit, ombre légère)."""
     rond = Image.open(LOGO_PNG) if os.path.exists(LOGO_PNG) else creer_logo()
     f = ImageFont.truetype(FONT, 25)
     nom = "CANAL ROUGE"
@@ -69,17 +71,18 @@ def creer_badge():
     ombre = Image.new("RGBA", (bw, bh), (0, 0, 0, 0))
     od = ImageDraw.Draw(ombre)
     x0 = (bw - DIAMETRE) // 2
-    od.ellipse([x0 + 2, 6, x0 + DIAMETRE + 2, DIAMETRE + 6], fill=(0, 0, 0, 170))
-    od.text((bw / 2 + 2, DIAMETRE + 28), nom, font=f, fill=(0, 0, 0, 220), anchor="mm")
+    od.ellipse([x0 + 2, 6, x0 + DIAMETRE + 2, DIAMETRE + 6], fill=(0, 0, 0, 90 if clair else 170))
+    if not clair:
+        od.text((bw / 2 + 2, DIAMETRE + 28), nom, font=f, fill=(0, 0, 0, 220), anchor="mm")
     badge.alpha_composite(ombre.filter(ImageFilter.GaussianBlur(4)))
     # liseré blanc + rond
     d = ImageDraw.Draw(badge)
     d.ellipse([x0 - 3, 1, x0 + DIAMETRE + 3, DIAMETRE + 7], fill=(255, 255, 255, 235))
     badge.alpha_composite(rond.resize((DIAMETRE, DIAMETRE), Image.LANCZOS), (x0, 4))
-    d.text((bw / 2, DIAMETRE + 26), nom, font=f, fill=(255, 255, 255, 255), anchor="mm")
+    d.text((bw / 2, DIAMETRE + 26), nom, font=f, fill=(0, 35, 95, 255) if clair else (255, 255, 255, 255), anchor="mm")
     if OPACITE < 1:
         badge.putalpha(badge.getchannel("A").point(lambda v: int(v * OPACITE)))
-    badge.save(BADGE_PNG)
+    badge.save(BADGE_CLAIR_PNG if clair else BADGE_PNG)
     return badge
 
 
@@ -90,13 +93,16 @@ def position(badge, w=W):
 _cache = {}
 
 
-def appliquer_logo(arr):
-    """Incruste le badge sur une image numpy RVB (H, W, 3) uint8 et la renvoie."""
-    if "b" not in _cache:
-        b = Image.open(BADGE_PNG) if os.path.exists(BADGE_PNG) else creer_badge()
+def appliquer_logo(arr, clair=False):
+    """Incruste le badge sur une image numpy RVB (H, W, 3) uint8 et la renvoie.
+    clair=True pour les vidéos sur fond blanc."""
+    cle = "clair" if clair else "b"
+    if cle not in _cache:
+        png = BADGE_CLAIR_PNG if clair else BADGE_PNG
+        b = Image.open(png) if os.path.exists(png) else creer_badge(clair)
         rgba = np.asarray(b).astype(np.float32)
-        _cache["b"] = (rgba[..., :3], rgba[..., 3:] / 255.0, position(b, arr.shape[1]))
-    rgb, al, (x, y) = _cache["b"]
+        _cache[cle] = (rgba[..., :3], rgba[..., 3:] / 255.0, position(b, arr.shape[1]))
+    rgb, al, (x, y) = _cache[cle]
     h, w = al.shape[:2]
     zone = arr[y:y + h, x:x + w].astype(np.float32)
     arr = arr.copy() if not arr.flags.writeable else arr
@@ -131,7 +137,8 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         creer_logo()
         creer_badge()
-        print(f"[OK] {LOGO_PNG}\n[OK] {BADGE_PNG}")
+        creer_badge(clair=True)
+        print(f"[OK] {LOGO_PNG}\n[OK] {BADGE_PNG}\n[OK] {BADGE_CLAIR_PNG}")
         print("Usage : python3 branding/canal_rouge.py video.mp4 [sortie.mp4]")
     else:
         filigraner_video(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None)
