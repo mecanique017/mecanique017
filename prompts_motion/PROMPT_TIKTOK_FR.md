@@ -18,7 +18,7 @@ Si un élément manque, prends une valeur par défaut raisonnable et dis-le moi.
 Vidéo TikTok verticale 1080x1920, 30 ou 60 fps, plan-séquence continu : chaque scène naît de la précédente
 (un mot devient une forme, une carte s'ouvre sur la scène suivante, une couleur envahit l'écran puis se contracte).
 Une seule police d'affichage grasse (Anton ou Archivo Black) et une police texte (Inter ou Geist).
-Palette : 2 couleurs maximum, plus le noir et le blanc.
+Palette PAR DÉFAUT (depuis le 10/11/2026) : FOND BLANC, couleurs BLEU-BLANC-ROUGE (bleu #0055A4, rouge #EF4135, texte bleu nuit) — moteur de référence : tiktok_reaction/montage_reaction.py ; logo en version claire.
 Sous-titres cinétiques mot par mot, calés sur la voix, avec les mots-clés surlignés.
 Accroche dans la première seconde. Une idée par plan. Rien ne reste immobile plus de 0,8 s.
 Chaque chiffre ou citation affiche une carte « Source : … » lisible au moins 1,5 s.
