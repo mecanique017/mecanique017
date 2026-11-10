@@ -29,7 +29,12 @@ Ces règles viennent de l'audit du compte @kopp3051 du 10/11/2026 (30 vidéos an
 5. **Voix** : edge-tts `fr-FR-HenriNeural`, débit +8 %. La voix Kokoro est jugée trop robotique.
 6. **Sources** : chaque chiffre ou citation a sa source à l'écran.
 7. **Extraits** : toujours crédités (droit de citation).
-8. **Formats à alterner** : les vidéos sourcées, et des extraits bruts de clash de 20 à 40 secondes avec un simple titre.
+8. **Appel à s'abonner et à partager AU MILIEU de la vidéo** (demande de l'utilisateur, 10/11/2026), en plus de l'appel final :
+   - le placer vers 40 à 55 % de la durée, juste après un fait fort, pas dans les 10 premières secondes ;
+   - une phrase courte en voix off, par exemple : « Si tu apprends quelque chose, abonne-toi et partage. La suite va te surprendre. » ;
+   - un bandeau « ABONNE-TOI · PARTAGE » à l'écran pendant 2 à 3 secondes ;
+   - il ne doit pas casser le rythme : l'enchaîner avec une promesse sur la suite.
+9. **Formats à alterner** : les vidéos sourcées, et des extraits bruts de clash de 20 à 40 secondes avec un simple titre.
 
 ## 3. Fond et ton
 
