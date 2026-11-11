@@ -10,6 +10,7 @@ Avant toute nouvelle vidéo, lire et appliquer **`prompts_motion/REGLES_CANAL_RO
 - **Durée de 60 à 90 secondes par défaut**, sauf durée demandée.
 - **Fond blanc bleu-blanc-rouge**, avec le logo Canal Rouge en version claire sur toutes les images. Le moteur de référence est `tiktok_reaction/montage_reaction.py`.
 - **Appel « abonne-toi et partage » au milieu de la vidéo** (vers 40 à 55 %), en plus de l'appel final.
+- **Écriture inspirée de @enmarge.media** : citation exacte en ouverture, « on a fait le calcul » sur la vie courante, tutoiement, « qui paie ? », limite honnête, question finale (détail dans le fichier de règles, section 7).
 - **Voix** : edge-tts `fr-FR-HenriNeural`, débit +8 %.
 - **Faits vérifiés et sourcés à l'écran.** On critique des propos, pas des personnes : pas d'insulte, pas d'intention inventée.
 - **À livrer avec la vidéo** :

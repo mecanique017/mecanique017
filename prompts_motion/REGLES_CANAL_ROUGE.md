@@ -78,3 +78,32 @@ Ces règles viennent de l'audit du compte @kopp3051 du 10/11/2026 (30 vidéos an
 - **Rendu** : contrôler une planche d'aperçus avant le rendu complet.
 - **Version légère** : `-crf 26 -maxrate 1800k`.
 - **Dépôt** : les MP4 et les dossiers `build/` restent hors dépôt (`.gitignore` par dossier). Commit et push à chaque livraison.
+
+## 7. Modèle d'écriture : @enmarge.media (demande de l'utilisateur, 11/11/2026)
+
+Analyse de leurs 30 dernières vidéos (27/10 au 10/11/2026), à partir des légendes et des statistiques. Les images et le son n'ont pas pu être consultés depuis cet environnement : le style visuel reste à copier d'après une capture fournie par l'utilisateur.
+
+**Leurs résultats** : médiane de 10 000 vues (contre 358 pour @kopp3051), et cinq vidéos entre 168 000 et 384 000 vues :
+
+- Bardella et la TVA sur le plein : 384 000 ;
+- la taxe sur les données numériques : 336 000 ;
+- Retailleau et le Smic : 313 000 ;
+- « ton patron peut-il t'empêcher de faire grève ? » : 218 000 ;
+- la pétition CNews : 168 000.
+
+**La recette à reprendre dans chaque script :**
+
+1. **Ouvrir sur une citation exacte**, avec qui, quand et où (« Jordan Bardella, mardi 3 novembre au 20h de TF1 »). Jamais de phrase d'introduction.
+2. **« On a fait le calcul »** : refaire le calcul devant le spectateur, avec des chiffres de la vie courante (un plein de 40 litres, une fiche de paie au Smic, un abonnement à 14,99 €). C'est le cœur de leurs plus gros succès.
+3. **Tutoyer et ramener au quotidien** : « ta fiche de paie », « ton patron », « toi qui fais 40 litres par semaine pour aller bosser ».
+4. **La question « Qui paie ? »** : chiffrer le coût de la mesure et dire qui le supporte.
+5. **Donner la limite ou le point faible**, même quand ça dessert la thèse (« ce n'est pas encore une loi », « le point faible : aucun seuil »). C'est ce qui rend la vidéo crédible et partageable au-delà des convaincus.
+6. **Le détail que les autres n'ont pas** : numéro du scrutin, votes groupe par groupe, article de loi, calcul maison (« sans les voix du RN, le vote donnait 25 contre 17 »).
+7. **Finir par une question ou une consigne de partage ciblée** : « Envoie-la au collègue qui croit qu'il n'a pas le droit », « Tu croyais gagner combien ? ».
+8. **Viser tous les camps avec la même méthode** (RN, LR, macronistes, mais aussi LFI) : la vérification paraît neutre, donc elle touche plus large.
+
+**Les sujets qui marchent chez eux** : l'argent dans la poche des gens (carburant, Smic, retraite, impôts, grève, livret A). Les citations abstraites ou les sujets de personnes plafonnent à 2 000 – 5 000 vues.
+
+**Les légendes** : longues et complètes (la légende raconte toute la vidéo), sources primaires listées à la fin, **aucun hashtag**. À tester sur Canal Rouge : légende longue avec sources, et 0 à 3 hashtags.
+
+**Le rythme** : 1 à 3 vidéos par jour, publiées le jour même ou le lendemain matin de la déclaration.
