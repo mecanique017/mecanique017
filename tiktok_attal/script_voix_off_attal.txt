@@ -1,0 +1,77 @@
+SCRIPT VOIX OFF : « LA MACRONIE D'ATTAL, DÉBOISÉE » (≈ 1 min 30)
+(** = pavé jaune + impact · * = surligné bleu clair)
+
+01. [LA MACRONIE] Le parti de Gabriel Attal. La macronie. Le grand renouveau promis…
+    écran : Le parti de Gabriel Attal. La *macronie*. Le grand *renouveau* promis…
+    gag : emoji / son : chuckle
+
+02. [LA MACRONIE] …qui nous a offert le plus grand mépris social de la Cinquième République !
+    écran : …qui nous a offert le plus grand **MÉPRIS** social de la Ve République !
+    gag : emoji / son : buzzer
+
+03. [LA MACRONIE] Parlons de leur bilan, et de leurs belles promesses en toc.
+    écran : Parlons de leur *bilan*, et de leurs belles promesses en *toc*.
+    gag : emoji / son : chuckle
+
+04. [SUCCÈS N°1] Premier grand succès : le « en même temps ». Spoiler : c'était toujours pour les mêmes.
+    écran : Premier grand succès : le « *en* *même* *temps* ». Spoiler : c'était toujours pour les **MÊMES**.
+    gag : balance / son : scratch
+
+05. [SUCCÈS N°1] Deux mille dix-huit : suppression de l'ISF. Cadeau de bienvenue aux plus riches.
+    écran : 2018 : suppression de l'**ISF**. Cadeau de *bienvenue* aux plus riches.
+    gag : vote / son : kaching
+    source : Loi n°2017-1837 de finances pour 2018 (Légifrance)
+
+06. [SUCCÈS N°1] Deux mille vingt-trois : la retraite à soixante-quatre ans, passée en force au quarante-neuf trois. Malgré des millions de personnes dans la rue.
+    écran : 2023 : la retraite à *64* *ans*, passée en force au **49.3**. Malgré des *millions* de personnes dans la rue.
+    gag : vote / son : buzzer
+    source : 49.3 du 16/03/2023 · manif. du 7/03/2023 : Intérieur 1,28 M / CGT 3,5 M
+
+07. [SUCCÈS N°1] Et l'hôpital ? Des urgences qui ferment la nuit, faute de soignants.
+    écran : Et l'*hôpital* ? Des urgences qui **FERMENT** la nuit, faute de soignants.
+    gag : emoji / son : siren
+
+08. [SUCCÈS N°1] Pendant ce temps, le CAC quarante verse cent sept milliards et demi à ses actionnaires. Un record.
+    écran : Pendant ce temps, le CAC 40 verse **107,5** **Md€** à ses actionnaires. Un *record*.
+    gag : counter / son : kaching
+    source : La Tribune · Lettre Vernimmen — dividendes + rachats d'actions 2025
+
+09. [SUCCÈS N°1] Et la pauvreté ? Quinze virgule quatre pour cent. Du jamais vu depuis trente ans.
+    écran : Et la pauvreté ? **15,4** **%**. Du *jamais* *vu* depuis trente ans.
+    gag : counter / son : trombone
+    source : Insee Première n°2063 (juillet 2025) — plus haut niveau depuis 1996
+
+10. [SUCCÈS N°1] Leur « en même temps », c'était : toujours plus pour les riches, toujours moins pour les autres.
+    écran : Leur « en même temps », c'était : toujours *plus* pour les riches, toujours **MOINS** pour les autres.
+    gag : rain / son : chuckle
+
+11. [ABERRATION N°2] Deuxième aberration : la trahison démocratique.
+    écran : Deuxième aberration : la **TRAHISON** démocratique.
+    gag : title / son : rimshot
+
+12. [ABERRATION N°2] Décembre deux mille vingt-trois : la loi immigration est adoptée avec les voix du RN.
+    écran : Décembre 2023 : la loi *immigration* est adoptée avec les voix du **RN**.
+    gag : vote / son : buzzer
+    source : Parlement, 19/12/2023 (Le Monde · Les Échos)
+
+13. [ABERRATION N°2] Marine Le Pen applaudit : « une victoire idéologique », dit-elle.
+    écran : Marine Le Pen applaudit : « une *victoire* *idéologique* », dit-elle.
+    gag : quote / son : trombone
+    source : Le Monde, 20/12/2023
+
+14. [ABERRATION N°2] Ils se disent le rempart… mais ils ont ouvert l'autoroute à l'extrême droite.
+    écran : Ils se disent le *rempart*… mais ils ont ouvert l'**AUTOROUTE** à l'extrême droite.
+    gag : road / son : whoosh
+
+15. [CONCLUSION] Leurs années au pouvoir ont fracturé le pays et vidé les services publics.
+    écran : Leurs années au pouvoir ont *fracturé* le pays et vidé les **SERVICES** **PUBLICS**.
+    gag : error404 / son : glitch
+
+16. [CONCLUSION] La seule issue : le service public, la justice fiscale, le partage des richesses.
+    écran : La seule issue : le *service* *public*, la *justice* *fiscale*, le **PARTAGE** des richesses.
+    gag : — / son : —
+
+17. [CONCLUSION] La vraie gauche, c'est le seul rempart qui reste. Abonne-toi, et partage !
+    écran : La vraie gauche, c'est le seul **REMPART** qui reste. Abonne-toi, et partage !
+    gag : cta / son : —
+
