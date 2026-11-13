@@ -107,3 +107,14 @@ Analyse de leurs 30 dernières vidéos (27/10 au 10/11/2026), à partir des lég
 **Les légendes** : longues et complètes (la légende raconte toute la vidéo), sources primaires listées à la fin, **aucun hashtag**. À tester sur Canal Rouge : légende longue avec sources, et 0 à 3 hashtags.
 
 **Le rythme** : 1 à 3 vidéos par jour, publiées le jour même ou le lendemain matin de la déclaration.
+
+## 8. Recette de la vidéo qui a percé (Riner, 09/11/2026) — PRIORITAIRE
+
+Constat : « Riner : à qui ça profite ? » = 22 780 vues, 816 partages (3,6 % des vues), contre ~318 vues de médiane sur les 30 dernières vidéos. Le moteur, ce sont les partages. Ces 6 règles priment sur le reste en cas de conflit.
+
+1. **Réagir dans les heures qui suivent** une annonce qui touche une personnalité populaire. Si le sujet date de plus de 24 h, le signaler à l'utilisateur avant de produire.
+2. **Une seule question** dans le titre, l'accroche et le bandeau (« À qui ça profite ? », « Qui paie ? »). Chaque chapitre y répond. Pas de « bref » à plusieurs sujets sans fil commun.
+3. **Au moins 3 extraits avec la vraie voix** de la personne critiquée, en alternance avec le motion design (texte 2 à 5 s, extrait 3 à 8 s). S'il manque des extraits parlés, le dire à l'utilisateur et lui demander d'en envoyer.
+4. **Un chiffre « fais le calcul »** vérifiable et sourcé à l'écran (ex. « 421 308 voix manquaient en 2022 »).
+5. **Appel au partage avec une raison** liée au sujet (« Partage pour que tes potes ne se fassent pas avoir », « Ne disperse pas ta voix. Partage. »), au milieu ET à la fin. Jamais un simple « partage ».
+6. **Une seule version par sujet.** Republier une variante seulement si la première ne décolle pas après 2 à 3 h.

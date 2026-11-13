@@ -6,6 +6,8 @@ Ce dépôt contient le site du garage Mécanique 17 et les projets vidéo TikTok
 
 Avant toute nouvelle vidéo, lire et appliquer **`prompts_motion/REGLES_CANAL_ROUGE.md`**. L'essentiel :
 
+- **Recette prioritaire (section 8 du fichier de règles)** : réagir dans les heures qui suivent ; une seule question (« À qui ça profite ? ») ; au moins 3 extraits avec la vraie voix de la personne critiquée ; un chiffre « fais le calcul » vérifiable ; un appel au partage avec une raison ; une seule version par sujet.
+
 - **Accroche choc dès la première seconde.**
 - **Durée de 60 à 90 secondes par défaut**, sauf durée demandée.
 - **Fond blanc bleu-blanc-rouge**, avec le logo Canal Rouge en version claire sur toutes les images. Le moteur de référence est `tiktok_reaction/montage_reaction.py`.
