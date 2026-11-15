@@ -305,10 +305,30 @@ def split_voice(path):
     return [shrink_pauses(trim_silence(x[a:b])) for a, b in zip(bounds[:-1], bounds[1:])]
 
 
+CLONE_DIR = os.path.join(BUILD, "clone")
+
+
+def clone_pieces():
+    """Voix clonée : une pièce par séquence, lue telle quelle (pas de découpe devinée ni de pauses rabotées).
+    Renvoie None si les fichiers build/clone/sNN.wav ne sont pas tous là."""
+    import json
+    out = []
+    for i, seg in enumerate(SEGMENTS):
+        p = os.path.join(CLONE_DIR, f"s{i:02d}.wav")
+        if not os.path.exists(p):
+            return None
+        x = read_wav_mono(p)
+        j = p[:-4] + ".json"
+        seg["phrases"] = json.load(open(j)) if os.path.exists(j) else [dict(texte=seg["voice"], t0=0.0, t1=len(x) / SR)]
+        out.append(x)
+    return out
+
+
 def build_voiceover(voice_file):
     pieces = [np.zeros(int(INTRO_PAD * SR), np.float32)]
     t = INTRO_PAD
-    for seg, x in zip(SEGMENTS, split_voice(voice_file)):
+    voix = clone_pieces() or split_voice(voice_file)
+    for seg, x in zip(SEGMENTS, voix):
         seg["t0"], seg["t1"] = t, t + len(x) / SR
         gap = GAP + seg.get("beat", 0.0)          # « temps comique » après certaines phrases
         ex = seg.get("extract")
@@ -345,15 +365,36 @@ def parse_words(sub):
     return out
 
 
+def _cle(w):
+    return re.sub(r"[^\w%€]", "", w.lower())
+
+
+def sous_titre_parle(seg):
+    """Sous-titre = ce qui est VRAIMENT dit (le `sub` résumé décalait tout) ; les mots en **gras** / *jaune*
+    du `sub` sont reportés sur les mots identiques de la voix."""
+    styles = {_cle(w): st for w, st in parse_words(seg["sub"]) if st != "n"}
+    return [(w, styles.get(_cle(w), "n")) for w in seg["voice"].split()]
+
+
 def prepare_timing():
     for seg in SEGMENTS:
-        words = parse_words(seg["sub"])
-        weights = [len(SPOKEN.get(w, w)) + 1 for w, _ in words]
-        dur, tot = seg["t1"] - seg["t0"], sum(weights)
-        t, wl = seg["t0"], []
-        for (w, st), wt in zip(words, weights):
-            wl.append(dict(word=w, style=st, t=t))
-            t += dur * wt / tot
+        wl = []
+        if seg.get("phrases"):                     # voix clonée : minutage sur les vraies phrases
+            for ph in seg["phrases"]:
+                words = [(w, st) for w, st in sous_titre_parle(dict(voice=ph["texte"], sub=seg["sub"]))]
+                weights = [len(SPOKEN.get(w, w)) + 1 for w, _ in words]
+                t, dur, tot = seg["t0"] + ph["t0"], ph["t1"] - ph["t0"], sum(weights) or 1
+                for (w, st), wt in zip(words, weights):
+                    wl.append(dict(word=w, style=st, t=t))
+                    t += dur * wt / tot
+        else:                                      # ancienne voix (edge-tts) : comportement inchangé
+            words = parse_words(seg["sub"])
+            weights = [len(SPOKEN.get(w, w)) + 1 for w, _ in words]
+            dur, tot = seg["t1"] - seg["t0"], sum(weights)
+            t = seg["t0"]
+            for (w, st), wt in zip(words, weights):
+                wl.append(dict(word=w, style=st, t=t))
+                t += dur * wt / tot
         # groupes d'écran : 6 mots max, coupure après ponctuation forte
         chunks, cur = [], []
         for w in wl:

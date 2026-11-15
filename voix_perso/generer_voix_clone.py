@@ -11,7 +11,7 @@ Usage :  <python du venv> voix_perso/generer_voix_clone.py tiktok_xxx/montage_xx
 Référence par défaut : voix_perso/ref/ref_ma_voix.wav (NON versionnée : le dépôt est public).
 Installation (une fois par session) : voir voix_perso/README.md.
 Compter environ 5 à 6 s de calcul par seconde de voix générée."""
-import importlib.util, os, re, sys, time
+import importlib.util, json, os, re, sys, time
 import numpy as np, torch, torchaudio as ta, wave
 from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
@@ -85,10 +85,14 @@ parts, t0 = [], time.time()
 for i, seg in enumerate(m.SEGMENTS):
     out = os.path.join(projet, "build", "clone", f"s{i:02d}.wav")
     if not os.path.exists(out):                          # reprise possible si le calcul est interrompu
-        morceaux = []
+        morceaux, fen, t = [], [], 0.0
         for j, ph in enumerate(phrases(seg["voice"])):
-            morceaux += [generer_phrase(ph, 17 + 31 * i + j), np.zeros(int(PAUSE_PHRASE * SR), np.float32)]
+            x = generer_phrase(ph, 17 + 31 * i + j)
+            fen.append(dict(texte=ph, t0=round(t, 3), t1=round(t + len(x) / SR, 3)))
+            t += len(x) / SR + PAUSE_PHRASE
+            morceaux += [x, np.zeros(int(PAUSE_PHRASE * SR), np.float32)]
         ta.save(out, torch.from_numpy(np.concatenate(morceaux[:-1]))[None], SR)
+        json.dump(fen, open(out[:-4] + ".json", "w"), ensure_ascii=False, indent=1)   # fenêtres réelles
     w, sr = ta.load(out)
     if sr != SR:
         w = ta.functional.resample(w, sr, SR)
