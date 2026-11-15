@@ -26,7 +26,7 @@ Ces règles viennent de l'audit du compte @kopp3051 du 10/11/2026 (30 vidéos an
    - appel du logo : `appliquer_logo(arr, clair=True)` ;
    - moteur de référence : `tiktok_reaction/montage_reaction.py`.
 4. **Logo Canal Rouge sur toutes les images**, extraits compris. Ne pas l'ajouter après coup sur d'anciennes vidéos, sauf demande.
-5. **Voix** : edge-tts `fr-FR-RemyMultilingualNeural`, débit +3 % (depuis le 15/11/2026, plus naturelle qu'Henri ; voir section 9). Henri et Kokoro sont jugées trop robotiques.
+5. **Voix** : **la voix clonée de l'utilisateur** (depuis le 15/11/2026, voir `voix_perso/README.md`) via `voix_perso/generer_voix_clone.py`. Si la référence n'est pas disponible dans la session (machine réinitialisée), demander à l'utilisateur de renvoyer son enregistrement, ou utiliser en secours edge-tts `fr-FR-RemyMultilingualNeural`, débit +3 %. Henri et Kokoro sont jugées trop robotiques.
 6. **Sources** : chaque chiffre ou citation a sa source à l'écran.
 7. **Extraits** : toujours crédités (droit de citation).
 8. **Appel à s'abonner et à partager AU MILIEU de la vidéo** (demande de l'utilisateur, 10/11/2026), en plus de l'appel final :
@@ -142,3 +142,9 @@ Constat : « Riner : à qui ça profite ? » = 22 780 vues, 816 partages (3,6 % 
 - Sous-titres mot à mot en bas, avec le mot clé surligné en jaune.
 
 Ces règles complètent les sections 7 (enmarge) et 8 (recette Riner). En cas de conflit, la section 8 prime : on garde au moins 3 extraits avec de vraies voix.
+
+## 10. Voix clonée de l'utilisateur (15/11/2026)
+- Clone fait à la demande de l'utilisateur, avec son accord dit à voix haute dans l'enregistrement. On ne clone **jamais** la voix d'une autre personne.
+- Générateur : `voix_perso/generer_voix_clone.py` (Chatterbox multilingue, CPU, ~5-6 s de calcul par seconde de voix). Installation et commande dans `voix_perso/README.md`.
+- L'enregistrement de référence n'est **jamais** commité : le dépôt est public.
+- À chaque livraison avec la voix clonée, rappeler d'activer le label TikTok « Contenu généré par l'IA ».
