@@ -1,6 +1,6 @@
 # Protégeons les nôtres : s'organiser sans armes face à l'ultradroite
 
-Vidéo TikTok Canal Rouge (~2 min), sensibilisation, voix clonée de l'utilisateur.
+Vidéo TikTok Canal Rouge (~1 min 50), sensibilisation, voix clonée de l'utilisateur.
 Question : « Qui nous protège ? ». Message : s'organiser pour se protéger, **pas pour attaquer**, sans armes, sans milice, dans la loi.
 
 - Extraits : @tajmaat_service (témoignages de faux contrôles « BAC », **non vérifiés**, présentés comme tels).
