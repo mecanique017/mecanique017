@@ -101,7 +101,7 @@ SEGMENTS = [
     dict(voice="Quatre : on se forme. Premiers secours, sport de combat en club. Cinq : on témoigne, comme le demandent ces lanceurs d'alerte :",
          sub="**4.** On se forme : premiers secours, sport de combat **en club**. **5.** On témoigne :",
          tag="LE PLAN", bg="rouge", mark="4-5", gag=None,
-         extract=dict(file="v1.mp4", src=107.94, end=127.6, label="« Transmettez-nous votre témoignage »")),
+         extract=dict(file="v1.mp4", src=107.94, end=119.56, label="« Transmettez-nous votre témoignage »")),
     dict(voice="La limite, et elle est importante : pas d'armes, pas de milice, pas de vengeance. En France, la légitime défense doit être nécessaire et proportionnée. Notre force, c'est le nombre, la loi, et la solidarité.",
          sub="La limite, **importante** : pas d'armes, pas de milice, pas de vengeance. La légitime défense doit être *nécessaire et proportionnée*. Notre force : **LE NOMBRE, LA LOI, LA SOLIDARITÉ**.",
          tag="LA LIMITE", bg="noir", mark="LOI", serious=True, gag=None,
