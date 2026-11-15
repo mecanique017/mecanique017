@@ -1,6 +1,6 @@
 # Argentine : le « miracle » Milei, qui paie la facture ?
 
-Vidéo TikTok Canal Rouge (~1 min 44), ton alarmiste, voix clonée de l'utilisateur.
+Vidéo TikTok Canal Rouge (~1 min 40), ton alarmiste, voix clonée de l'utilisateur.
 Une question (« qui a payé la facture ? »), 4 extraits avec vraies voix (BFM Business : patron d'usine x2, industriel ; un commentateur pro-Milei pour la limite honnête), chiffre « fais le calcul » : 90 000 emplois industriels.
 Sources fournies dans `build/src/` (non versionnées). Non utilisé : `v1.mp4` (chiffre « -2,6 % de PIB » introuvable, visage de Milei visiblement retouché).
 

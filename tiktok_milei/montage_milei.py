@@ -100,7 +100,7 @@ SEGMENTS = [
     dict(voice="La limite honnête : ses partisans ont un argument. Écoute :",
          sub="La limite honnête : ses partisans ont un **ARGUMENT**. Écoute :",
          tag="LA LIMITE", bg="noir", mark="!", serious=True, gag=None,
-         extract=dict(file="v3.mp4", src=31.22, end=39.0, label="« La pauvreté est passée en dessous »")),
+         extract=dict(file="v3.mp4", src=31.22, end=35.6, label="« La pauvreté est passée en dessous »")),
     dict(voice="C'est vrai : elle reste sous son niveau de fin deux mille vingt-trois. Mais elle remonte déjà. Et pendant ce temps, qui paie ? Les ouvriers. Et ceux qui n'ont plus de quoi consommer.",
          sub="Vrai : elle reste sous son niveau de fin 2023. Mais elle **REMONTE DÉJÀ**. Et qui paie ? **LES OUVRIERS**. Et ceux qui n'ont plus de quoi consommer.",
          tag="LA LIMITE", bg="rouge", mark="!", serious=True, gag=None,
