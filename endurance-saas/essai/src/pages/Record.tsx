@@ -178,6 +178,11 @@ export function RecordPage() {
   const [now, setNow] = useState(() => Date.now())
   const [gps, setGps] = useState<{ accuracy: number; at: number; lat: number; lng: number; heading: number | null; speed: number | null } | { error: string } | null>(null)
   const [gap, setGap] = useState<number | null>(null)
+  // Relance du suivi GPS : certains téléphones (iPhone surtout) cessent d'envoyer des positions sans
+  // erreur, notamment au retour dans l'appli. Changer cette valeur recrée le suivi.
+  const [watchGen, setWatchGen] = useState(0)
+  const lastGpsAtRef = useRef(0)
+  const restartedAtRef = useRef(0)
   const [hr, setHr] = useState<number | null>(null)
   const [hrDevice, setHrDevice] = useState<string | null>(null)
   const [finishing, setFinishing] = useState(false)
@@ -233,6 +238,11 @@ export function RecordPage() {
       const t = Date.now()
       setNow(t)
       const s = sessionRef.current
+      // Signal muet depuis 15 s alors que l'appli est affichée : on relance le suivi (au plus toutes les 15 s)
+      if (s && hrOnlyRef.current === false && document.visibilityState === 'visible' && lastGpsAtRef.current && t - lastGpsAtRef.current > 15000 && t - restartedAtRef.current > 15000) {
+        restartedAtRef.current = t
+        setWatchGen((g) => g + 1)
+      }
       if (s && document.visibilityState === 'visible' && t - last < 3000) {
         const r = tick(s, t)
         if (r.event) {
@@ -252,6 +262,7 @@ export function RecordPage() {
     const id = navigator.geolocation.watchPosition(
       (p) => {
         const at = p.timestamp || Date.now()
+        lastGpsAtRef.current = Date.now()
         setGps({ accuracy: Math.round(p.coords.accuracy), at, lat: p.coords.latitude, lng: p.coords.longitude, heading: p.coords.heading, speed: p.coords.speed })
         // Guidage sur le parcours : distance restante, alerte vocale en cas d'écart prolongé
         const gr = guideRef.current
@@ -276,7 +287,12 @@ export function RecordPage() {
         }
         const s = sessionRef.current
         if (!s) return
-        const r = addFix(s, { lat: p.coords.latitude, lng: p.coords.longitude, accuracy: p.coords.accuracy, altitude: p.coords.altitude, at }, hrRef.current)
+        const c = p.coords
+        const r = addFix(
+          s,
+          { lat: c.latitude, lng: c.longitude, accuracy: c.accuracy, altitude: c.altitude, altitudeAccuracy: c.altitudeAccuracy, speed: c.speed, heading: c.heading, at },
+          hrRef.current,
+        )
         apply(r.session)
         if (r.event?.type === 'lap') {
           navigator.vibrate?.([200, 100, 200])
@@ -293,7 +309,7 @@ export function RecordPage() {
       { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 },
     )
     return () => navigator.geolocation.clearWatch(id)
-  }, [useGps, finishing, apply])
+  }, [useGps, finishing, apply, watchGen])
 
   // Écran maintenu allumé pendant l'enregistrement + détection d'une coupure (écran verrouillé, appli quittée)
   useEffect(() => {
@@ -304,6 +320,9 @@ export function RecordPage() {
     const onVisible = () => {
       if (document.visibilityState !== 'visible') return
       acquire()
+      // Retour dans l'appli : suivi GPS relancé tout de suite (iOS le laisse parfois figé)
+      restartedAtRef.current = Date.now()
+      setWatchGen((g) => g + 1)
       const s = sessionRef.current
       const last = s?.lastFix?.at
       if (s?.status === 'running' && last && Date.now() - last > 20000) setGap(Math.round((Date.now() - last) / 1000))
