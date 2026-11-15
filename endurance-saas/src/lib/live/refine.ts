@@ -6,13 +6,16 @@
  *     comme la « correction d'altitude » des applications de sport — l'altitude GPS bruite de ±10-20 m.
  * Logique pure + un appel réseau optionnel (fetchIgnElevations), réutilisable côté serveur.
  */
-import { haversine } from './recorder'
+import { haversine, dopplerVelocity } from './recorder'
 import { sportFamily } from '@/lib/sports'
 import { routeLeg, type RoutingProfile } from '@/lib/routes/router'
 import { routeLength } from '@/lib/routes/geo'
 
-/** Point GPS brut retenu pendant l'enregistrement : [t (s en mouvement), lat, lng, précision (m), epoch ms] */
-export type RawFix = [number, number, number, number, number]
+/**
+ * Point GPS brut retenu pendant l'enregistrement :
+ * [t (s en mouvement), lat, lng, précision (m), epoch ms, vitesse Doppler (m/s)?, cap (°)?]
+ */
+export type RawFix = [number, number, number, number, number, number?, number?]
 
 const M = 111_320
 
@@ -26,7 +29,7 @@ function q(sport: string) {
 }
 
 /** Lissage avant/arrière d'un axe (modèle position + vitesse). */
-function smoothAxis(z: number[], r: number[], dt: number[], qa: number): number[] {
+function smoothAxis(z: number[], r: number[], dt: number[], qa: number, zv?: (number | null)[], rv?: number[]): number[] {
   const n = z.length
   const xs: [number, number][] = [] // état filtré
   const Ps: [number, number, number][] = [] // covariance filtrée (pp, pv, vv)
@@ -49,6 +52,16 @@ function smoothAxis(z: number[], r: number[], dt: number[], qa: number): number[
     const innov = z[i] - x[0]
     x = [x[0] + k0 * innov, x[1] + k1 * innov]
     P = [(1 - k0) * P[0], (1 - k0) * P[1], P[2] - k1 * P[1]]
+    // Vitesse Doppler (si mesurée) : corrige aussi la position via la covariance
+    const v = zv?.[i]
+    if (v != null && rv) {
+      const sv = P[2] + rv[i]
+      const kp = P[1] / sv
+      const kv = P[2] / sv
+      const iv = v - x[1]
+      x = [x[0] + kp * iv, x[1] + kv * iv]
+      P = [P[0] - kp * P[1], P[1] - kp * P[2], P[2] - kv * P[2]]
+    }
     xs.push([...x])
     Ps.push([...P])
   }
@@ -126,8 +139,11 @@ export function smoothTrack(raw: RawFix[], sport: string): RefinedTrack | null {
     }
     const dt = seg.map((f, i) => (i ? Math.min(60, Math.max(0.001, (f[4] - seg[i - 1][4]) / 1000)) : 0))
     const r = seg.map((f) => Math.max(f[3], 3) ** 2)
-    const xs = seg.length > 1 ? smoothAxis(seg.map((f) => (f[2] - lng0) * kx), r, dt, qa) : [(seg[0][2] - lng0) * kx]
-    const ys = seg.length > 1 ? smoothAxis(seg.map((f) => (f[1] - lat0) * M), r, dt, qa) : [(seg[0][1] - lat0) * M]
+    // Vitesse Doppler (enregistrée depuis la v2 du GPS) : uniquement avec le cap, ou à l'arrêt
+    const dop = seg.map((f) => (f[5] != null && (f[6] != null || f[5] < 0.4) ? dopplerVelocity(f[5], f[6]) : null))
+    const rv = dop.map((d) => d?.r ?? 1)
+    const xs = seg.length > 1 ? smoothAxis(seg.map((f) => (f[2] - lng0) * kx), r, dt, qa, dop.map((d) => d?.vx ?? null), rv) : [(seg[0][2] - lng0) * kx]
+    const ys = seg.length > 1 ? smoothAxis(seg.map((f) => (f[1] - lat0) * M), r, dt, qa, dop.map((d) => d?.vy ?? null), rv) : [(seg[0][1] - lat0) * M]
     let last: { lat: number; lng: number } | null = null
     for (let i = 0; i < seg.length; i++) {
       const p = { t: seg[i][0], lat: lat0 + ys[i] / M, lng: lng0 + xs[i] / kx }

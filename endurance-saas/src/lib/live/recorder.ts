@@ -4,9 +4,12 @@
  * (localStorage) pour survivre à un rechargement ou à la fermeture de l'application.
  *
  * Traitement GPS :
- *  1. rejet des points imprécis (précision annoncée > 25 m) et des sauts impossibles ;
+ *  1. rejet des points imprécis (précision annoncée > 50 m), des sauts impossibles et des points
+ *     statistiquement incohérents avec la trajectoire (test d'innovation : reflets sur les immeubles) ;
  *  2. filtre de Kalman position + vitesse (pondéré par la précision de chaque point) : tracé lissé,
  *     distance juste même quand le signal « tremble » (immeubles, forêt), vitesse instantanée stable ;
+ *     la vitesse Doppler mesurée par la puce GPS (bien plus précise que la vitesse déduite des
+ *     positions) est fusionnée dans le filtre, comme sur les montres GPS ;
  *  3. pause automatique à l'arrêt (feu rouge, ravitaillement), reprise dès qu'on repart ;
  *  4. altitude lissée + seuil pour le dénivelé (l'altitude GPS brute bruite de ±10 m) ;
  *  5. tours automatiques (1 km par défaut) avec temps et allure de chaque tour.
@@ -75,6 +78,22 @@ export interface LiveSession {
   /** Depuis quand la vitesse filtrée est sous le seuil d'arrêt (ou au-dessus du seuil de reprise) */
   still: { since: number; lat: number; lng: number } | null
   maxSpeed: number // m/s
+  /** Points rejetés d'affilée par le test d'innovation (au-delà de 4 : on fait confiance au GPS) */
+  rejects?: number
+}
+
+/** Position transmise par le navigateur (GeolocationCoordinates) */
+export interface GpsFix {
+  lat: number
+  lng: number
+  accuracy: number
+  altitude?: number | null
+  altitudeAccuracy?: number | null
+  /** vitesse Doppler (m/s), null si inconnue */
+  speed?: number | null
+  /** cap (degrés, 0 = nord), null ou NaN à l'arrêt */
+  heading?: number | null
+  at: number
 }
 
 const STORAGE_KEY = 'endurance-live-session'
@@ -83,7 +102,11 @@ export const GOOD_ACCURACY_M = 20 // signal de bonne qualité (affichage « GPS 
 // un point à ± 40 m (fréquent sur iPhone au démarrage ou en ville) pèse peu mais n'est pas perdu.
 const MAX_ACCURACY_M = 50
 const MAX_SPEED_MS = 45 // ~160 km/h : au-delà c'est un saut GPS
-const ALT_THRESHOLD_M = 5 // seuil d'hystérésis du dénivelé (sur altitude lissée)
+const ALT_THRESHOLD_M = 5
+const MAX_ALT_ACCURACY_M = 30 // altitude GPS plus imprécise : ignorée (le dénivelé est recalculé sur l'IGN à la fin)
+const GATE = 16 // test d'innovation (khi² à 2 degrés de liberté, ~99,97 %)
+const MAX_REJECTS = 4
+const REINIT_AFTER_S = 30 // au-delà, le filtre repart de zéro (pas d'extrapolation sur une coupure) // seuil d'hystérésis du dénivelé (sur altitude lissée)
 const HR_EVERY_S = 5
 
 /** Réglages par sport : accélération plausible (m/s², bruit du modèle), vitesses d'arrêt et de reprise (m/s). */
@@ -165,6 +188,32 @@ function axisStep(a: Axis, z: number, r: number, dt: number, q: number): Axis {
   return { p: p + kp * innov, v: a.v + kv * innov, pp: (1 - kp) * pp, pv: (1 - kp) * pv, vv: vv - kv * pv }
 }
 
+/** Correction par une mesure de vitesse zv (variance rv) : vitesse Doppler de la puce GPS. */
+export function axisVelocity(a: Axis, zv: number, rv: number): Axis {
+  const s = a.vv + rv
+  const kp = a.pv / s
+  const kv = a.vv / s
+  const innov = zv - a.v
+  return { p: a.p + kp * innov, v: a.v + kv * innov, pp: a.pp - (kp * a.pv), pv: a.pv - kp * a.vv, vv: a.vv - kv * a.vv }
+}
+
+/**
+ * Vitesse Doppler → mesure de vitesse est/nord (m/s) et sa variance.
+ * À l'arrêt (< 0,4 m/s) : vitesse nulle, très fiable — supprime la dérive du tracé et la distance fantôme.
+ * Sans cap (certains téléphones) : la norme de la vitesse estimée est recalée sur la vitesse mesurée.
+ */
+export function dopplerVelocity(speed: number | null | undefined, heading: number | null | undefined, est?: { vx: number; vy: number }) {
+  if (speed == null || !Number.isFinite(speed) || speed < 0 || speed > MAX_SPEED_MS) return null
+  if (speed < 0.4) return { vx: 0, vy: 0, r: 0.25 }
+  if (heading != null && Number.isFinite(heading) && heading >= 0) {
+    const h = (heading * Math.PI) / 180
+    return { vx: speed * Math.sin(h), vy: speed * Math.cos(h), r: 0.25 + (0.15 * speed) ** 2 }
+  }
+  const n = est ? Math.hypot(est.vx, est.vy) : 0
+  if (!est || n < 0.5) return null
+  return { vx: (est.vx / n) * speed, vy: (est.vy / n) * speed, r: 0.5 + (0.3 * speed) ** 2 }
+}
+
 function kalmanStep(k: Kalman | null, lat: number, lng: number, accuracy: number, at: number, q: number): Kalman {
   const r = Math.max(accuracy, 3) ** 2
   if (!k) {
@@ -183,6 +232,19 @@ function kalmanStep(k: Kalman | null, lat: number, lng: number, accuracy: number
 
 const kalmanLatLng = (k: Kalman) => ({ lat: k.lat0 + k.y.p / M_PER_DEG, lng: k.lng0 + k.x.p / (Math.cos((k.lat0 * Math.PI) / 180) * M_PER_DEG) })
 const kalmanSpeed = (k: Kalman) => Math.hypot(k.x.v, k.y.v)
+
+/** Distance de Mahalanobis² entre la position mesurée et la position prédite par le filtre. */
+function innovation2(k: Kalman, lat: number, lng: number, accuracy: number, at: number, q: number) {
+  const dt = Math.min(Math.max(0, (at - k.at) / 1000), 60)
+  const kx = Math.cos((k.lat0 * Math.PI) / 180) * M_PER_DEG
+  const r = Math.max(accuracy, 3) ** 2
+  const one = (a: Axis, z: number) => {
+    const p = a.p + a.v * dt
+    const pp = a.pp + 2 * dt * a.pv + dt * dt * a.vv + (q * q * dt ** 4) / 4
+    return (z - p) ** 2 / (pp + r)
+  }
+  return one(k.x, (lng - k.lng0) * kx) + one(k.y, (lat - k.lat0) * M_PER_DEG)
+}
 const stopped = (k: Kalman): Kalman => ({ ...k, x: { ...k.x, v: 0 }, y: { ...k.y, v: 0 } })
 
 /**
@@ -202,25 +264,36 @@ export function tick(s: LiveSession, now = Date.now()): FixResult {
 export type FixResult = { session: LiveSession; event?: { type: 'lap'; lap: Lap } | { type: 'autopause' } | { type: 'autoresume' } }
 
 /** Ajoute une position GPS. Renvoie la nouvelle séance et, le cas échéant, un événement (tour, pause auto). */
-export function addFix(
-  s: LiveSession,
-  fix: { lat: number; lng: number; accuracy: number; altitude?: number | null; at: number },
-  hr?: number | null,
-): FixResult {
+export function addFix(s: LiveSession, fix: GpsFix, hr?: number | null): FixResult {
   if (s.status === 'paused' || !(fix.accuracy <= MAX_ACCURACY_M)) return { session: s }
   const { q, stop, resume: resumeSpeed } = tuning(s.sport)
 
-  // Saut impossible par rapport à la position filtrée : ignoré (le filtre n'est pas contaminé)
-  if (s.kalman) {
-    const dt = (fix.at - s.kalman.at) / 1000
-    const prev = kalmanLatLng(s.kalman)
-    const d = haversine(prev.lat, prev.lng, fix.lat, fix.lng)
-    if (dt <= 0 || (d - fix.accuracy) / dt > MAX_SPEED_MS) return { session: s }
+  let prior = s.kalman
+  const rejects = 0
+  if (prior) {
+    const dt = (fix.at - prior.at) / 1000
+    if (dt <= 0) return { session: s }
+    if (dt > REINIT_AFTER_S) prior = null // retour après une coupure : le filtre repart de cette position
+    else {
+      // Saut impossible par rapport à la position filtrée : ignoré (le filtre n'est pas contaminé)
+      const prev = kalmanLatLng(prior)
+      const d = haversine(prev.lat, prev.lng, fix.lat, fix.lng)
+      if ((d - fix.accuracy) / dt > MAX_SPEED_MS) return { session: s }
+      // Point incohérent avec la trajectoire (reflet sur un immeuble, saut de quelques dizaines de m) :
+      // ignoré, sauf s'il se répète (virage serré, demi-tour) — on fait alors confiance au GPS
+      if (innovation2(prior, fix.lat, fix.lng, fix.accuracy, fix.at, q) > GATE) {
+        if ((s.rejects ?? 0) < MAX_REJECTS) return { session: { ...s, rejects: (s.rejects ?? 0) + 1 } }
+        prior = null
+      }
+    }
   }
-  const kalman = kalmanStep(s.kalman, fix.lat, fix.lng, fix.accuracy, fix.at, q)
+  let kalman = kalmanStep(prior, fix.lat, fix.lng, fix.accuracy, fix.at, q)
+  // Fusion de la vitesse Doppler (pas au tout premier point : le filtre n'a pas encore de direction)
+  const dop = dopplerVelocity(fix.speed, fix.heading, prior ? { vx: kalman.x.v, vy: kalman.y.v } : undefined)
+  if (dop) kalman = { ...kalman, x: axisVelocity(kalman.x, dop.vx, dop.r), y: axisVelocity(kalman.y, dop.vy, dop.r) }
   const pos = kalmanLatLng(kalman)
   const speed = s.kalman ? kalmanSpeed(kalman) : 0
-  let next: LiveSession = { ...s, kalman }
+  let next: LiveSession = { ...s, kalman, rejects }
   let event: FixResult['event']
 
   // --- Pause / reprise automatiques sur la vitesse filtrée (avec hystérésis) ---
@@ -262,7 +335,8 @@ export function addFix(
 
   // --- Dénivelé : altitude lissée (moyenne exponentielle) + hystérésis ---
   let { elevationGain, elevationLoss, altSmooth, altRef } = next
-  const alt = fix.altitude != null && Number.isFinite(fix.altitude) ? fix.altitude : null
+  const altOk = fix.altitudeAccuracy == null || !(fix.altitudeAccuracy > MAX_ALT_ACCURACY_M)
+  const alt = altOk && fix.altitude != null && Number.isFinite(fix.altitude) ? fix.altitude : null
   if (alt != null) {
     altSmooth = altSmooth == null ? alt : altSmooth + 0.05 * (alt - altSmooth)
     if (altRef == null) altRef = altSmooth
@@ -279,7 +353,12 @@ export function addFix(
   if (altSmooth != null) point.alt = Math.round(altSmooth)
   if (hr) point.hr = hr
   const points = [...next.points, point]
-  const raw: RawFix[] = [...(next.raw ?? []), [t, round(fix.lat, 7), round(fix.lng, 7), Math.round(fix.accuracy * 10) / 10, fix.at]]
+  const rawFix: RawFix = [t, round(fix.lat, 7), round(fix.lng, 7), Math.round(fix.accuracy * 10) / 10, fix.at]
+  if (fix.speed != null && Number.isFinite(fix.speed) && fix.speed >= 0) {
+    rawFix.push(round(fix.speed, 2))
+    if (fix.heading != null && Number.isFinite(fix.heading) && fix.heading >= 0) rawFix.push(Math.round(fix.heading))
+  }
+  const raw: RawFix[] = [...(next.raw ?? []), rawFix]
 
   // --- Tours automatiques ---
   let laps = next.laps
