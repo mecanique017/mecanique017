@@ -1,9 +1,9 @@
-  0.15-  4.36  [ALERTE]  Qui nous protège ? Écoute ce que des témoins racontent, ces dernières semaines :
- 13.02- 27.22  [LES FAITS]  Ces témoignages ne sont pas encore vérifiés. Mais le reste, si. Le vingt-trois octobre, à Trappes, Pengo, vingt-six ans, est tué dans un attentat raciste. Et en deux mille vingt-cinq, la police a enregistré dix mille cent victimes de crimes et délits racistes.
- 27.72- 34.95  [LE CALCUL]  Fais le calcul : dix mille cent victimes en un an. Ça fait vingt-huit par jour. Et ce sont seulement celles qui ont porté plainte.
- 35.45- 49.75  [L'EXEMPLE]  Alors on fait quoi ? On s'organise. Pas pour attaquer. Pour se protéger. Aux États-Unis, les Black Panthers l'ont compris : leur arme la plus redoutée, c'était un petit-déjeuner gratuit. Vingt mille enfants nourris en mille neuf cent soixante-neuf.
- 50.25- 60.06  [L'EXEMPLE]  En France, à la fin des années quatre-vingt, les Black Dragons ont fait reculer les skinheads de Paris. On garde l'esprit : la solidarité, la discipline. Pas la violence.
- 60.56- 74.05  [LE PLAN]  Partage, pour que les nôtres ne restent jamais seuls. Un : on ne rentre plus seul la nuit. Groupes de quartier, on s'accompagne. Deux : on filme, on note la date, l'heure, le lieu. Trois : on porte plainte, à chaque fois.
- 74.55- 81.72  [LE PLAN]  Quatre : on se forme. Premiers secours, sport de combat en club. Cinq : on témoigne, comme le demandent ces lanceurs d'alerte :
- 93.84-106.37  [LA LIMITE]  La limite, et elle est importante : pas d'armes, pas de milice, pas de vengeance. En France, la légitime défense doit être nécessaire et proportionnée. Notre force, c'est le nombre, la loi, et la solidarité.
-106.87-115.00  [À TOI]  Et toi, dans ton quartier, qui est là pour les autres ? Dis-le en commentaire. Abonne-toi, et partage pour qu'aucun des nôtres ne marche seul.
+  0.15-  5.07  [ALERTE]  Qui nous protège ? Écoute ce que des témoins racontent, ces dernières semaines :
+ 13.73- 28.93  [LES FAITS]  Ces témoignages ne sont pas encore vérifiés. Mais le reste, si. Le vingt-trois octobre, à Trappes, Pengo, vingt-six ans, est tué dans un attentat raciste. Et en deux mille vingt-cinq, la police a enregistré dix mille cent victimes de crimes et délits racistes.
+ 29.43- 36.93  [LE CALCUL]  Fais le calcul : dix mille cent victimes en un an. Ça fait vingt-huit par jour. Et ce sont seulement celles qui ont porté plainte.
+ 37.43- 53.21  [L'EXEMPLE]  Alors on fait quoi ? On s'organise. Pas pour attaquer. Pour se protéger. Aux États-Unis, les Black Panthers l'ont compris : leur arme la plus redoutée, c'était un petit-déjeuner gratuit. Vingt mille enfants nourris en mille neuf cent soixante-neuf.
+ 53.71- 64.71  [L'EXEMPLE]  En France, à la fin des années quatre-vingt, les Black Dragons ont fait reculer les skinheads de Paris. On garde l'esprit : la solidarité, la discipline. Pas la violence.
+ 65.21- 80.19  [LE PLAN]  Partage, pour que les nôtres ne restent jamais seuls. Un : on ne rentre plus seul la nuit. Groupes de quartier, on s'accompagne. Deux : on filme, on note la date, l'heure, le lieu. Trois : on porte plainte, à chaque fois.
+ 80.69- 89.70  [LE PLAN]  Quatre : on se forme. Premiers secours, sport de combat en club. Cinq : on témoigne, comme le demandent ces lanceurs d'alerte :
+101.82-116.41  [LA LIMITE]  La limite, et elle est importante : pas d'armes, pas de milice, pas de vengeance. En France, la légitime défense doit être nécessaire et proportionnée. Notre force, c'est le nombre, la loi, et la solidarité.
+116.91-125.67  [À TOI]  Et toi, dans ton quartier, qui est là pour les autres ? Dis-le en commentaire. Abonne-toi, et partage pour qu'aucun des nôtres ne marche seul.
