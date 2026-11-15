@@ -26,7 +26,7 @@ Ces règles viennent de l'audit du compte @kopp3051 du 10/11/2026 (30 vidéos an
    - appel du logo : `appliquer_logo(arr, clair=True)` ;
    - moteur de référence : `tiktok_reaction/montage_reaction.py`.
 4. **Logo Canal Rouge sur toutes les images**, extraits compris. Ne pas l'ajouter après coup sur d'anciennes vidéos, sauf demande.
-5. **Voix** : edge-tts `fr-FR-HenriNeural`, débit +8 %. La voix Kokoro est jugée trop robotique.
+5. **Voix** : edge-tts `fr-FR-RemyMultilingualNeural`, débit +3 % (depuis le 15/11/2026, plus naturelle qu'Henri ; voir section 9). Henri et Kokoro sont jugées trop robotiques.
 6. **Sources** : chaque chiffre ou citation a sa source à l'écran.
 7. **Extraits** : toujours crédités (droit de citation).
 8. **Appel à s'abonner et à partager AU MILIEU de la vidéo** (demande de l'utilisateur, 10/11/2026), en plus de l'appel final :
@@ -118,3 +118,27 @@ Constat : « Riner : à qui ça profite ? » = 22 780 vues, 816 partages (3,6 % 
 4. **Un chiffre « fais le calcul »** vérifiable et sourcé à l'écran (ex. « 421 308 voix manquaient en 2022 »).
 5. **Appel au partage avec une raison** liée au sujet (« Partage pour que tes potes ne se fassent pas avoir », « Ne disperse pas ta voix. Partage. »), au milieu ET à la fin. Jamais un simple « partage ».
 6. **Une seule version par sujet.** Republier une variante seulement si la première ne décolle pas après 2 à 3 h.
+
+## 9. Voix et façon d'expliquer : modèle « L'Astérisque » (vidéo Attal analysée le 15/11/2026)
+
+**Voix**
+- edge-tts `fr-FR-RemyMultilingualNeural`, débit +3 %. Son intonation varie beaucoup plus que celle d'Henri (écart de hauteur mesuré : 91 Hz contre 61 Hz, 77 Hz pour la vidéo de référence) : elle sonne moins robotique.
+- Option premium : la voix ElevenLabs « Nicolas - Narrator » ou « Guillaume - Narrator » via vidIQ (28 crédits pour 1 000 caractères). Le compte vidIQ est à 0 crédit jusqu'au 30/11/2026, puis 150 crédits par mois, soit environ une vidéo de 2 min.
+- On ne clone pas la voix d'un autre créateur : on reprend le style, pas la voix d'une personne réelle.
+
+**Façon d'écrire (texte de la voix off)**
+1. **Ouvrir sur le document lui-même**, lu tel quel, puis qui l'a dit et où, en deux phrases sèches. Exemple : « Je propose photo… Signé Gabriel, en 2005. France 2 l'a montré jeudi. »
+2. **Phrases très courtes**, 3 à 10 mots, une idée par phrase. Pas de subordonnées. Des phrases nominales assumées : « Cinq mois. » « Au tiroir. »
+3. **Les dates comme repères**, dites seules en début de phrase : « Août 2023. » « Octobre 2025. » Une date par étape du récit.
+4. **Pivot d'honnêteté tôt** : ce qui n'est pas prouvé est dit tout de suite (« Rien n'est authentifié. Il n'a pas réagi. »), puis « Alors restons sur ce qui est prouvé. C'est pas plus joli. »
+5. **Relances de rythme** entre les parties : « Et c'est pas le pire. » « Et chez lui ? » « Le meilleur : »
+6. **Attribution dite à voix haute**, en deux mots : « selon Mediapart », « selon lui », « le parti dément ». La source exacte est aussi écrite en petit à l'écran.
+7. **Ironie par juxtaposition**, sans adjectif ni insulte : on recolle sa propre phrase en face des faits. « Le candidat anti-harcèlement. Chez lui, celui qui le contredit prend la porte. Le harcèlement, sa priorité absolue. »
+8. **Récapitulatif en dossier numéroté** avant la fin : « Dossier X : 1. … 2. … 3. … 4. … »
+9. **Chute en tutoiement** qui donne une utilité au spectateur : « La prochaine fois qu'on te le vend comme le gendre idéal, repense à ça. » Puis l'appel : « Abonne-toi. »
+
+**Visuel (à reprendre progressivement dans le moteur)**
+- Esthétique « dossier » : fond papier, documents découpés, tampons rouges (« AU TIROIR », « VIDE », « DÉLOYAL »), dates en gros façon calendrier, fiche « DOSSIER » numérotée en fin.
+- Sous-titres mot à mot en bas, avec le mot clé surligné en jaune.
+
+Ces règles complètent les sections 7 (enmarge) et 8 (recette Riner). En cas de conflit, la section 8 prime : on garde au moins 3 extraits avec de vraies voix.
