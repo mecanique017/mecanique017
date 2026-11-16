@@ -106,7 +106,7 @@ SEGMENTS = [
 ]
 EXTRACT_DIR = os.path.join(HERE, "build", "src")                 # vidéos fournies (non versionnées)
 EXTRACT_SRC = os.path.join(EXTRACT_DIR, "v1.mp4")
-EXTRACT_CREDIT = "Extraits : France Inter · Sud Radio (« Le Duel ») via @media_actu · droit de citation"
+EXTRACT_CREDIT = "Extraits : France Inter · LCI (« Le duel », 18H Darius Rochebin) via @media_actu · droit de citation"
 EXT_PAD = 0.25
 
 SPOKEN = {"95": "quatre-vingt-quinze", "1931.": "mille neuf cent trente et un.", "2023,": "deux mille vingt-trois,"}
