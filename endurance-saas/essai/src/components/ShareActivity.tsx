@@ -30,8 +30,30 @@ export function ShareActivity({ data, onClose }: { data: ShareData; onClose: () 
     img.src = `${import.meta.env.BASE_URL}icons/icon-192.png`
   }, [])
 
+  const fileName = `kronofit-${data.title.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${format}.png`
+
+  // L'image est préparée dès qu'elle change : sur iPhone, la feuille de partage doit s'ouvrir dans
+  // l'instant qui suit le toucher. La fabriquer au moment du toucher (1 à 2 s pour une story) fait
+  // refuser le partage par Safari.
+  const fileRef = useRef<File | null>(null)
+  const [ready, setReady] = useState(false)
   useEffect(() => {
-    if (canvas.current) renderShareImage(canvas.current, data, format, format === 'sticker' ? null : photo, mark)
+    if (!canvas.current) return
+    renderShareImage(canvas.current, data, format, format === 'sticker' ? null : photo, mark)
+    fileRef.current = null
+    setReady(false)
+    let cancelled = false
+    canvasToFile(canvas.current, fileName)
+      .then((f) => {
+        if (cancelled) return
+        fileRef.current = f
+        setReady(true)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, format, photo, mark])
 
   const pickPhoto = async (file: File | undefined) => {
@@ -47,29 +69,31 @@ export function ShareActivity({ data, onClose }: { data: ShareData; onClose: () 
     if (format === 'sticker') setFormat('story')
   }
 
-  const fileName = `kronofit-${data.title.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-${format}.png`
-
-  const share = async () => {
-    if (!canvas.current) return
-    setBusy(true)
+  // Pas d'attente entre le toucher et navigator.share (exigence de Safari). Image seule, sans texte :
+  // avec un texte joint, Instagram et TikTok n'apparaissent pas ou ne reçoivent pas l'image.
+  const share = () => {
+    const file = fileRef.current
     setMessage(null)
-    try {
-      const file = await canvasToFile(canvas.current, fileName)
-      const payload = { files: [file], title: data.title, text: `${data.title} · ${data.stats.map((s) => s.value).join(' · ')}` }
-      if (navigator.canShare?.(payload)) await navigator.share(payload)
-      else {
-        download(file)
-        setMessage('Partage direct indisponible sur cet appareil : image enregistrée, ajoutez-la depuis l’application du réseau social.')
-      }
-    } catch (e) {
-      if ((e as Error)?.name !== 'AbortError') setMessage('Partage impossible. Utilisez « Enregistrer l’image ».')
+    if (!file) return setMessage('Image en préparation, réessayez dans une seconde.')
+    const payload = { files: [file] }
+    if (!navigator.canShare?.(payload)) {
+      download(file)
+      setMessage('Partage direct indisponible dans ce navigateur : image enregistrée. Ouvrez KronoFit dans Safari (ou Chrome) pour partager directement, ou ajoutez l’image depuis l’application du réseau social.')
+      return
     }
-    setBusy(false)
+    setBusy(true)
+    navigator
+      .share(payload)
+      .catch((e: Error) => {
+        if (e?.name !== 'AbortError') setMessage('Partage impossible. Utilisez le bouton « Enregistrer l’image » puis ajoutez-la depuis Instagram, Facebook ou TikTok.')
+      })
+      .finally(() => setBusy(false))
   }
 
-  const save = async () => {
-    if (!canvas.current) return
-    download(await canvasToFile(canvas.current, fileName))
+  const save = () => {
+    const file = fileRef.current
+    if (!file) return setMessage('Image en préparation, réessayez dans une seconde.')
+    download(file)
     setMessage('Image enregistrée (Fichiers → Téléchargements sur iPhone, ou appui long sur l’aperçu → « Enregistrer dans Photos »).')
   }
 
@@ -106,7 +130,7 @@ export function ShareActivity({ data, onClose }: { data: ShareData; onClose: () 
         {message && <p role="status" className="text-sm text-muted-foreground">{message}</p>}
       </div>
       <div className="grid grid-cols-[1fr_auto] gap-2 border-t px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+12px)]">
-        <Button size="lg" className="h-14 rounded-full text-base" onClick={share} disabled={busy}>
+        <Button size="lg" className="h-14 rounded-full text-base" onClick={share} disabled={busy || !ready}>
           {busy ? <Loader2 className="size-5 animate-spin" /> : <Share2 className="size-5" />} Partager
         </Button>
         <Button size="lg" variant="outline" className="h-14 rounded-full" onClick={save} aria-label="Enregistrer l’image">

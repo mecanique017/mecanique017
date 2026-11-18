@@ -184,6 +184,22 @@ export function renderShareImage(canvas: HTMLCanvasElement, data: ShareData, for
 }
 
 function fitText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, max: number) {
+  // D'abord réduire la police (jusqu'à 60 %) : une valeur comme « 31,2 km/h » doit rester entière
+  const m = /(\d+(?:\.\d+)?)px/.exec(ctx.font)
+  if (m && ctx.measureText(text).width > max) {
+    const size = Number(m[1])
+    let s = size
+    while (s > size * 0.6 && ctx.measureText(text).width > max) {
+      s -= 2
+      ctx.font = ctx.font.replace(/\d+(?:\.\d+)?px/, `${s}px`)
+    }
+    if (ctx.measureText(text).width <= max) {
+      ctx.fillText(text, x, y)
+      ctx.font = ctx.font.replace(/\d+(?:\.\d+)?px/, `${size}px`)
+      return
+    }
+    ctx.font = ctx.font.replace(/\d+(?:\.\d+)?px/, `${size}px`)
+  }
   let t = text
   while (ctx.measureText(t).width > max && t.length > 3) t = t.slice(0, -2)
   ctx.fillText(t === text ? t : `${t.trimEnd()}…`, x, y)
