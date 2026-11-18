@@ -17,7 +17,11 @@ import type { SportKey as SportType } from '@/lib/sports'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
 export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar' | 'demo' | 'live'
 export type PlannedSource = 'manual' | 'ai' | 'demo'
-export type AiUsageKind = 'coach_analysis' | 'training_plan'
+export type AiUsageKind = 'coach_analysis' | 'training_plan' | 'nutrition_coach'
+export type NutritionGoal = 'lose' | 'recomp' | 'maintain' | 'muscle' | 'gain' | 'performance'
+export type Lifestyle = 'sedentary' | 'light' | 'active' | 'very_active'
+export type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+export type Diet = 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian'
 
 export type Database = {
   public: {
@@ -300,6 +304,88 @@ export type Database = {
         Row: { id: string; segment_id: string; activity_id: string; user_id: string; elapsed_seconds: number; start_time: string; created_at: string }
         Insert: { id?: string; segment_id: string; activity_id: string; user_id: string; elapsed_seconds: number; start_time: string; created_at?: string }
         Update: Partial<Database['public']['Tables']['segment_efforts']['Insert']>
+        Relationships: []
+      }
+      nutrition_profiles: {
+        Row: {
+          user_id: string
+          sex: 'male' | 'female'
+          birth_year: number
+          height_cm: number
+          lifestyle: Lifestyle
+          goal: NutritionGoal
+          rate_kg_week: number
+          target_weight: number | null
+          pregnant: boolean
+          diet: Diet
+          allergies: string | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          sex: 'male' | 'female'
+          birth_year: number
+          height_cm: number
+          lifestyle?: Lifestyle
+          goal?: NutritionGoal
+          rate_kg_week?: number
+          target_weight?: number | null
+          pregnant?: boolean
+          diet?: Diet
+          allergies?: string | null
+          updated_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['nutrition_profiles']['Insert']>
+        Relationships: []
+      }
+      food_logs: {
+        Row: {
+          id: string
+          user_id: string
+          day: string
+          meal: Meal
+          name: string
+          brand: string | null
+          barcode: string | null
+          quantity_g: number
+          kcal: number
+          protein_g: number
+          carbs_g: number
+          fat_g: number
+          fiber_g: number | null
+          per100: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          day: string
+          meal: Meal
+          name: string
+          brand?: string | null
+          barcode?: string | null
+          quantity_g: number
+          kcal: number
+          protein_g?: number
+          carbs_g?: number
+          fat_g?: number
+          fiber_g?: number | null
+          per100?: Json | null
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['food_logs']['Insert']>
+        Relationships: []
+      }
+      weight_logs: {
+        Row: { user_id: string; day: string; weight: number }
+        Insert: { user_id: string; day: string; weight: number }
+        Update: Partial<Database['public']['Tables']['weight_logs']['Insert']>
+        Relationships: []
+      }
+      nutrition_advice: {
+        Row: { id: string; user_id: string; day: string; question: string | null; advice: Json; created_at: string }
+        Insert: { id?: string; user_id: string; day: string; question?: string | null; advice: Json; created_at?: string }
+        Update: Partial<Database['public']['Tables']['nutrition_advice']['Insert']>
         Relationships: []
       }
       live_shares: {

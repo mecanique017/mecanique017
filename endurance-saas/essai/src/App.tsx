@@ -1,5 +1,5 @@
 import { HashRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { Circle, LayoutDashboard, LogOut, Newspaper, User, Users } from 'lucide-react'
+import { Apple, Circle, LayoutDashboard, LogOut, Newspaper, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { supabase } from './supabase'
@@ -20,6 +20,7 @@ import { FeedPage } from './pages/Feed'
 import { AthletePage } from './pages/Athlete'
 import { ClubPage, ClubsPage } from './pages/Clubs'
 import { ChallengesPage } from './pages/Challenges'
+import { NutritionPage } from './pages/Nutrition'
 import { RouteDetailPage, RouteEditorPage, RoutesPage } from './pages/Routes'
 import { SegmentPage } from './pages/Segment'
 
@@ -32,6 +33,7 @@ const NAV = [
   { to: '/dashboard/routes', label: 'Parcours' },
   { to: '/dashboard/calendar', label: 'Calendrier' },
   { to: '/dashboard/activities/import', label: 'Importer' },
+  { to: '/dashboard/nutrition', label: 'Nutrition' },
   { to: '/dashboard/wellness', label: 'Bien-être' },
   { to: '/dashboard/performance', label: 'Records' },
   { to: '/dashboard/stats', label: 'Statistiques' },
@@ -94,6 +96,7 @@ function Protected() {
           <Route path="activities/:id" element={<ActivityPage />} />
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="wellness" element={<WellnessPage />} />
+          <Route path="nutrition" element={<NutritionPage />} />
           <Route path="performance" element={<PerformancePage />} />
           <Route path="feed" element={<FeedPage />} />
           <Route path="athletes/:id" element={<AthletePage />} />
@@ -119,7 +122,7 @@ const TABS = [
   { to: '/dashboard', label: 'Accueil', icon: LayoutDashboard, end: true },
   { to: '/dashboard/feed', label: 'Fil', icon: Newspaper },
   { to: '/dashboard/record', label: 'Enregistrer', icon: Circle, main: true },
-  { to: '/dashboard/clubs', label: 'Groupes', icon: Users },
+  { to: '/dashboard/nutrition', label: 'Nutrition', icon: Apple },
   { to: '/dashboard/profile', label: 'Profil', icon: User },
 ]
 

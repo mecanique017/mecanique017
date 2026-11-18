@@ -14,6 +14,8 @@ export interface CoachUsage {
 const LIMITS: Record<AiUsageKind, (tier: SubscriptionTier) => number | null> = {
   coach_analysis: (tier) => getPlan(tier).monthlyCoachAnalyses,
   training_plan: (tier) => getPlan(tier).monthlyTrainingPlans,
+  // Conseils nutrition : quota journalier appliqué par la fonction serveur nutrition-coach
+  nutrition_coach: () => null,
 }
 
 /**
