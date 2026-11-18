@@ -83,7 +83,7 @@ SEGMENTS = [
          sub="Darmanin veut que Retailleau et Attal **se retirent**. Macron rêve d'une **coalition** de Lisnard à Glucksmann. Un seul but : **empêcher Mélenchon**. Une mère seule demande de l'aide. Retailleau :",
          tag="LA PANIQUE", bg="noir", mark="2027", gag=dict(kind="image", file="parismatch.webp", h=520, cy=0.70),
          source="BFM TV, 05/11 et 18/11/2026 · TF1 Info",
-         extract=dict(file="v10.mp4", src=0.0, end=10.4, label="Bruno Retailleau : « Il faut travailler un peu plus »")),
+         extract=dict(file="v10b.mp4", src=0.0, end=10.4, label="Bruno Retailleau : « Il faut travailler un peu plus »")),
     dict(voice="Fais le calcul : une mère seule sur trois vit sous le seuil de pauvreté. Travailler plus, c'est payer plus de garde d'enfants. Mélenchon, lui, montre le vrai problème :",
          sub="Fais le calcul : **1 MÈRE SEULE SUR 3** vit sous le seuil de pauvreté. Travailler plus = payer plus de **garde d'enfants**. Mélenchon, lui, montre le **vrai problème** :",
          tag="LE CALCUL", bg="rouge", mark="1/3", gag=None,
