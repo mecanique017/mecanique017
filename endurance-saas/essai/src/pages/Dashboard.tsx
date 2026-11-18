@@ -103,6 +103,14 @@ export function DashboardPage() {
               <p className="font-semibold">Bien-être</p>
               <p className="text-xs text-muted-foreground">VFC, sommeil, fatigue du matin</p>
             </Link>
+            <Link to="/dashboard/nutrition" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Nutrition</p>
+              <p className="text-xs text-muted-foreground">Calories, repas, poids, coach IA</p>
+            </Link>
+            <Link to="/dashboard/clubs" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Clubs & groupes</p>
+              <p className="text-xs text-muted-foreground">Rejoindre, créer, classements</p>
+            </Link>
           </nav>
           <KpiTiles series={data.series} />
           <div className="grid gap-6 lg:grid-cols-3">
