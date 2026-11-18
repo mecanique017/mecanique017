@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Maximize2, Minimize2 } from 'lucide-react'
 import { RouteMap } from '@/components/dashboard/route-map'
 import { cn } from '@/lib/utils'
 import type { GeoJSONSource, Map as MlMap, Marker } from 'maplibre-gl'
@@ -106,6 +107,8 @@ export function TrackMap({
   const me = useRef<Marker | null>(null)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
+  // Plein écran (cartes de séance, parcours…) : on y déplace la carte avec un seul doigt
+  const [full, setFull] = useState(false)
   const fitted = useRef(false)
   const onClick = useRef(onMapClick)
   useEffect(() => {
@@ -151,6 +154,8 @@ export function TrackMap({
         })
         // Geste de l'utilisateur (pas un déplacement programmé) : le suivi s'interrompt
         created.on('dragstart', () => onPan.current?.())
+        // Mentions légales repliées en un bouton « i » : dépliées, elles masquent une partie de la carte
+        created.once('idle', () => el.current?.querySelector('.maplibregl-ctrl-attrib')?.classList.remove('maplibregl-compact-show'))
         created.on('click', (e) => onClick.current?.([e.lngLat.lat, e.lngLat.lng]))
         created.on('load', () => {
           const m = created!
@@ -263,6 +268,21 @@ export function TrackMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, threeD, headingUp])
 
+  // Plein écran : un doigt déplace la carte ; en page, un doigt fait défiler la page
+  useEffect(() => {
+    const m = map.current
+    if (!ready || !m || live) return
+    if (full) m.cooperativeGestures.disable()
+    else m.cooperativeGestures.enable()
+    const id = requestAnimationFrame(() => m.resize())
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFull(false)
+    if (full) window.addEventListener('keydown', onKey)
+    return () => {
+      cancelAnimationFrame(id)
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [full, ready, live])
+
   if (failed) {
     return route.length >= 2 ? (
       <div className={cn('rounded-xl border bg-card p-2', className)}>
@@ -276,9 +296,26 @@ export function TrackMap({
   }
 
   return (
-    <div className={cn('relative overflow-hidden rounded-xl border bg-[#e8e4da]', live && 'live-map', className)}>
+    <div
+      className={cn(
+        'relative overflow-hidden rounded-xl border bg-[#e8e4da]',
+        live && 'live-map',
+        className,
+        full && 'fixed inset-0 z-[70] h-auto rounded-none border-0 pt-[env(safe-area-inset-top)]',
+      )}
+    >
       <div ref={el} className="h-full w-full" aria-label="Carte du parcours" role="img" />
       {!ready && <p className="absolute inset-0 flex items-center justify-center text-sm text-neutral-600">Chargement de la carte…</p>}
+      {ready && !live && (
+        <button
+          type="button"
+          onClick={() => setFull((f) => !f)}
+          className="absolute right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-10 flex size-11 items-center justify-center rounded-full bg-black/75 text-white shadow"
+          aria-label={full ? 'Quitter le plein écran' : 'Agrandir la carte'}
+        >
+          {full ? <Minimize2 className="size-5" /> : <Maximize2 className="size-5" />}
+        </button>
+      )}
     </div>
   )
 }
