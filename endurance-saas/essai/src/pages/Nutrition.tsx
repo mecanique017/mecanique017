@@ -23,6 +23,7 @@ import {
   type Targets,
 } from '@/lib/nutrition/calculator'
 import { autoAdvice, type Tip } from '@/lib/nutrition/advice'
+import { mealIdeas, nextMeal, type MealIdea } from '@/lib/nutrition/meals'
 import type { Food } from '@/lib/nutrition/foods'
 import type { Meal } from '@/types/database'
 import { AddFood } from '../components/AddFood'
@@ -209,12 +210,20 @@ export function NutritionPage() {
           })}
           <TipList tips={computed.tips.slice(0, 3)} />
           <Button variant="outline" className="w-full" onClick={() => setTab('coach')}>
-            <Sparkles className="size-4" /> Conseils du coach
+            <Sparkles className="size-4" /> Conseils et idées de repas
           </Button>
         </>
       )}
 
-      {tab === 'coach' && <CoachTab computed={computed} profile={data.profile} entries={data.today} day={day} history={data.advice} onDone={reload} />}
+      {tab === 'coach' && (
+        <CoachTab computed={computed} profile={data.profile} entries={data.today} day={day} history={data.advice}
+          onDone={reload}
+          onAddIdea={async (idea) => {
+            for (const it of idea.items) await addFood(user.id, day, idea.meal, it.food, it.grams)
+            reload()
+          }}
+        />
+      )}
       {tab === 'poids' && <WeightTab userId={user.id} today={today} weights={data.weights} person={computed.person} target={data.profile.target_weight != null ? Number(data.profile.target_weight) : null} trend={computed.trend} onSaved={reload} />}
       {tab === 'objectif' && (
         <div className="space-y-4">
@@ -333,6 +342,7 @@ function CoachTab({
   day,
   history,
   onDone,
+  onAddIdea,
 }: {
   computed: Computed
   profile: NutritionProfile
@@ -340,6 +350,7 @@ function CoachTab({
   day: string
   history: { id: string; question: string | null; advice: AiAdvice; created_at: string }[]
   onDone: () => void
+  onAddIdea: (idea: MealIdea) => Promise<void>
 }) {
   const [question, setQuestion] = useState('')
   const [state, setState] = useState<{ busy: boolean; result: AiAdvice | null; msg: string | null }>({ busy: false, result: null, msg: null })
@@ -379,7 +390,7 @@ function CoachTab({
         result: null,
         msg:
           r.reason === 'not_configured'
-            ? 'Le coach IA n’est pas encore activé sur ce compte d’essai. Les conseils automatiques ci-dessus restent disponibles.'
+            ? 'Coach IA non activé (il nécessite une clé Anthropic payante). Les conseils automatiques et les idées de repas ci-dessus sont gratuits.'
             : r.reason === 'quota'
               ? 'Limite de 10 demandes par jour atteinte. Revenez demain !'
               : r.reason === 'refused'
@@ -395,11 +406,12 @@ function CoachTab({
         <TipList tips={computed.tips} />
         {!computed.tips.length && <p className="text-sm text-muted-foreground">Rien à signaler pour le moment : continuez à noter vos repas.</p>}
       </section>
-      <section className="space-y-3 rounded-xl border bg-card p-4">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <Sparkles className="size-4" style={{ color: 'var(--brand)' }} /> Coach IA
-        </h2>
-        <p className="text-sm text-muted-foreground">Le coach analyse votre journée, votre semaine, vos séances et votre poids, puis vous propose des ajustements et des idées de repas.</p>
+      <MealIdeas computed={computed} profile={profile} entries={entries} day={day} onAdd={onAddIdea} />
+      <details className="space-y-3 rounded-xl border bg-card p-4" open={!!history.length}>
+        <summary className="flex cursor-pointer items-center gap-2 font-semibold">
+          <Sparkles className="size-4" style={{ color: 'var(--brand)' }} /> Coach IA <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
+        </summary>
+        <p className="mt-3 text-sm text-muted-foreground">Le coach IA analyse votre journée, votre semaine, vos séances et votre poids pour répondre à vos questions. Il nécessite une clé Anthropic (payante à l’usage) : les conseils automatiques et les idées de repas ci-dessus sont gratuits.</p>
         <textarea
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
@@ -414,8 +426,101 @@ function CoachTab({
         </Button>
         {state.msg && <p role="status" className="text-sm text-muted-foreground">{state.msg}</p>}
         {last && <AdviceView advice={last} />}
-      </section>
+      </details>
     </div>
+  )
+}
+
+/** Idées de repas gratuites (sans IA) pour le prochain repas, ajoutables au journal en un geste. */
+function MealIdeas({
+  computed,
+  profile,
+  entries,
+  day,
+  onAdd,
+}: {
+  computed: Computed
+  profile: NutritionProfile
+  entries: { meal: string; kcal: number; protein_g: number }[]
+  day: string
+  onAdd: (idea: MealIdea) => Promise<void>
+}) {
+  const isToday = day === localDate(new Date())
+  // Les collations peuvent être multiples : elles ne « ferment » pas un repas
+  const logged = new Set<Meal>(entries.map((e) => e.meal as Meal).filter((m) => m !== 'snack'))
+  const [meal, setMeal] = useState<Meal>(() => nextMeal(isToday ? new Date().getHours() : 8, logged))
+  const [added, setAdded] = useState<string | null>(null)
+  const { targets, totals } = computed
+  // Part de ce qu'il reste à manger pour ce repas : répartie sur les repas non encore notés
+  const remainingMeals = MEALS.filter((m) => !logged.has(m.key) || m.key === meal)
+  const shareLeft = remainingMeals.reduce((a, m) => a + m.share, 0) || 1
+  const mealShare = (MEALS.find((m) => m.key === meal)?.share ?? 0.3) / shareLeft
+  const kcalLeft = targets.kcal - totals.kcal
+  const wanted = Math.max(kcalLeft, 0) * (logged.has(meal) ? 1 : mealShare)
+  // Un repas reste un repas : au plus ~40 % de la journée et 55 g de protéines (au-delà, mieux vaut une collation de plus)
+  const cap = meal === 'snack' ? targets.kcal * 0.2 : targets.kcal * 0.4
+  const goal = {
+    kcal: Math.round(Math.min(wanted, cap)),
+    protein: Math.round(Math.min(Math.max(0, targets.protein - totals.protein) * (logged.has(meal) ? 1 : mealShare), meal === 'snack' ? 30 : 55)),
+  }
+  const extra = Math.round(Math.max(kcalLeft, 0) - goal.kcal)
+  const ideas = goal.kcal >= 150 ? mealIdeas(meal, { kcal: goal.kcal, protein: Math.max(goal.protein, 10) }, profile.diet, profile.allergies ?? '') : []
+  return (
+    <section className="space-y-3 rounded-xl border bg-card p-4">
+      <h2 className="font-semibold">Idées de repas</h2>
+      <div className="flex gap-1 overflow-x-auto" role="radiogroup" aria-label="Repas à préparer">
+        {MEALS.map((m) => (
+          <button
+            key={m.key}
+            role="radio"
+            aria-checked={meal === m.key}
+            onClick={() => setMeal(m.key)}
+            className={cn('whitespace-nowrap rounded-full border px-3 py-1.5 text-sm', meal === m.key && 'border-primary bg-primary/15 font-medium')}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      {goal.kcal < 150 ? (
+        <p className="text-sm text-muted-foreground">Objectif du jour atteint : pas besoin d’un repas de plus. Un fruit ou un yaourt si vous avez faim.</p>
+      ) : (
+        <>
+          <p className="text-sm text-muted-foreground">
+            Pour ce repas : environ {nf(goal.kcal)} kcal et {nf(Math.max(goal.protein, 10))} g de protéines (ce qu’il vous reste, réparti sur les repas restants).
+            {extra > 250 && remainingMeals.length <= 2 && ` Il vous restera environ ${nf(extra)} kcal : ajoutez une collation (par exemple après la séance ou en soirée).`}
+          </p>
+          {!ideas.length && <p className="text-sm text-muted-foreground">Aucune idée adaptée à ce repas avec votre régime : essayez un autre repas.</p>}
+          {ideas.map((idea) => (
+            <div key={idea.title} className="space-y-2 rounded-lg border p-3">
+              <div className="flex items-baseline gap-2">
+                <p className="flex-1 font-medium">{idea.title}</p>
+                <span className="text-xs tabular-nums text-muted-foreground">
+                  {nf(idea.kcal)} kcal · {nf(idea.protein)} g P
+                </span>
+              </div>
+              <ul className="text-sm text-muted-foreground">
+                {idea.items.map((i) => (
+                  <li key={i.food.name}>
+                    {nf(i.grams)} g · {i.food.name}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={added === idea.title}
+                onClick={async () => {
+                  setAdded(idea.title)
+                  await onAdd(idea).catch(() => setAdded(null))
+                }}
+              >
+                {added === idea.title ? <CheckCircle2 className="size-4" /> : <Plus className="size-4" />} {added === idea.title ? 'Ajouté au journal' : 'Ajouter au journal'}
+              </Button>
+            </div>
+          ))}
+        </>
+      )}
+    </section>
   )
 }
 
