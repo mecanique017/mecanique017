@@ -1,7 +1,7 @@
 /**
  * Nutrition : lecture / écriture Supabase, recherche Open Food Facts, appel du coach IA.
  */
-import type { Database, Meal } from '@/types/database'
+import type { Database, Json, Meal } from '@/types/database'
 import { addDays } from '@/lib/dates'
 import { fromOpenFoodFacts, forQuantity, type Food, type OffProduct, type Per100 } from '@/lib/nutrition/foods'
 import { supabase } from './supabase'
@@ -27,7 +27,7 @@ export async function loadNutrition(userId: string, day: string) {
   const weekStart = addDays(day, -6)
   const [fromWeek] = dayRange(weekStart)
   const [, toDay] = dayRange(day)
-  const [profile, base, logs, weights, acts, advice] = await Promise.all([
+  const [profile, base, logs, weights, acts, advice, water, favs] = await Promise.all([
     supabase.from('nutrition_profiles').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('profiles').select('weight, age, height').eq('id', userId).single(),
     supabase.from('food_logs').select('*').eq('user_id', userId).gte('day', addDays(day, -59)).lte('day', day).order('created_at'),
@@ -40,8 +40,10 @@ export async function loadNutrition(userId: string, day: string) {
       .lt('start_time', toDay)
       .order('start_time'),
     supabase.from('nutrition_advice').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
+    supabase.from('water_logs').select('ml').eq('user_id', userId).eq('day', day).maybeSingle(),
+    supabase.from('meal_favorites').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(30),
   ])
-  for (const r of [profile, base, logs, weights, acts, advice]) if (r.error) throw r.error
+  for (const r of [profile, base, logs, weights, acts, advice, water, favs]) if (r.error) throw r.error
   const all = (logs.data ?? []) as FoodLog[]
   return {
     profile: profile.data as NutritionProfile | null,
@@ -52,6 +54,8 @@ export async function loadNutrition(userId: string, day: string) {
     history: all,
     weights: ((weights.data ?? []) as WeightLog[]).map((w) => ({ ...w, weight: Number(w.weight) })),
     activities: acts.data ?? [],
+    waterMl: water.data?.ml ?? 0,
+    favorites: (favs.data ?? []) as unknown as Favorite[],
     advice: (advice.data ?? []) as unknown as { id: string; day: string; question: string | null; advice: AiAdvice; created_at: string }[],
   }
 }
@@ -179,4 +183,51 @@ export async function askCoach(day: string, question: string, context: unknown):
     return { ok: false, reason: reason === 'not_configured' || reason === 'quota' || reason === 'refused' ? reason : 'error' }
   }
   return { ok: true, advice: (data as { advice: AiAdvice }).advice, remaining: (data as { remaining: number }).remaining }
+}
+
+export interface FavoriteItem {
+  name: string
+  brand?: string | null
+  barcode?: string | null
+  grams: number
+  per100: Per100
+}
+export interface Favorite {
+  id: string
+  name: string
+  meal: Meal
+  items: FavoriteItem[]
+}
+
+/** Enregistre les aliments d'un repas comme « repas favori ». */
+export async function saveFavorite(userId: string, name: string, meal: Meal, logs: FoodLog[]) {
+  const items: FavoriteItem[] = logs.map((l) => {
+    const k = Number(l.quantity_g) / 100
+    const p = (l.per100 ?? null) as Per100 | null
+    return {
+      name: l.name,
+      brand: l.brand,
+      barcode: l.barcode,
+      grams: Number(l.quantity_g),
+      per100: p ?? { kcal: Number(l.kcal) / k, protein: Number(l.protein_g) / k, carbs: Number(l.carbs_g) / k, fat: Number(l.fat_g) / k, fiber: l.fiber_g != null ? Number(l.fiber_g) / k : null },
+    }
+  })
+  const { error } = await supabase.from('meal_favorites').insert({ user_id: userId, name: name.trim().slice(0, 80), meal, items: items as unknown as Json })
+  if (error) throw error
+}
+
+export async function deleteFavorite(id: string) {
+  const { error } = await supabase.from('meal_favorites').delete().eq('id', id)
+  if (error) throw error
+}
+
+/** Ajoute tous les aliments d'un favori au repas choisi. */
+export async function addFavorite(userId: string, day: string, meal: Meal, fav: Favorite) {
+  for (const it of fav.items) await addFood(userId, day, meal, { name: it.name, brand: it.brand, barcode: it.barcode, ...it.per100 }, it.grams)
+}
+
+/** Hydratation : nouveau total de la journée (ml). */
+export async function setWater(userId: string, day: string, ml: number) {
+  const { error } = await supabase.from('water_logs').upsert({ user_id: userId, day, ml: Math.max(0, Math.min(15000, Math.round(ml))) }, { onConflict: 'user_id,day' })
+  if (error) throw error
 }

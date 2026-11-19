@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { ArrowLeft, Barcode, Camera, Loader2, Pencil, Search, X } from 'lucide-react'
+import { ArrowLeft, Barcode, Camera, Loader2, Pencil, Search, Star, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field } from '@/components/ui/field'
 import { cn } from '@/lib/utils'
 import { MEALS } from '@/lib/nutrition/calculator'
 import { forQuantity, searchCommonFoods, type Food } from '@/lib/nutrition/foods'
 import type { Meal } from '@/types/database'
-import { productByBarcode, searchOpenFoodFacts } from '../nutrition'
+import { productByBarcode, searchOpenFoodFacts, type Favorite } from '../nutrition'
 
 type BarcodeDetectorCtor = new (o: { formats: string[] }) => { detect(src: CanvasImageSource): Promise<{ rawValue: string }[]> }
 const Detector = (globalThis as { BarcodeDetector?: BarcodeDetectorCtor }).BarcodeDetector
@@ -21,14 +21,19 @@ const fmt1 = (n: number) => (Math.round(n * 10) / 10).toLocaleString('fr-FR')
 export function AddFood({
   meal: initialMeal,
   recents,
+  favorites = [],
   onAdd,
+  onAddFavorite,
   onClose,
 }: {
   meal: Meal
   recents: (Food & { lastQty: number })[]
+  favorites?: Favorite[]
   onAdd: (meal: Meal, food: Food, grams: number) => Promise<void>
+  onAddFavorite?: (meal: Meal, fav: Favorite) => Promise<void>
   onClose: () => void
 }) {
+  const [favBusy, setFavBusy] = useState<string | null>(null)
   const [meal, setMeal] = useState<Meal>(initialMeal)
   const [q, setQ] = useState('')
   const [picked, setPicked] = useState<Food | null>(null)
@@ -117,6 +122,37 @@ export function AddFood({
               </button>
             </div>
 
+            {!q && favorites.length > 0 && onAddFavorite && (
+              <section>
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Mes repas favoris</h3>
+                <ul className="divide-y rounded-xl border">
+                  {favorites.map((f) => {
+                    const kcal = f.items.reduce((a, i) => a + (i.per100.kcal * i.grams) / 100, 0)
+                    return (
+                      <li key={f.id}>
+                        <button
+                          className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent disabled:opacity-60"
+                          disabled={!!favBusy}
+                          onClick={async () => {
+                            setFavBusy(f.id)
+                            await onAddFavorite(meal, f).catch(() => setFavBusy(null))
+                          }}
+                        >
+                          <Star className="size-4 shrink-0 fill-current text-amber-400" aria-hidden />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium">{f.name}</span>
+                            <span className="block truncate text-xs text-muted-foreground">
+                              {f.items.length} aliment{f.items.length > 1 ? 's' : ''} · {Math.round(kcal)} kcal
+                            </span>
+                          </span>
+                          {favBusy === f.id ? <Loader2 className="size-4 animate-spin" /> : <span className="text-xs text-primary">Ajouter</span>}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </section>
+            )}
             {!q && recents.length > 0 && <FoodList title="Récents" items={recents} onPick={setPicked} />}
             {q && <FoodList title="Aliments courants" items={local} onPick={setPicked} empty="Aucun aliment courant ne correspond." />}
             {q.trim().length >= 3 && (
