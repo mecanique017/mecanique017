@@ -10,6 +10,8 @@ import { getTrainingLoad, localDate } from '@/lib/training/load'
 import { getWellness, getWellnessContext } from '@/lib/training/wellness'
 import { addDays } from '@/lib/dates'
 import { ReadinessCard } from '../components/ReadinessCard'
+import { WeatherCard } from '../components/WeatherCard'
+import { loadGear, wornGear } from './Gear'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -19,15 +21,16 @@ export function DashboardPage() {
   const user = useUser()
   const { data, error } = useData(async () => {
     const today = localDate(new Date())
-    const [series, profile, activities, planned, wellness, history] = await Promise.all([
+    const [series, profile, activities, planned, wellness, history, gear] = await Promise.all([
       getTrainingLoad(supabase, user.id),
       supabase.from('profiles').select('full_name, subscription_tier, subscription_status, trial_ends_at').eq('id', user.id).single(),
       supabase.from('activities').select('id, title, sport_type, start_time, duration_seconds, distance_meters, tss').eq('user_id', user.id).order('start_time', { ascending: false }).limit(8),
       supabase.from('planned_workouts').select('id, title, is_completed').eq('user_id', user.id).eq('scheduled_date', today),
       getWellnessContext(supabase, user.id, today),
       getWellness(supabase, user.id, addDays(today, -29), today),
+      loadGear(user.id).catch(() => []),
     ])
-    return { today, series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness, history }
+    return { today, series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness, history, worn: wornGear(gear) }
   }, [user.id])
 
   const live = loadSession()
@@ -78,6 +81,14 @@ export function DashboardPage() {
             </p>
           )}
           <ReadinessCard series={data.series} wellness={data.history} today={data.today} />
+          <WeatherCard />
+          {data.worn.length > 0 && (
+            <Link to="/dashboard/gear" className="flex items-center gap-3 rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 text-sm">
+              <span className="flex-1">
+                <strong>Matériel à surveiller :</strong> {data.worn.map((g) => `${g.name} (${Math.round(g.km).toLocaleString('fr-FR')} km)`).join(', ')}
+              </span>
+            </Link>
+          )}
           <nav className="grid grid-cols-2 gap-3" aria-label="Analyses">
             <Link to="/dashboard/performance" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Records & prédictions</p>
@@ -106,6 +117,10 @@ export function DashboardPage() {
             <Link to="/dashboard/nutrition" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Nutrition</p>
               <p className="text-xs text-muted-foreground">Calories, repas, poids, coach IA</p>
+            </Link>
+            <Link to="/dashboard/gear" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Matériel</p>
+              <p className="text-xs text-muted-foreground">Km des chaussures, vélo, chaîne, pneus</p>
             </Link>
             <Link to="/dashboard/clubs" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Clubs & groupes</p>

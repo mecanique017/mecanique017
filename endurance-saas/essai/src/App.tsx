@@ -21,6 +21,7 @@ import { AthletePage } from './pages/Athlete'
 import { ClubPage, ClubsPage } from './pages/Clubs'
 import { ChallengesPage } from './pages/Challenges'
 import { NutritionPage } from './pages/Nutrition'
+import { GearPage } from './pages/Gear'
 import { RouteDetailPage, RouteEditorPage, RoutesPage } from './pages/Routes'
 import { SegmentPage } from './pages/Segment'
 
@@ -34,6 +35,7 @@ const NAV = [
   { to: '/dashboard/calendar', label: 'Calendrier' },
   { to: '/dashboard/activities/import', label: 'Importer' },
   { to: '/dashboard/nutrition', label: 'Nutrition' },
+  { to: '/dashboard/gear', label: 'Matériel' },
   { to: '/dashboard/wellness', label: 'Bien-être' },
   { to: '/dashboard/performance', label: 'Records' },
   { to: '/dashboard/stats', label: 'Statistiques' },
@@ -97,6 +99,7 @@ function Protected() {
           <Route path="calendar" element={<CalendarPage />} />
           <Route path="wellness" element={<WellnessPage />} />
           <Route path="nutrition" element={<NutritionPage />} />
+          <Route path="gear" element={<GearPage />} />
           <Route path="performance" element={<PerformancePage />} />
           <Route path="feed" element={<FeedPage />} />
           <Route path="athletes/:id" element={<AthletePage />} />

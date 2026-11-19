@@ -165,6 +165,7 @@ export function ActivityPage() {
           <Download className="h-4 w-4" /> Exporter en GPX (Garmin, Strava, Komoot…)
         </Button>
       )}
+      <GearPicker activityId={a.id} userId={user.id} sport={a.sport_type} current={a.gear_id} onChange={reload} />
       {a.athlete_notes && (
         <div className="rounded-xl border bg-card p-4">
           <h2 className="text-sm text-muted-foreground mb-1">Notes</h2>
@@ -184,5 +185,35 @@ export function ActivityPage() {
         <Sparkles className="size-4 shrink-0 text-red-600" aria-hidden /> L’analyse par le coach IA est disponible dans la version complète.
       </p>
     </div>
+  )
+}
+
+/** Matériel utilisé pour la séance (choisi automatiquement, modifiable). */
+function GearPicker({ activityId, userId, sport, current, onChange }: { activityId: string; userId: string; sport: string; current: string | null; onChange: () => void }) {
+  const { data } = useData(async () => {
+    const { data } = await supabase.from('gear').select('id, name, kind, sports, retired').eq('user_id', userId).is('parent_id', null)
+    return data ?? []
+  }, [userId])
+  const options = (data ?? []).filter((g) => (!g.retired && (g.sports.includes(sport) || !g.sports.length)) || g.id === current)
+  if (!options.length) return null
+  return (
+    <label className="flex items-center gap-3 rounded-xl border bg-card p-4 text-sm">
+      <span className="text-muted-foreground">Matériel</span>
+      <select
+        className="h-9 flex-1 rounded-md border border-input bg-background px-2"
+        value={current ?? ''}
+        onChange={async (e) => {
+          await supabase.from('activities').update({ gear_id: e.target.value || null }).eq('id', activityId)
+          onChange()
+        }}
+      >
+        <option value="">Aucun</option>
+        {options.map((g) => (
+          <option key={g.id} value={g.id}>
+            {g.name}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
