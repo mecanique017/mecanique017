@@ -259,6 +259,7 @@ export function NutritionPage() {
           })()}
           diet={data.profile.diet}
           avoid={data.profile.allergies ?? ''}
+          onChange={reload}
         />
       )}
       {tab === 'poids' && <WeightTab userId={user.id} today={today} weights={data.weights} person={computed.person} target={data.profile.target_weight != null ? Number(data.profile.target_weight) : null} trend={computed.trend} onSaved={reload} />}

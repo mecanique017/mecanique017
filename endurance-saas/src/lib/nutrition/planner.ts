@@ -42,12 +42,17 @@ export function weekMenu(start: string, target: { kcal: number; protein: number 
   }
   return Array.from({ length: 7 }, (_, i) => ({
     day: addDaysIso(start, i),
-    meals: MEALS.flatMap((m) => {
+    meals: MEALS.reduce<MenuMeal[]>((day, m) => {
       const pool = pools.get(m.key) ?? []
-      if (!pool.length) return []
-      const idea = pool[(i + (m.key === 'dinner' ? 1 : 0)) % pool.length] // déjeuner et dîner différents le même jour
-      return [{ meal: m.key, title: idea.title, kcal: idea.kcal, protein: idea.protein, items: idea.items.map((it) => ({ name: it.food.name, grams: it.grams })) }]
-    }),
+      if (!pool.length) return day
+      // Rotation sur la semaine ; jamais le même plat au déjeuner et au dîner du même jour
+      const taken = new Set(day.map((x) => x.title))
+      const choices = pool.filter((p) => !taken.has(p.title))
+      const list = choices.length ? choices : pool
+      const idea = list[(i + (m.key === 'dinner' ? 1 : 0)) % list.length]
+      day.push({ meal: m.key, title: idea.title, kcal: idea.kcal, protein: idea.protein, items: idea.items.map((it) => ({ name: it.food.name, grams: it.grams })) })
+      return day
+    }, []),
   }))
 }
 

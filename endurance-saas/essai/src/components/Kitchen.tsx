@@ -19,8 +19,13 @@ const mondayOf = (day: string) => {
 }
 
 /** Onglet Cuisine : menu de la semaine + liste de courses, recettes maison. */
-export function Kitchen({ userId, today, target, diet, avoid }: { userId: string; today: string; target: { kcal: number; protein: number }; diet: Diet; avoid: string }) {
-  const { data, error, reload } = useData(() => loadKitchen(userId), [userId])
+export function Kitchen({ userId, today, target, diet, avoid, onChange }: { userId: string; today: string; target: { kcal: number; protein: number }; diet: Diet; avoid: string; onChange?: () => void }) {
+  const { data, error, reload: reloadKitchen } = useData(() => loadKitchen(userId), [userId])
+  // Les recettes servent aussi au journal : la page est rechargée avec la cuisine
+  const reload = () => {
+    reloadKitchen()
+    onChange?.()
+  }
   if (error) return <p className="text-sm text-destructive">{error}</p>
   if (!data) return <p className="text-sm text-muted-foreground">Chargement…</p>
   return (
