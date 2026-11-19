@@ -388,6 +388,18 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['nutrition_advice']['Insert']>
         Relationships: []
       }
+      water_logs: {
+        Row: { user_id: string; day: string; ml: number }
+        Insert: { user_id: string; day: string; ml?: number }
+        Update: Partial<Database['public']['Tables']['water_logs']['Insert']>
+        Relationships: []
+      }
+      meal_favorites: {
+        Row: { id: string; user_id: string; name: string; meal: Meal; items: Json; created_at: string }
+        Insert: { id?: string; user_id: string; name: string; meal: Meal; items: Json; created_at?: string }
+        Update: Partial<Database['public']['Tables']['meal_favorites']['Insert']>
+        Relationships: []
+      }
       live_shares: {
         Row: {
           token: string
@@ -537,6 +549,7 @@ export type Database = {
     }
     Views: { [_ in never]: never }
     Functions: {
+      kronofit_ping: { Args: Record<string, never>; Returns: boolean }
       segment_leaderboard: { Args: { p_segment: string }; Returns: Json }
       segments_in_box: { Args: { p_min_lat: number; p_max_lat: number; p_min_lng: number; p_max_lng: number }; Returns: Database['public']['Tables']['segments']['Row'][] }
       get_feed: { Args: { p_before?: string | null; p_limit?: number }; Returns: Json }

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Copy, Loader2, Plus, Sparkles, Trash2, TriangleAlert, CheckCircle2, Info } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Copy, Droplet, Loader2, Plus, Sparkles, Star, Trash2, TriangleAlert, CheckCircle2, Info } from 'lucide-react'
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField } from '@/components/ui/field'
@@ -27,7 +27,7 @@ import { mealIdeas, nextMeal, type MealIdea } from '@/lib/nutrition/meals'
 import type { Food } from '@/lib/nutrition/foods'
 import type { Meal } from '@/types/database'
 import { AddFood } from '../components/AddFood'
-import { addFood, askCoach, copyMeal, deleteFood, loadNutrition, recentFoods, saveProfile, saveWeight, type AiAdvice, type NutritionProfile } from '../nutrition'
+import { addFavorite, addFood, askCoach, copyMeal, deleteFood, loadNutrition, recentFoods, saveFavorite, saveProfile, saveWeight, setWater, type AiAdvice, type Favorite, type NutritionProfile } from '../nutrition'
 import { useData, useUser } from '../session'
 
 /** Valeurs calculées pour le jour affiché */
@@ -151,6 +151,14 @@ export function NutritionPage() {
       {tab === 'journal' && (
         <>
           <Summary targets={targets} totals={totals} sessions={computed.sessions.map((s) => ({ label: sportInfo(s.sport_type).short, kcal: s.kcal }))} />
+          <WaterCard
+            ml={data.waterMl}
+            targetL={targets.waterL}
+            onChange={async (ml) => {
+              await setWater(user.id, day, ml).catch(() => {})
+              reload()
+            }}
+          />
           {MEALS.map((m) => {
             const items = data.today.filter((l) => l.meal === m.key)
             const kcal = items.reduce((a, l) => a + Number(l.kcal), 0)
@@ -204,6 +212,20 @@ export function NutritionPage() {
                       <Copy className="size-4" /> Comme la veille ({nf(prev.reduce((a, l) => a + Number(l.kcal), 0))} kcal)
                     </Button>
                   )}
+                  {items.length > 1 && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        const name = window.prompt('Nom du repas favori (ex. « Mon petit-déj habituel ») :', m.label)
+                        if (!name?.trim()) return
+                        await saveFavorite(user.id, name, m.key, items).catch(() => {})
+                        reload()
+                      }}
+                    >
+                      <Star className="size-4" /> En favori
+                    </Button>
+                  )}
                 </div>
               </section>
             )
@@ -236,6 +258,12 @@ export function NutritionPage() {
         <AddFood
           meal={adding}
           recents={recentFoods(data.history)}
+          favorites={data.favorites}
+          onAddFavorite={async (meal: Meal, fav: Favorite) => {
+            await addFavorite(user.id, day, meal, fav)
+            setAdding(null)
+            reload()
+          }}
           onClose={() => setAdding(null)}
           onAdd={async (meal: Meal, food: Food, grams: number) => {
             await addFood(user.id, day, meal, food, grams)
@@ -784,5 +812,51 @@ function GoalForm({ userId, profile, weight, height, onSaved }: { userId: string
         {busy && <Loader2 className="size-4 animate-spin" />} Enregistrer
       </Button>
     </form>
+  )
+}
+
+/** Hydratation : boutons rapides (verre 250 ml, gourde 500 ml) et objectif du jour (plus élevé les jours de sport). */
+function WaterCard({ ml, targetL, onChange }: { ml: number; targetL: number; onChange: (ml: number) => Promise<void> }) {
+  const [value, setValue] = useState(ml)
+  const [prev, setPrev] = useState(ml)
+  if (ml !== prev) {
+    setPrev(ml)
+    setValue(ml)
+  }
+  const target = Math.round(targetL * 1000)
+  const pct = Math.min(100, (value / Math.max(1, target)) * 100)
+  const change = (v: number) => {
+    const next = Math.max(0, v)
+    setValue(next)
+    onChange(next)
+  }
+  return (
+    <section className="rounded-xl border bg-card p-4" aria-label="Hydratation">
+      <div className="flex items-center gap-3">
+        <Droplet className="size-5 shrink-0 text-sky-400" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Hydratation</span>
+            <span className="tabular-nums text-muted-foreground">
+              {nf1(value / 1000)} / {nf1(target / 1000)} L
+            </span>
+          </div>
+          <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted/40">
+            <div className="h-full rounded-full bg-sky-400" style={{ width: `${pct}%` }} />
+          </div>
+        </div>
+      </div>
+      <div className="mt-3 flex gap-2">
+        <Button size="sm" variant="outline" onClick={() => change(value - 250)} disabled={value <= 0} aria-label="Retirer un verre">
+          −
+        </Button>
+        <Button size="sm" variant="outline" className="flex-1" onClick={() => change(value + 250)}>
+          + Verre (250 ml)
+        </Button>
+        <Button size="sm" variant="outline" className="flex-1" onClick={() => change(value + 500)}>
+          + Gourde (500 ml)
+        </Button>
+      </div>
+    </section>
   )
 }
