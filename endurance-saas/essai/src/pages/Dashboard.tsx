@@ -12,6 +12,7 @@ import { addDays } from '@/lib/dates'
 import { ReadinessCard } from '../components/ReadinessCard'
 import { WeatherCard } from '../components/WeatherCard'
 import { loadGear, wornGear } from './Gear'
+import { loadAllActivities, StreakChip } from './Trophies'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
 
@@ -21,7 +22,7 @@ export function DashboardPage() {
   const user = useUser()
   const { data, error } = useData(async () => {
     const today = localDate(new Date())
-    const [series, profile, activities, planned, wellness, history, gear] = await Promise.all([
+    const [series, profile, activities, planned, wellness, history, gear, all] = await Promise.all([
       getTrainingLoad(supabase, user.id),
       supabase.from('profiles').select('full_name, subscription_tier, subscription_status, trial_ends_at').eq('id', user.id).single(),
       supabase.from('activities').select('id, title, sport_type, start_time, duration_seconds, distance_meters, tss').eq('user_id', user.id).order('start_time', { ascending: false }).limit(8),
@@ -29,8 +30,9 @@ export function DashboardPage() {
       getWellnessContext(supabase, user.id, today),
       getWellness(supabase, user.id, addDays(today, -29), today),
       loadGear(user.id).catch(() => []),
+      loadAllActivities(user.id).catch(() => ({ activities: [], name: null })),
     ])
-    return { today, series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness, history, worn: wornGear(gear) }
+    return { today, series, profile: profile.data, activities: activities.data ?? [], planned: planned.data ?? [], wellness, history, worn: wornGear(gear), all: all.activities }
   }, [user.id])
 
   const live = loadSession()
@@ -81,6 +83,7 @@ export function DashboardPage() {
             </p>
           )}
           <ReadinessCard series={data.series} wellness={data.history} today={data.today} />
+          <StreakChip activities={data.all} />
           <WeatherCard />
           {data.worn.length > 0 && (
             <Link to="/dashboard/gear" className="flex items-center gap-3 rounded-xl border border-amber-500/50 bg-amber-500/10 p-4 text-sm">
@@ -117,6 +120,10 @@ export function DashboardPage() {
             <Link to="/dashboard/nutrition" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Nutrition</p>
               <p className="text-xs text-muted-foreground">Calories, repas, poids, coach IA</p>
+            </Link>
+            <Link to="/dashboard/trophies" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Trophées</p>
+              <p className="text-xs text-muted-foreground">Badges, séries, bilan du mois</p>
             </Link>
             <Link to="/dashboard/gear" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Matériel</p>
