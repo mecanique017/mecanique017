@@ -454,6 +454,18 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['training_plans']['Insert']>
         Relationships: []
       }
+      push_subscriptions: {
+        Row: { id: string; user_id: string; endpoint: string; p256dh: string; auth: string; created_at: string }
+        Insert: { id?: string; user_id: string; endpoint: string; p256dh: string; auth: string; created_at?: string }
+        Update: Partial<Database['public']['Tables']['push_subscriptions']['Insert']>
+        Relationships: []
+      }
+      reminder_prefs: {
+        Row: { user_id: string; weigh_hour: number | null; meals_hour: number | null; planned_hour: number | null; inactivity_days: number | null; updated_at: string }
+        Insert: { user_id: string; weigh_hour?: number | null; meals_hour?: number | null; planned_hour?: number | null; inactivity_days?: number | null; updated_at?: string }
+        Update: Partial<Database['public']['Tables']['reminder_prefs']['Insert']>
+        Relationships: []
+      }
       live_shares: {
         Row: {
           token: string

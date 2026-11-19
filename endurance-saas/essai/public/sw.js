@@ -2,7 +2,7 @@
  * Service worker de la version d'essai : met en cache l'application elle-même (fichiers statiques
  * versionnés). Les DONNÉES (Supabase) ne sont jamais mises en cache : elles restent en ligne.
  */
-const CACHE = 'kronofit-v4'
+const CACHE = 'kronofit-v5'
 const TILES = 'kronofit-tiles-v1' // cartes (hors ligne) : conservé entre les versions
 
 self.addEventListener('install', (event) => {
@@ -48,5 +48,41 @@ self.addEventListener('fetch', (event) => {
           return res
         })
     )
+  )
+})
+
+// Rappels (Web Push) : affichage de la notification envoyée par le serveur
+self.addEventListener('push', (event) => {
+  let data = {}
+  try {
+    data = event.data ? event.data.json() : {}
+  } catch {
+    data = { title: 'KronoFit', body: event.data ? event.data.text() : '' }
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'KronoFit', {
+      body: data.body || '',
+      icon: './icons/icon-192.png',
+      badge: './icons/icon-192.png',
+      tag: data.tag,
+      data: { url: data.url || './' },
+    }),
+  )
+})
+
+// Toucher la notification : ouvre (ou remet au premier plan) l'appli à la bonne page
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close()
+  const url = (event.notification.data && event.notification.data.url) || './'
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) {
+          c.navigate ? c.navigate(url).catch(() => {}) : null
+          return c.focus()
+        }
+      }
+      return self.clients.openWindow(url)
+    }),
   )
 })

@@ -129,6 +129,10 @@ export function DashboardPage() {
               <p className="font-semibold">Trophées</p>
               <p className="text-xs text-muted-foreground">Badges, séries, bilan du mois</p>
             </Link>
+            <Link to="/dashboard/reminders" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Rappels</p>
+              <p className="text-xs text-muted-foreground">Pesée, repas, séance du jour</p>
+            </Link>
             <Link to="/dashboard/gear" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Matériel</p>
               <p className="text-xs text-muted-foreground">Km des chaussures, vélo, chaîne, pneus</p>
