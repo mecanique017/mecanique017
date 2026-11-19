@@ -435,6 +435,18 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['gear']['Insert']>
         Relationships: []
       }
+      recipes: {
+        Row: { id: string; user_id: string; name: string; portions: number; items: Json; created_at: string }
+        Insert: { id?: string; user_id: string; name: string; portions?: number; items: Json; created_at?: string }
+        Update: Partial<Database['public']['Tables']['recipes']['Insert']>
+        Relationships: []
+      }
+      shopping_lists: {
+        Row: { user_id: string; week_start: string; menu: Json; checked: string[]; updated_at: string }
+        Insert: { user_id: string; week_start: string; menu?: Json; checked?: string[]; updated_at?: string }
+        Update: Partial<Database['public']['Tables']['shopping_lists']['Insert']>
+        Relationships: []
+      }
       live_shares: {
         Row: {
           token: string
