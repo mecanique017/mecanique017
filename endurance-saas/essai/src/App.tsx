@@ -24,6 +24,7 @@ import { NutritionPage } from './pages/Nutrition'
 import { GearPage } from './pages/Gear'
 import { RecapPage, TrophiesPage } from './pages/Trophies'
 import { PlanPage } from './pages/Plan'
+import { RemindersPage } from './pages/Reminders'
 import { RouteDetailPage, RouteEditorPage, RoutesPage } from './pages/Routes'
 import { SegmentPage } from './pages/Segment'
 
@@ -43,6 +44,7 @@ const NAV = [
   { to: '/dashboard/wellness', label: 'Bien-être' },
   { to: '/dashboard/performance', label: 'Records' },
   { to: '/dashboard/stats', label: 'Statistiques' },
+  { to: '/dashboard/reminders', label: 'Rappels' },
   { to: '/dashboard/profile', label: 'Profil' },
 ]
 
@@ -106,6 +108,7 @@ function Protected() {
           <Route path="gear" element={<GearPage />} />
           <Route path="trophies" element={<TrophiesPage />} />
           <Route path="plan" element={<PlanPage />} />
+          <Route path="reminders" element={<RemindersPage />} />
           <Route path="recap" element={<RecapPage />} />
           <Route path="performance" element={<PerformancePage />} />
           <Route path="feed" element={<FeedPage />} />
