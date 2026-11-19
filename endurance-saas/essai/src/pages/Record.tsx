@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { AlertTriangle, BarChart3, Bluetooth, BluetoothOff, ChevronDown, Compass, Flag, Heart, Layers, Loader2, LocateFixed, Map as MapIcon, MapPin, Maximize2, Pause, Play, Radio, Settings, Square, Trash2, Volume2, VolumeX, X } from 'lucide-react'
+import { AlertTriangle, BarChart3, Bluetooth, BluetoothOff, ChevronDown, Compass, Flag, Heart, Layers, Loader2, LocateFixed, Map as MapIcon, MapPin, Maximize2, Moon, Pause, Play, Radio, Settings, Square, Trash2, Volume2, VolumeX, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, SelectField, TextareaField } from '@/components/ui/field'
 import { SportOptions } from '@/components/ui/sport-options'
@@ -175,6 +175,7 @@ export function RecordPage() {
   })
   const guidedRef = useRef(guided)
   const [pickGuided, setPickGuided] = useState(false)
+  const [pocket, setPocket] = useState(false)
   const setGuidedState = useCallback((g: GuidedState | null) => {
     guidedRef.current = g
     setGuided(g)
@@ -657,7 +658,7 @@ export function RecordPage() {
         {gap && (
           <div role="alert" className="absolute inset-x-3 top-20 flex items-start gap-2 rounded-xl bg-amber-500 p-3 text-sm text-neutral-950 shadow-lg">
             <AlertTriangle className="size-4 shrink-0" />
-            <span className="flex-1">GPS interrompu {spokenDuration(gap)} (écran verrouillé ou appli quittée) : tronçon compté en ligne droite.</span>
+            <span className="flex-1">GPS interrompu {spokenDuration(gap)} (écran verrouillé ou appli quittée). Le tronçon manquant sera reconstitué par la route à la fin. Pour l’éviter : mode poche 🌙 au lieu de verrouiller l’écran.</span>
             <button onClick={() => setGap(null)} aria-label="Fermer l’alerte"><X className="size-4" /></button>
           </div>
         )}
@@ -844,13 +845,61 @@ export function RecordPage() {
             <button onClick={lap} disabled={session.status !== 'running'} className="flex size-14 shrink-0 items-center justify-center rounded-full bg-neutral-800 disabled:opacity-40" aria-label="Tour">
               <Flag className="size-5" />
             </button>
+            <button onClick={() => setPocket(true)} className="flex size-14 shrink-0 items-center justify-center rounded-full bg-neutral-800" aria-label="Mode poche (écran noir, GPS actif)">
+              <Moon className="size-5" />
+            </button>
             <button onClick={() => apply(pause(session))} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-[#e10600] text-lg font-semibold active:scale-[.98]">
               <Pause className="size-6 fill-current" /> Pause
             </button>
           </div>
         )}
       </div>
+      {pocket && session && <PocketMode time={clock(t)} distance={km(session.distance)} onExit={() => setPocket(false)} />}
     </FullScreen>
+  )
+}
+
+/**
+ * Mode poche : écran noir (très peu de batterie sur les écrans OLED) qui garde l'appli au premier
+ * plan, donc le GPS actif — contrairement au verrouillage de l'écran sur iPhone. Les touches
+ * accidentelles sont ignorées ; appui long de 2 secondes pour revenir.
+ */
+function PocketMode({ time, distance, onExit }: { time: string; distance: string; onExit: () => void }) {
+  const [holding, setHolding] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const start = () => {
+    setHolding(true)
+    timer.current = setTimeout(() => {
+      navigator.vibrate?.(80)
+      onExit()
+    }, 2000)
+  }
+  const cancel = () => {
+    setHolding(false)
+    if (timer.current) clearTimeout(timer.current)
+  }
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex select-none flex-col items-center justify-center gap-6 bg-black text-neutral-700"
+      role="dialog"
+      aria-label="Mode poche : appui long de 2 secondes pour revenir"
+      onPointerDown={start}
+      onPointerUp={cancel}
+      onPointerLeave={cancel}
+      onPointerCancel={cancel}
+      onContextMenu={(e) => e.preventDefault()}
+      style={{ touchAction: 'none', WebkitUserSelect: 'none' }}
+    >
+      <p className="text-6xl font-bold tabular-nums">{time}</p>
+      <p className="text-3xl tabular-nums">{distance} km</p>
+      <div className="mt-8 flex flex-col items-center gap-2 text-sm">
+        <span className={cn('flex size-20 items-center justify-center rounded-full border-2 transition-colors', holding ? 'border-[#e10600] text-[#e10600]' : 'border-neutral-800')}>
+          <Moon className="size-8" />
+        </span>
+        <span>{holding ? 'Maintenez…' : 'Appui long 2 s pour revenir'}</span>
+        <span className="max-w-64 text-center text-xs text-neutral-800">GPS actif · ne verrouillez pas l’écran, mettez le téléphone en poche</span>
+      </div>
+    </div>
   )
 }
 
@@ -1077,6 +1126,17 @@ function FinishForm({ session, profile, userId, onBack, onDiscard, onSaved }: {
         <Stat label="Distance" value={(distance / 1000).toLocaleString('fr-FR', { maximumFractionDigits: 2 })} unit="km" />
         <Stat label="D+" value={String(elevation)} unit="m" />
       </dl>
+      {(() => {
+        // Vitesse moyenne irréaliste pour le sport : trajet en voiture, en train… (records et badges faussés)
+        const kmh = seconds > 120 ? (distance / seconds) * 3.6 : 0
+        const fam = sportFamily(f.sport)
+        const max = fam === 'ride' ? (f.sport === 'ebike' ? 45 : 55) : f.sport === 'walk' || f.sport === 'hike' ? 12 : fam === 'run' ? 25 : fam === 'swim' ? 8 : 80
+        return kmh > max ? (
+          <p role="alert" className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-3 text-sm">
+            Vitesse moyenne de {Math.round(kmh)} km/h : c’est beaucoup pour du {sportInfo(f.sport).label.toLowerCase()}. Trajet en voiture ? Supprimez la séance (en bas) pour ne pas fausser vos records, badges et statistiques.
+          </p>
+        ) : null
+      })()}
       {smoothed && (
         <p className="text-xs text-muted-foreground" aria-live="polite">
           Trace affinée sur {smoothed.points.length} points GPS.{' '}
