@@ -21,6 +21,7 @@ export type AiUsageKind = 'coach_analysis' | 'training_plan' | 'nutrition_coach'
 export type NutritionGoal = 'lose' | 'recomp' | 'maintain' | 'muscle' | 'gain' | 'performance'
 export type Lifestyle = 'sedentary' | 'light' | 'active' | 'very_active'
 export type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+export type GearKind = 'shoes' | 'bike' | 'chain' | 'tyres' | 'brake_pads' | 'cassette' | 'other'
 export type Diet = 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian'
 
 export type Database = {
@@ -135,6 +136,7 @@ export type Database = {
           best_efforts: Json | null
           visibility: 'public' | 'followers' | 'private'
           public_route: Json | null
+          gear_id: string | null
           rpe_score: number | null
           athlete_notes: string | null
           normalized_power: number | null
@@ -162,6 +164,7 @@ export type Database = {
           best_efforts?: Json | null
           visibility?: 'public' | 'followers' | 'private'
           public_route?: Json | null
+          gear_id?: string | null
           rpe_score?: number | null
           athlete_notes?: string | null
           normalized_power?: number | null
@@ -400,6 +403,38 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['meal_favorites']['Insert']>
         Relationships: []
       }
+      gear: {
+        Row: {
+          id: string
+          user_id: string
+          parent_id: string | null
+          kind: GearKind
+          name: string
+          sports: string[]
+          is_default: boolean
+          start_km: number
+          limit_km: number | null
+          installed_at: string
+          retired: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          parent_id?: string | null
+          kind: GearKind
+          name: string
+          sports?: string[]
+          is_default?: boolean
+          start_km?: number
+          limit_km?: number | null
+          installed_at?: string
+          retired?: boolean
+          created_at?: string
+        }
+        Update: Partial<Database['public']['Tables']['gear']['Insert']>
+        Relationships: []
+      }
       live_shares: {
         Row: {
           token: string
@@ -550,6 +585,7 @@ export type Database = {
     Views: { [_ in never]: never }
     Functions: {
       kronofit_ping: { Args: Record<string, never>; Returns: boolean }
+      gear_usage: { Args: Record<string, never>; Returns: { gear_id: string; km: number; activities: number; last_used: string | null }[] }
       segment_leaderboard: { Args: { p_segment: string }; Returns: Json }
       segments_in_box: { Args: { p_min_lat: number; p_max_lat: number; p_min_lng: number; p_max_lng: number }; Returns: Database['public']['Tables']['segments']['Row'][] }
       get_feed: { Args: { p_before?: string | null; p_limit?: number }; Returns: Json }
