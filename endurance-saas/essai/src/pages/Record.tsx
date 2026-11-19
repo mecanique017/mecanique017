@@ -21,6 +21,10 @@ import { publicRoute, VISIBILITY_LABEL, type Visibility } from '../social'
 import { cumulative, guide, type Guidance, type LatLng } from '@/lib/routes/geo'
 import { supabase } from '../supabase'
 import { useData, useUser } from '../session'
+import { advance, announce, skip as skipStep, startGuided, remaining as stepRemaining, type GuidedState } from '@/lib/live/guided'
+import type { Step } from '@/lib/training/plan'
+import { localDate } from '@/lib/training/load'
+import { beep, GuidedBanner, GuidedPicker, unlockAudio, type GuidedChoice } from '../components/Guided'
 
 // --- APIs navigateur non typées par TypeScript (Web Bluetooth, Wake Lock) ---
 type BtChar = EventTarget & { value?: DataView; startNotifications(): Promise<unknown> }
@@ -153,7 +157,34 @@ export function RecordPage() {
     setFollowRoute(null)
     setGuidance(null)
   }
-  const { data: profile } = useData(async () => (await supabase.from('profiles').select('ftp, hr_rest, lactate_threshold_hr, full_name').eq('id', user.id).single()).data, [user.id])
+  const { data: profile } = useData(async () => (await supabase.from('profiles').select('ftp, vma, hr_rest, lactate_threshold_hr, full_name').eq('id', user.id).single()).data, [user.id])
+  // Séance guidée : séances structurées prévues aujourd'hui (plan d'entraînement) ou fractionné rapide
+  const { data: plannedToday } = useData(async () => {
+    const { data } = await supabase.from('planned_workouts').select('id, title, workout_structure').eq('user_id', user.id).eq('scheduled_date', localDate(new Date())).eq('is_completed', false)
+    return (data ?? [])
+      .map((w) => ({ id: w.id, title: w.title, steps: ((w.workout_structure as { steps?: Step[] } | null)?.steps ?? []) as Step[] }))
+      .filter((w) => w.steps.length > 0)
+  }, [user.id])
+  const [guidedChoice, setGuidedChoice] = useState<GuidedChoice | null>(null)
+  const [guided, setGuided] = useState<GuidedState | null>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('kronofit-guided') ?? 'null')
+    } catch {
+      return null
+    }
+  })
+  const guidedRef = useRef(guided)
+  const [pickGuided, setPickGuided] = useState(false)
+  const setGuidedState = useCallback((g: GuidedState | null) => {
+    guidedRef.current = g
+    setGuided(g)
+    try {
+      if (g) localStorage.setItem('kronofit-guided', JSON.stringify(g))
+      else localStorage.removeItem('kronofit-guided')
+    } catch {
+      // stockage indisponible : la séance guidée continue en mémoire
+    }
+  }, [])
   // « Mes passages » : tracés des 150 dernières séances (seule la colonne du tracé est lue)
   const { data: heatRows } = useData(async () => {
     const { data } = await supabase.from('activities').select('route:raw_telemetry->route').eq('user_id', user.id).not('raw_telemetry', 'is', null).order('start_time', { ascending: false }).limit(150)
@@ -243,6 +274,21 @@ export function RecordPage() {
         restartedAtRef.current = t
         setWatchGen((g) => g + 1)
       }
+      // Séance guidée : changement d'étape, compte à rebours des 3 dernières secondes
+      const g = guidedRef.current
+      if (s && g && !g.done && s.status === 'running') {
+        const mt = movingSeconds(s, t)
+        const r = advance(g, mt, s.distance)
+        if (r.event) {
+          setGuidedState(r.state)
+          beep(r.event === 'finish' ? 660 : 990, 400)
+          navigator.vibrate?.([200, 100, 200])
+          if (prefsRef.current.voice) say(r.event === 'finish' ? 'Séance guidée terminée, bravo ! Continuez à votre rythme ou terminez la séance.' : announce(r.state.steps[r.state.index], r.state.index === r.state.steps.length - 1))
+        } else {
+          const left = stepRemaining(g, mt, s.distance).seconds
+          if (left != null && left > 0 && left <= 3) beep(660, 120)
+        }
+      }
       if (s && document.visibilityState === 'visible' && t - last < 3000) {
         const r = tick(s, t)
         if (r.event) {
@@ -254,7 +300,7 @@ export function RecordPage() {
       last = t
     }, 1000)
     return () => clearInterval(id)
-  }, [active, apply])
+  }, [active, apply, setGuidedState])
 
   // GPS : allumé dès l'écran de départ (le signal s'affine avant de partir), suivi continu ensuite
   useEffect(() => {
@@ -392,8 +438,16 @@ export function RecordPage() {
     setFollow(true)
     setPanel('none')
     requestCompass()
-    // La synthèse vocale d'iOS doit être déclenchée par un geste : première annonce au départ
-    if (prefs.voice) say('C’est parti !')
+    unlockAudio()
+    if (guidedChoice) {
+      const g = startGuided(guidedChoice.title, guidedChoice.steps, 0, 0)
+      setGuidedState(g)
+      // La synthèse vocale d'iOS doit être déclenchée par un geste : première annonce au départ
+      if (prefs.voice) say(`C’est parti ! ${announce(g.steps[0], g.steps.length === 1)}`)
+    } else {
+      setGuidedState(null)
+      if (prefs.voice) say('C’est parti !')
+    }
   }
 
   const lap = () => {
@@ -491,8 +545,8 @@ export function RecordPage() {
             profile={profile}
             userId={user.id}
             onBack={() => setFinishing(false)}
-            onDiscard={() => { stopShare(); stopFollow(); apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
-            onSaved={(id) => { stopShare(); stopFollow(); apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
+            onDiscard={() => { stopShare(); stopFollow(); setGuidedState(null); setGuidedChoice(null); apply(null); deviceRef.current?.gatt?.disconnect(); setFinishing(false) }}
+            onSaved={(id) => { stopShare(); stopFollow(); setGuidedState(null); setGuidedChoice(null); apply(null); deviceRef.current?.gatt?.disconnect(); navigate(`/dashboard/activities/${id}?partager=1`) }}
           />
         </div>
       </FullScreen>
@@ -618,6 +672,18 @@ export function RecordPage() {
               {hrDevice && hr ? <span>♥ {hr} bpm</span> : null}
               <button onClick={() => setDataView(true)} aria-label="Agrandir les données"><Maximize2 className="size-4" /></button>
             </div>
+            {guided && (
+              <GuidedBanner
+                g={guided}
+                t={t}
+                d={session.distance}
+                onSkip={() => {
+                  const g = skipStep(guided, t, session.distance)
+                  setGuidedState(g)
+                  if (!g.done && prefs.voice) say(announce(g.steps[g.index], g.index === g.steps.length - 1))
+                }}
+              />
+            )}
             {followRoute && guidance && (
               <p className={cn('mt-1 rounded-lg px-2 py-1 text-center text-xs font-medium', guidance.offRoute > 50 ? 'bg-amber-500 text-neutral-950' : 'bg-neutral-800')}>
                 {guidance.offRoute > 50 ? `Hors parcours (${Math.round(guidance.offRoute)} m) · ` : ''}{followRoute.name} : reste {km(guidance.remaining)} km sur {km(guidance.total)}
@@ -631,6 +697,19 @@ export function RecordPage() {
           </div>
         )}
 
+        {pickGuided && (
+          <GuidedPicker
+            sport={sportFamily(sport) === 'run' ? 'run' : sportFamily(sport) === 'ride' ? 'ride' : 'other'}
+            planned={plannedToday ?? []}
+            vma={Number(profile?.vma ?? 15)}
+            ftp={Number(profile?.ftp ?? 200)}
+            onClose={() => setPickGuided(false)}
+            onPick={(c) => {
+              setGuidedChoice(c)
+              setPickGuided(false)
+            }}
+          />
+        )}
         {/* Panneaux : réglages / fonds de carte */}
         {panel !== 'none' && (
           <div className="absolute inset-x-3 top-16 z-10 max-h-[70%] overflow-y-auto rounded-2xl bg-background p-4 shadow-2xl space-y-4">
@@ -736,6 +815,16 @@ export function RecordPage() {
               </p>
             ) : (
               <Link to="/dashboard/routes" className="block rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-center text-sm text-neutral-300">Suivre un parcours…</Link>
+            )}
+            {guidedChoice ? (
+              <p className="flex items-center justify-between gap-2 rounded-2xl border border-[#e10600]/60 bg-neutral-900 px-4 py-2.5 text-sm">
+                <span className="min-w-0 truncate">Séance guidée : <strong>{guidedChoice.title}</strong></span>
+                <button onClick={() => setGuidedChoice(null)} className="shrink-0 text-[#e10600]">Retirer</button>
+              </p>
+            ) : (
+              <button onClick={() => setPickGuided(true)} className="block w-full rounded-2xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-center text-sm text-neutral-300">
+                Séance guidée (fractionné, plan)…{plannedToday?.length ? ` · ${plannedToday.length} prévue${plannedToday.length > 1 ? 's' : ''} aujourd’hui` : ''}
+              </button>
             )}
             <button onClick={start} className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-[#e10600] text-lg font-semibold active:scale-[.98]">
               <Play className="size-6 fill-current" /> {useGps && !gpsReady ? 'Démarrer (GPS en recherche)' : 'Démarrer'}

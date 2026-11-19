@@ -16,11 +16,12 @@ export type { SportKey as SportType } from '@/lib/sports'
 import type { SportKey as SportType } from '@/lib/sports'
 export type SubscriptionTier = 'free' | 'pro' | 'premium'
 export type ActivitySource = 'manual' | 'fit' | 'gpx' | 'tcx' | 'polar' | 'demo' | 'live'
-export type PlannedSource = 'manual' | 'ai' | 'demo'
+export type PlannedSource = 'manual' | 'ai' | 'demo' | 'plan'
 export type AiUsageKind = 'coach_analysis' | 'training_plan' | 'nutrition_coach'
 export type NutritionGoal = 'lose' | 'recomp' | 'maintain' | 'muscle' | 'gain' | 'performance'
 export type Lifestyle = 'sedentary' | 'light' | 'active' | 'very_active'
 export type Meal = 'breakfast' | 'lunch' | 'dinner' | 'snack'
+export type PlanGoal = '5k' | '10k' | 'half' | 'marathon' | 'run_fitness' | 'ride100' | 'ride160' | 'ride_fitness'
 export type GearKind = 'shoes' | 'bike' | 'chain' | 'tyres' | 'brake_pads' | 'cassette' | 'other'
 export type Diet = 'omnivore' | 'vegetarian' | 'vegan' | 'pescatarian'
 
@@ -447,6 +448,12 @@ export type Database = {
         Update: Partial<Database['public']['Tables']['shopping_lists']['Insert']>
         Relationships: []
       }
+      training_plans: {
+        Row: { id: string; user_id: string; goal: PlanGoal; race_date: string; sessions_per_week: number; days: number[]; start_volume: number | null; active: boolean; created_at: string }
+        Insert: { id?: string; user_id: string; goal: PlanGoal; race_date: string; sessions_per_week: number; days?: number[]; start_volume?: number | null; active?: boolean; created_at?: string }
+        Update: Partial<Database['public']['Tables']['training_plans']['Insert']>
+        Relationships: []
+      }
       live_shares: {
         Row: {
           token: string
@@ -497,6 +504,7 @@ export type Database = {
           source: PlannedSource
           created_by: string | null
           created_at: string
+          plan_id: string | null
         }
         Insert: {
           id?: string
@@ -513,6 +521,7 @@ export type Database = {
           source?: PlannedSource
           created_by?: string | null
           created_at?: string
+          plan_id?: string | null
         }
         Update: Partial<Database['public']['Tables']['planned_workouts']['Insert']>
         Relationships: []

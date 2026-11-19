@@ -121,6 +121,10 @@ export function DashboardPage() {
               <p className="font-semibold">Nutrition</p>
               <p className="text-xs text-muted-foreground">Calories, repas, poids, coach IA</p>
             </Link>
+            <Link to="/dashboard/plan" className="rounded-xl border bg-card p-4 hover:bg-accent">
+              <p className="font-semibold">Plan d’entraînement</p>
+              <p className="text-xs text-muted-foreground">10 km, semi, marathon, cyclo… gratuit</p>
+            </Link>
             <Link to="/dashboard/trophies" className="rounded-xl border bg-card p-4 hover:bg-accent">
               <p className="font-semibold">Trophées</p>
               <p className="text-xs text-muted-foreground">Badges, séries, bilan du mois</p>
