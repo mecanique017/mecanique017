@@ -24,10 +24,12 @@ import {
 } from '@/lib/nutrition/calculator'
 import { autoAdvice, type Tip } from '@/lib/nutrition/advice'
 import { mealIdeas, nextMeal, type MealIdea } from '@/lib/nutrition/meals'
+import { carbInsights, recipeAsFood } from '@/lib/nutrition/planner'
+import { Kitchen } from '../components/Kitchen'
 import type { Food } from '@/lib/nutrition/foods'
 import type { Meal } from '@/types/database'
 import { AddFood } from '../components/AddFood'
-import { addFavorite, addFood, askCoach, copyMeal, deleteFood, loadNutrition, recentFoods, saveFavorite, saveProfile, saveWeight, setWater, type AiAdvice, type Favorite, type NutritionProfile } from '../nutrition'
+import { addFavorite, addFood, askCoach, copyMeal, deleteFood, loadNutrition, loadPerformanceData, recentFoods, saveFavorite, saveProfile, saveWeight, setWater, type AiAdvice, type Favorite, type NutritionProfile } from '../nutrition'
 import { useData, useUser } from '../session'
 
 /** Valeurs calculées pour le jour affiché */
@@ -42,10 +44,11 @@ interface Computed {
   weight: number
 }
 
-type Tab = 'journal' | 'coach' | 'poids' | 'objectif'
+type Tab = 'journal' | 'coach' | 'cuisine' | 'poids' | 'objectif'
 const TABS: { key: Tab; label: string }[] = [
   { key: 'journal', label: 'Journal' },
   { key: 'coach', label: 'Coach' },
+  { key: 'cuisine', label: 'Cuisine' },
   { key: 'poids', label: 'Poids' },
   { key: 'objectif', label: 'Objectif' },
 ]
@@ -140,9 +143,9 @@ export function NutritionPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-1 rounded-xl border bg-card p-1" role="tablist">
+      <div className="grid grid-cols-5 gap-1 rounded-xl border bg-card p-1" role="tablist">
         {TABS.map((t) => (
-          <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)} className={cn('rounded-lg py-2 text-sm', tab === t.key ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground')}>
+          <button key={t.key} role="tab" aria-selected={tab === t.key} onClick={() => setTab(t.key)} className={cn('rounded-lg py-2 text-[13px]', tab === t.key ? 'bg-primary text-primary-foreground font-semibold' : 'text-muted-foreground')}>
             {t.label}
           </button>
         ))}
@@ -246,6 +249,18 @@ export function NutritionPage() {
           }}
         />
       )}
+      {tab === 'cuisine' && (
+        <Kitchen
+          userId={user.id}
+          today={today}
+          target={(() => {
+            const t = dailyTargets(computed.person, 0)
+            return { kcal: t.kcal, protein: t.protein }
+          })()}
+          diet={data.profile.diet}
+          avoid={data.profile.allergies ?? ''}
+        />
+      )}
       {tab === 'poids' && <WeightTab userId={user.id} today={today} weights={data.weights} person={computed.person} target={data.profile.target_weight != null ? Number(data.profile.target_weight) : null} trend={computed.trend} onSaved={reload} />}
       {tab === 'objectif' && (
         <div className="space-y-4">
@@ -259,6 +274,7 @@ export function NutritionPage() {
           meal={adding}
           recents={recentFoods(data.history)}
           favorites={data.favorites}
+          recipes={data.recipes.map(recipeAsFood)}
           onAddFavorite={async (meal: Meal, fav: Favorite) => {
             await addFavorite(user.id, day, meal, fav)
             setAdding(null)
@@ -435,6 +451,7 @@ function CoachTab({
         {!computed.tips.length && <p className="text-sm text-muted-foreground">Rien à signaler pour le moment : continuez à noter vos repas.</p>}
       </section>
       <MealIdeas computed={computed} profile={profile} entries={entries} day={day} onAdd={onAddIdea} />
+      <PerformanceInsights userId={profile.user_id} weight={computed.weight} />
       <details className="space-y-3 rounded-xl border bg-card p-4" open={!!history.length}>
         <summary className="flex cursor-pointer items-center gap-2 font-semibold">
           <Sparkles className="size-4" style={{ color: 'var(--brand)' }} /> Coach IA <span className="text-xs font-normal text-muted-foreground">(optionnel)</span>
@@ -857,6 +874,31 @@ function WaterCard({ ml, targetL, onChange }: { ml: number; targetL: number; onC
           + Gourde (500 ml)
         </Button>
       </div>
+    </section>
+  )
+}
+
+/** Ce que disent les données : glucides de la veille ↔ vitesse des séances d'endurance. */
+function PerformanceInsights({ userId, weight }: { userId: string; weight: number }) {
+  const today = localDate(new Date())
+  const { data } = useData(() => loadPerformanceData(userId, today), [userId, today])
+  if (!data) return null
+  const { insights, missing } = carbInsights(data.sessions, data.carbs, weight)
+  return (
+    <section className="space-y-2 rounded-xl border bg-card p-4">
+      <h2 className="font-semibold">Nutrition et performance</h2>
+      {insights.length ? (
+        insights.map((i) => (
+          <p key={i.sport} className="text-sm">
+            {i.text}
+          </p>
+        ))
+      ) : (
+        <p className="text-sm text-muted-foreground">
+          KronoFit compare vos repas de la veille à la vitesse de vos séances d’endurance (45 min et plus). Encore {missing || 6} séance{(missing || 6) > 1 ? 's' : ''} avec les repas de la veille notés pour obtenir une première analyse.
+        </p>
+      )}
+      <p className="text-[11px] text-muted-foreground">Analyse de vos 90 derniers jours ; la vitesse dépend aussi du parcours, du vent et de la fatigue : c’est une tendance, pas une règle.</p>
     </section>
   )
 }

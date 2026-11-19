@@ -4,6 +4,7 @@
 import type { Database, Json, Meal } from '@/types/database'
 import { addDays } from '@/lib/dates'
 import { fromOpenFoodFacts, forQuantity, type Food, type OffProduct, type Per100 } from '@/lib/nutrition/foods'
+import type { MenuDay, RecipeItem } from '@/lib/nutrition/planner'
 import { supabase } from './supabase'
 
 export type NutritionProfile = Database['public']['Tables']['nutrition_profiles']['Row']
@@ -27,7 +28,7 @@ export async function loadNutrition(userId: string, day: string) {
   const weekStart = addDays(day, -6)
   const [fromWeek] = dayRange(weekStart)
   const [, toDay] = dayRange(day)
-  const [profile, base, logs, weights, acts, advice, water, favs] = await Promise.all([
+  const [profile, base, logs, weights, acts, advice, water, favs, recipes] = await Promise.all([
     supabase.from('nutrition_profiles').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('profiles').select('weight, age, height').eq('id', userId).single(),
     supabase.from('food_logs').select('*').eq('user_id', userId).gte('day', addDays(day, -59)).lte('day', day).order('created_at'),
@@ -42,8 +43,9 @@ export async function loadNutrition(userId: string, day: string) {
     supabase.from('nutrition_advice').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
     supabase.from('water_logs').select('ml').eq('user_id', userId).eq('day', day).maybeSingle(),
     supabase.from('meal_favorites').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(30),
+    supabase.from('recipes').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
   ])
-  for (const r of [profile, base, logs, weights, acts, advice, water, favs]) if (r.error) throw r.error
+  for (const r of [profile, base, logs, weights, acts, advice, water, favs, recipes]) if (r.error) throw r.error
   const all = (logs.data ?? []) as FoodLog[]
   return {
     profile: profile.data as NutritionProfile | null,
@@ -56,6 +58,7 @@ export async function loadNutrition(userId: string, day: string) {
     activities: acts.data ?? [],
     waterMl: water.data?.ml ?? 0,
     favorites: (favs.data ?? []) as unknown as Favorite[],
+    recipes: (recipes.data ?? []) as unknown as Recipe[],
     advice: (advice.data ?? []) as unknown as { id: string; day: string; question: string | null; advice: AiAdvice; created_at: string }[],
   }
 }
@@ -230,4 +233,56 @@ export async function addFavorite(userId: string, day: string, meal: Meal, fav: 
 export async function setWater(userId: string, day: string, ml: number) {
   const { error } = await supabase.from('water_logs').upsert({ user_id: userId, day, ml: Math.max(0, Math.min(15000, Math.round(ml))) }, { onConflict: 'user_id,day' })
   if (error) throw error
+}
+
+// --- Cuisine : recettes, menu de la semaine, liste de courses ---------------------------------
+export type Recipe = { id: string; name: string; portions: number; items: RecipeItem[] }
+
+export async function loadKitchen(userId: string) {
+  const [r, l] = await Promise.all([
+    supabase.from('recipes').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+    supabase.from('shopping_lists').select('*').eq('user_id', userId).maybeSingle(),
+  ])
+  if (r.error) throw r.error
+  if (l.error) throw l.error
+  return {
+    recipes: (r.data ?? []) as unknown as Recipe[],
+    list: l.data ? { weekStart: l.data.week_start, menu: l.data.menu as unknown as MenuDay[], checked: l.data.checked } : null,
+  }
+}
+
+export async function saveRecipe(userId: string, r: { id?: string; name: string; portions: number; items: RecipeItem[] }) {
+  const row = { user_id: userId, name: r.name.trim().slice(0, 80), portions: r.portions, items: r.items as unknown as Json }
+  const { error } = r.id ? await supabase.from('recipes').update(row).eq('id', r.id) : await supabase.from('recipes').insert(row)
+  if (error) throw error
+}
+
+export async function deleteRecipe(id: string) {
+  const { error } = await supabase.from('recipes').delete().eq('id', id)
+  if (error) throw error
+}
+
+export async function saveShoppingList(userId: string, weekStart: string, menu: MenuDay[], checked: string[]) {
+  const { error } = await supabase
+    .from('shopping_lists')
+    .upsert({ user_id: userId, week_start: weekStart, menu: menu as unknown as Json, checked, updated_at: new Date().toISOString() }, { onConflict: 'user_id' })
+  if (error) throw error
+}
+
+/** Glucides par jour (90 derniers jours) et séances d'endurance, pour l'analyse nutrition ↔ performance. */
+export async function loadPerformanceData(userId: string, today: string) {
+  const from = addDays(today, -90)
+  const [logs, acts] = await Promise.all([
+    supabase.from('food_logs').select('day, carbs_g').eq('user_id', userId).gte('day', from),
+    supabase.from('activities').select('sport_type, start_time, duration_seconds, distance_meters').eq('user_id', userId).gte('start_time', `${from}T00:00:00Z`),
+  ])
+  if (logs.error) throw logs.error
+  if (acts.error) throw acts.error
+  const carbs = new Map<string, number>()
+  for (const l of logs.data ?? []) carbs.set(l.day, (carbs.get(l.day) ?? 0) + Number(l.carbs_g))
+  const day = (iso: string) => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' }).format(new Date(iso))
+  return {
+    carbs,
+    sessions: (acts.data ?? []).map((a) => ({ sport_type: a.sport_type, start_day: day(a.start_time), duration_seconds: a.duration_seconds, distance_meters: a.distance_meters != null ? Number(a.distance_meters) : null })),
+  }
 }

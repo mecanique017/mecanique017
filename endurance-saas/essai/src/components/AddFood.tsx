@@ -22,6 +22,8 @@ export function AddFood({
   meal: initialMeal,
   recents,
   favorites = [],
+  recipes = [],
+  ingredientMode = false,
   onAdd,
   onAddFavorite,
   onClose,
@@ -29,6 +31,10 @@ export function AddFood({
   meal: Meal
   recents: (Food & { lastQty: number })[]
   favorites?: Favorite[]
+  /** recettes maison (portion = 1 part) */
+  recipes?: Food[]
+  /** ajout d'un ingrédient de recette : pas de choix du repas */
+  ingredientMode?: boolean
   onAdd: (meal: Meal, food: Food, grams: number) => Promise<void>
   onAddFavorite?: (meal: Meal, fav: Favorite) => Promise<void>
   onClose: () => void
@@ -67,13 +73,13 @@ export function AddFood({
             <ArrowLeft className="size-6" />
           </button>
         ) : null}
-        <h2 className="flex-1 text-lg font-semibold">Ajouter un aliment</h2>
+        <h2 className="flex-1 text-lg font-semibold">{ingredientMode ? 'Ajouter un ingrédient' : 'Ajouter un aliment'}</h2>
         <button onClick={onClose} aria-label="Fermer" className="p-1">
           <X className="size-6" />
         </button>
       </div>
 
-      <div className="flex gap-1 overflow-x-auto border-b px-3 py-2" role="radiogroup" aria-label="Repas">
+      <div className={cn('flex gap-1 overflow-x-auto border-b px-3 py-2', ingredientMode && 'hidden')} role="radiogroup" aria-label="Repas">
         {MEALS.map((m) => (
           <button
             key={m.key}
@@ -152,6 +158,9 @@ export function AddFood({
                   })}
                 </ul>
               </section>
+            )}
+            {recipes.length > 0 && (!q || recipes.some((r) => r.name.toLowerCase().includes(q.trim().toLowerCase()))) && (
+              <FoodList title="Mes recettes" items={q ? recipes.filter((r) => r.name.toLowerCase().includes(q.trim().toLowerCase())) : recipes} onPick={setPicked} />
             )}
             {!q && recents.length > 0 && <FoodList title="Récents" items={recents} onPick={setPicked} />}
             {q && <FoodList title="Aliments courants" items={local} onPick={setPicked} empty="Aucun aliment courant ne correspond." />}
