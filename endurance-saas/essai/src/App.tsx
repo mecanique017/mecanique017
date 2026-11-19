@@ -23,6 +23,7 @@ import { ChallengesPage } from './pages/Challenges'
 import { NutritionPage } from './pages/Nutrition'
 import { GearPage } from './pages/Gear'
 import { RecapPage, TrophiesPage } from './pages/Trophies'
+import { PlanPage } from './pages/Plan'
 import { RouteDetailPage, RouteEditorPage, RoutesPage } from './pages/Routes'
 import { SegmentPage } from './pages/Segment'
 
@@ -33,6 +34,7 @@ const NAV = [
   { to: '/dashboard/clubs', label: 'Clubs' },
   { to: '/dashboard/challenges', label: 'Défis' },
   { to: '/dashboard/routes', label: 'Parcours' },
+  { to: '/dashboard/plan', label: 'Plan' },
   { to: '/dashboard/calendar', label: 'Calendrier' },
   { to: '/dashboard/activities/import', label: 'Importer' },
   { to: '/dashboard/nutrition', label: 'Nutrition' },
@@ -103,6 +105,7 @@ function Protected() {
           <Route path="nutrition" element={<NutritionPage />} />
           <Route path="gear" element={<GearPage />} />
           <Route path="trophies" element={<TrophiesPage />} />
+          <Route path="plan" element={<PlanPage />} />
           <Route path="recap" element={<RecapPage />} />
           <Route path="performance" element={<PerformancePage />} />
           <Route path="feed" element={<FeedPage />} />
