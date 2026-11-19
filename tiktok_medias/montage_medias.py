@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Montage TikTok automatisé — « CNews, BFM, RMC : le casting de la haine » (commentaire + extraits)
-=================================================================================================
+Montage TikTok automatisé — Fuites de Beauvau vers le RN : à qui ça profite ? (fond blanc, bleu-blanc-rouge)
+=========================================================================================
 
 Langage : Python 3 (Pillow + NumPy) + FFmpeg (mixage + encodage).
-Format  : 1080x1920 (9:16), 30 fps, H.264 + AAC stéréo -> `tiktok_medias_casting_haine.mp4`
+Format  : 1080x1920 (9:16), 30 fps, H.264 + AAC stéréo -> `tiktok_medias.mp4`
 
 Pipeline :
   1. VOIX OFF   : voix neuronale (ElevenLabs via vidIQ) lue d'une traite, accélérée de 8 %,
@@ -44,9 +44,11 @@ W, H, FPS, SR = 1080, 1920, 30, 44100
 GAP, INTRO_PAD, OUTRO_PAD = 0.50, 0.15, 1.8
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, "..", "branding"))
+from canal_rouge import appliquer_logo                      # logo Canal Rouge (anti-vol)
 BUILD = os.path.join(HERE, "build")
 OUT_AUDIO = os.path.join(HERE, "voix_off_medias.mp3")
-OUT_VIDEO = os.path.join(HERE, "tiktok_medias_casting_haine.mp4")
+OUT_VIDEO = os.path.join(HERE, "tiktok_medias.mp4")
 
 FONT_BLACK = "/usr/share/fonts/opentype/inter/Inter-Black.otf"
 FONT_BOLD = "/usr/share/fonts/opentype/inter/Inter-Bold.otf"
@@ -55,13 +57,13 @@ FONT_EMOJI = "/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"
 FONT_MONO = "/usr/share/fonts/truetype/jetbrains-mono/JetBrainsMono-ExtraBold.ttf"
 
 YELLOW = (255, 214, 0)        # (gardé pour compatibilité, peu utilisé)
-RED = (232, 28, 46)
-BLUE = (40, 110, 255)         # bleu vif (mots-clés)
-NAVY = (0, 38, 110)
+RED = (239, 65, 53)           # rouge du drapeau (#EF4135)
+BLUE = (0, 85, 164)           # bleu du drapeau (#0055A4)
+NAVY = (0, 35, 95)            # bleu nuit (texte)
 WHITE = (255, 255, 255)
 BG = {  # (centre, bord) des fonds dégradés
-    "noir":  ((30, 8, 10), (0, 0, 0)),       # noir
-    "rouge": ((90, 6, 14), (10, 0, 2)),      # rouge sombre
+    "noir":  ((255, 255, 255), (226, 234, 247)),   # blanc -> bleuté
+    "rouge": ((255, 255, 255), (250, 230, 230)),   # blanc -> rosé
 }
 
 # ---------------------------------------------------------------------------
@@ -72,51 +74,46 @@ BG = {  # (centre, bord) des fonds dégradés
 #    Mots-clés : *mot* = surligné jaune ; **mot** = encadré rouge + impact sonore
 # ---------------------------------------------------------------------------
 SEGMENTS = [
-    dict(voice="Elles sont sur vos écrans chaque semaine. CNews, RMC, BFM. Écoutez ce qu'elles disaient avant d'avoir un micro.",
-         sub="Elles sont sur vos écrans chaque semaine. *CNews*, *RMC*, *BFM*. Écoutez ce qu'elles disaient avant d'avoir un **MICRO**.",
-         tag="LES ARCHIVES", bg="rouge", mark="TV", serious=True, shake=True, gag=None,
-         extract=dict(src=11.0, end=23.4, label="ARCHIVE · émission sur les « jeunes zemmouristes »")),
-    dict(voice="Ces archives circulent sur les réseaux. Alice Cordier, fondatrice du collectif identitaire Némésis, invitée régulière de CNews. Et Juliette Briens, chroniqueuse sur RMC, passée par BFMTV.",
-         sub="Ces archives circulent sur les réseaux. Alice *Cordier*, fondatrice du collectif identitaire *Némésis*, invitée régulière de **CNEWS**. Et Juliette *Briens*, chroniqueuse sur **RMC**, passée par BFMTV.",
-         tag="QUI SONT-ELLES ?", bg="noir", mark="?", serious=True,
-         gag=dict(kind="whois", people=[("ALICE CORDIER", "Fondatrice du collectif identitaire Némésis", "Invitée régulière de CNews"),
-                                        ("JULIETTE BRIENS", "Chroniqueuse sur RMC (« Estelle Midi »)", "Passée par BFMTV, CNews, TPMP")]),
-         source="Wikipédia « Alice Cordier » · cnews.fr · rmc.bfmtv.com · Libération (29/11/2023)",
-         extract=dict(src=53.0, end=63.8, label="ARCHIVE · émission sur les « jeunes zemmouristes »")),
-    dict(voice="Le Gabon blanc. Le Japon maghrébin. Une France qui doit rester blanche. Et ça continue.",
-         sub="Le Gabon blanc. Le Japon maghrébin. Une France qui doit rester **BLANCHE**. Et ça continue.",
-         tag="LES ARCHIVES", bg="rouge", mark="!", serious=True, gag=None,
-         extract=dict(src=87.5, end=95.0, label="ARCHIVE · émission sur les « jeunes zemmouristes »")),
-    dict(voice="Le grand remplacement, récité mot pour mot. Une théorie complotiste et raciste.",
-         sub="Le grand *remplacement*, récité mot pour mot. Une théorie **COMPLOTISTE** et raciste.",
-         tag="DÉCRYPTAGE", bg="noir", mark="✗", serious=True, gag=dict(kind="stamp", text="COMPLOTISTE")),
-    dict(voice="Et aujourd'hui ? Ce discours a un micro, un salaire, et des heures d'antenne.",
-         sub="Et aujourd'hui ? Ce discours a un *micro*, un *salaire*, et des heures d'**ANTENNE**.",
-         tag="AUJOURD'HUI", bg="rouge", mark="ON AIR", serious=True, gag=dict(kind="onair"),
-         extract=dict(src=76.5, end=87.0, label="RMC · plateau, avec Juliette Briens")),
-    dict(voice="Ce n'est pas un dérapage. C'est un casting. Dès deux mille vingt-trois, Libération la surnommait : la nouvelle égérie d'extrême droite de BFM.",
-         sub="Ce n'est pas un dérapage. C'est un **CASTING**. Dès 2023, Libération la surnommait : « la nouvelle égérie d'extrême droite de BFM ».",
-         tag="LE CASTING", bg="noir", mark="BFM", serious=True,
-         gag=dict(kind="quote", text="« la nouvelle égérie d'extrême droite de BFM »", who="Libération, 29/11/2023 — à propos de J. Briens"),
-         source="Libération, « Juliette Briens, la nouvelle égérie d'extrême droite de BFM », 29/11/2023"),
-    dict(voice="Et cette semaine, l'Arcom saisit la justice pour des propos racistes d'Éric Zemmour, tenus sur LCI, BFM et CNews.",
-         sub="Et cette semaine, l'**ARCOM** saisit la justice pour des propos racistes d'Éric Zemmour, tenus sur *LCI*, *BFM* et *CNews*.",
-         tag="CETTE SEMAINE", bg="rouge", mark="§",
-         gag=dict(kind="vote", house="ARCOM", title="Propos racistes d'É. Zemmour", scrutin="tenus sur LCI, BFM et CNews", rn="SAISIT LA JUSTICE", stamp="JUSTICE", sfx="buzzer"),
-         source="Libération, 03/11/2026 — l'Arcom saisit la justice", serious=True),
-    dict(voice="CNews, BFM, RMC : quand on donne l'antenne à la haine, on la fabrique.",
-         sub="CNews, BFM, RMC : quand on donne l'antenne à la *haine*, on la **FABRIQUE**.",
-         tag="CONCLUSION", bg="noir", mark="TV", serious=True, shake=True, gag=None),
-    dict(voice="Ne détournez pas le regard. Partagez, et signalez à l'Arcom.",
-         sub="Ne détournez pas le regard. **PARTAGEZ**, et signalez à l'Arcom.",
-         tag="CONCLUSION", bg="rouge", mark="!", serious=True, gag=dict(kind="cta")),
+    dict(voice="Un procureur de Paris, au siège du Rassemblement national. En pleine perquisition. Écoute :",
+         sub="Un **procureur de Paris** au siège du **RN**. En pleine **perquisition**. Écoute :",
+         tag="ALERTE", bg="rouge", mark="!", gag=None,
+         source="BFMTV · Le Monde, 19/11/2026",
+         extract=dict(file="v1.mp4", src=72.04, end=82.12, label="« Venu prendre un café dans les locaux du RN »")),
+    dict(voice="Le neuf novembre, des juges perquisitionnent le siège du parti. Pourquoi ?",
+         sub="**9 novembre** : des juges perquisitionnent le siège du parti. **Pourquoi ?**",
+         tag="LES FAITS", bg="noir", mark="9/11", gag=None,
+         source="Information judiciaire ouverte le 27/07/2026 (parquet de Paris)",
+         extract=dict(file="v1.mp4", src=0.0, end=10.92, label="« Des fuites entre le ministère de l'Intérieur et le RN »")),
+    dict(voice="Et le soupçon est précis :",
+         sub="Et le soupçon est **précis** :",
+         tag="LE SOUPÇON", bg="rouge", mark="?", gag=None,
+         source="Le Figaro · HuffPost/AFP, 19/11/2026 : un préfet, ex-secrétaire général de Beauvau",
+         extract=dict(file="v1.mp4", src=31.46, end=43.3, label="« Des informations confidentielles transmises au RN »")),
+    dict(voice="Avant la suite : ce genre d'info passe une minute à la télé, puis disparaît. Abonne-toi, et partage : c'est toi qui l'empêches de disparaître.",
+         sub="Avant la suite : ce genre d'info passe **une minute** à la télé, puis disparaît. **Abonne-toi** et **PARTAGE** : c'est toi qui l'empêches de disparaître.",
+         tag="PARTAGE", bg="rouge", mark="↗", gag=dict(kind="cta")),
+    dict(voice="Maintenant, une seule question : à qui ça profite ? Des secrets d'enquêtes sur le Rassemblement national… qui auraient atterri au Rassemblement national.",
+         sub="Une seule question : **À QUI ÇA PROFITE ?** Des secrets d'enquêtes **visant le RN**… qui auraient atterri **au RN**.",
+         tag="LA QUESTION", bg="noir", mark="?", gag=dict(kind="stamp", text="À QUI ÇA PROFITE ?", sfx="boom")),
+    dict(voice="Fais le calcul : juillet deux mille vingt-cinq, juin deux mille vingt-six, novembre deux mille vingt-six. Trois visites d'enquêteurs au siège du parti en seize mois. Pour le parti de l'ordre.",
+         sub="Fais le calcul : **juillet 2025**, **juin 2026**, **novembre 2026**. **3 VISITES** d'enquêteurs au siège du RN en **16 mois**. Pour le parti **de l'ordre**.",
+         tag="LE CALCUL", bg="noir", mark="3",
+         gag=dict(kind="counter", n=3, fmt="{}", label="visites d'enquêteurs au siège du RN en 16 mois", e="🚨", sfx="buzzer"),
+         source="HuffPost/AFP, 19/11/2026"),
+    dict(voice="La limite, honnête : le parquet dit que la présence du procureur est sans lien avec le dossier. Et surtout :",
+         sub="La limite : selon le parquet, la présence du procureur est **sans lien avec le dossier**. Et surtout :",
+         tag="LA LIMITE", bg="rouge", mark="!", serious=True, gag=None,
+         extract=dict(file="v1.mp4", src=59.85, end=62.6, label="« Aucune mise en examen à ce stade »")),
+    dict(voice="Présomption d'innocence pour tous. Mais retiens : un préfet soupçonné, un procureur au café du parti. Et toi, tu leur confierais les clés de la police ? Dis-le en commentaire, et partage.",
+         sub="Présomption d'innocence pour tous. Mais retiens : **un préfet soupçonné**, **un procureur au café du parti**, des enquêtes qui **fuient**. Et toi : tu leur confierais **les clés de la police** ? Abonne-toi, **PARTAGE**.",
+         tag="À TOI", bg="noir", mark="?", serious=True, gag=dict(kind="cta")),
 ]
-EXTRACT_SRC = os.path.join(HERE, "build", "src", "source.mp4")   # vidéo fournie (non versionnée)
-EXTRACT_CREDIT = "Extraits : compilation TikTok @trucdeouf2027 · archives TV · droit de citation (critique)"
-EXT_PAD = 0.35                       # respiration avant / après chaque extrait
+EXTRACT_DIR = os.path.join(HERE, "build", "src")                 # vidéos fournies (non versionnées)
+EXTRACT_SRC = os.path.join(EXTRACT_DIR, "v1.mp4")
+EXTRACT_CREDIT = "Extraits : BFMTV (Pauline Revenat, service police-justice), via TikTok · droit de citation"
+EXT_PAD = 0.25
 
-# Longueur « parlée » des mots affichés différemment de leur lecture (pour le minutage)
-SPOKEN = {"2023,": "deux mille vingt-trois,"}
+SPOKEN = {"9": "neuf", "2025,": "deux mille vingt-cinq,", "2026,": "deux mille vingt-six,", "2026.": "deux mille vingt-six.", "3": "trois", "16": "seize", "RN": "Rassemblement national", "RN**.": "Rassemblement national"}
 
 
 # ---------------------------------------------------------------------------
@@ -308,10 +305,30 @@ def split_voice(path):
     return [shrink_pauses(trim_silence(x[a:b])) for a, b in zip(bounds[:-1], bounds[1:])]
 
 
+CLONE_DIR = os.path.join(BUILD, "clone")
+
+
+def clone_pieces():
+    """Voix clonée : une pièce par séquence, lue telle quelle (pas de découpe devinée ni de pauses rabotées).
+    Renvoie None si les fichiers build/clone/sNN.wav ne sont pas tous là."""
+    import json
+    out = []
+    for i, seg in enumerate(SEGMENTS):
+        p = os.path.join(CLONE_DIR, f"s{i:02d}.wav")
+        if not os.path.exists(p):
+            return None
+        x = read_wav_mono(p)
+        j = p[:-4] + ".json"
+        seg["phrases"] = json.load(open(j)) if os.path.exists(j) else [dict(texte=seg["voice"], t0=0.0, t1=len(x) / SR)]
+        out.append(x)
+    return out
+
+
 def build_voiceover(voice_file):
     pieces = [np.zeros(int(INTRO_PAD * SR), np.float32)]
     t = INTRO_PAD
-    for seg, x in zip(SEGMENTS, split_voice(voice_file)):
+    voix = clone_pieces() or split_voice(voice_file)
+    for seg, x in zip(SEGMENTS, voix):
         seg["t0"], seg["t1"] = t, t + len(x) / SR
         gap = GAP + seg.get("beat", 0.0)          # « temps comique » après certaines phrases
         ex = seg.get("extract")
@@ -348,15 +365,36 @@ def parse_words(sub):
     return out
 
 
+def _cle(w):
+    return re.sub(r"[^\w%€]", "", w.lower())
+
+
+def sous_titre_parle(seg):
+    """Sous-titre = ce qui est VRAIMENT dit (le `sub` résumé décalait tout) ; les mots en **gras** / *jaune*
+    du `sub` sont reportés sur les mots identiques de la voix."""
+    styles = {_cle(w): st for w, st in parse_words(seg["sub"]) if st != "n"}
+    return [(w, styles.get(_cle(w), "n")) for w in seg["voice"].split()]
+
+
 def prepare_timing():
     for seg in SEGMENTS:
-        words = parse_words(seg["sub"])
-        weights = [len(SPOKEN.get(w, w)) + 1 for w, _ in words]
-        dur, tot = seg["t1"] - seg["t0"], sum(weights)
-        t, wl = seg["t0"], []
-        for (w, st), wt in zip(words, weights):
-            wl.append(dict(word=w, style=st, t=t))
-            t += dur * wt / tot
+        wl = []
+        if seg.get("phrases"):                     # voix clonée : minutage sur les vraies phrases
+            for ph in seg["phrases"]:
+                words = [(w, st) for w, st in sous_titre_parle(dict(voice=ph["texte"], sub=seg["sub"]))]
+                weights = [len(SPOKEN.get(w, w)) + 1 for w, _ in words]
+                t, dur, tot = seg["t0"] + ph["t0"], ph["t1"] - ph["t0"], sum(weights) or 1
+                for (w, st), wt in zip(words, weights):
+                    wl.append(dict(word=w, style=st, t=t))
+                    t += dur * wt / tot
+        else:                                      # ancienne voix (edge-tts) : comportement inchangé
+            words = parse_words(seg["sub"])
+            weights = [len(SPOKEN.get(w, w)) + 1 for w, _ in words]
+            dur, tot = seg["t1"] - seg["t0"], sum(weights)
+            t = seg["t0"]
+            for (w, st), wt in zip(words, weights):
+                wl.append(dict(word=w, style=st, t=t))
+                t += dur * wt / tot
         # groupes d'écran : 6 mots max, coupure après ponctuation forte
         chunks, cur = [], []
         for w in wl:
@@ -597,7 +635,7 @@ def sfx_siren():                        # sirène deux tons (pin-pon)
 GAG_SFX = {"siren": sfx_siren, "copier": sfx_copier, "chainsaw": sfx_chainsaw, "buzzer": sfx_buzzer, "scratch": sfx_scratch, "trombone": sfx_trombone, "crickets": sfx_crickets,
            "rimshot": sfx_rimshot, "kaching": sfx_kaching, "chuckle": sfx_chuckle, "ghost": sfx_ghost,
            "rewind": sfx_rewind, "whoosh": lambda: sfx_whoosh(0.5, 1.0), "glitch": lambda: sfx_swish(2.0),
-           "tick": lambda: sfx_pop()}
+           "tick": lambda: sfx_pop(), "boom": lambda: sfx_boom(1.2), "pop": lambda: sfx_pop()}
 GAG_DELAY = 0.55        # le gag visuel (et son bruitage) arrive 0,55 s après le début de la séquence
 
 
@@ -610,7 +648,7 @@ def build_extract_audio(total, path):
             continue
         tmp = os.path.join(BUILD, "_ext.wav")
         run(["ffmpeg", "-y", "-loglevel", "error", "-ss", str(ex["src"]), "-t", str(ex["end"] - ex["src"]),
-             "-i", EXTRACT_SRC, "-ac", "1", "-ar", str(SR), "-af", "loudnorm=I=-16:TP=-1.5", tmp])
+             "-i", os.path.join(EXTRACT_DIR, ex.get("file", "v1.mp4")), "-ac", "1", "-ar", str(SR), "-af", "loudnorm=I=-16:TP=-1.5", tmp])
         with wave.open(tmp) as w:
             x = np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
         fade = np.minimum(1, np.minimum(np.arange(len(x)) / (0.05 * SR), (len(x) - np.arange(len(x))) / (0.08 * SR)))
@@ -687,7 +725,7 @@ def background(seg, i, local, dur, t):
     # faisceau lumineux qui balaie l'écran
     pos = ((t * 260) % 3600) - 600
     beam = np.exp(-((DIAG - pos) / 140) ** 2) * 38
-    arr = arr + beam * np.array([1.0, 0.35, 0.35], np.float32)
+    arr = arr - beam * np.array([0.30, 0.18, 0.0], np.float32)       # reflet bleuté discret
     img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8)).convert("RGBA")
     # mot géant en filigrane (contour), zoom lent
     if seg.get("mark"):
@@ -704,7 +742,7 @@ def background(seg, i, local, dur, t):
         xx = (x * W + 30 * math.sin(t * (0.5 + v) + x * 10)) % W
         rr = 2 + 4 * s
         a = int(90 + 120 * v)
-        d.ellipse([xx - rr, yy - rr, xx + rr, yy + rr], fill=((255, 255, 255, a) if int(x * 10) % 3 == 0 else RED + (a,)))
+        d.ellipse([xx - rr, yy - rr, xx + rr, yy + rr], fill=(BLUE + (a // 2,) if int(x * 10) % 2 == 0 else RED + (a // 2,)))
     # zoom lent alterné (in sur les séquences paires, out sur les impaires)
     k = local / max(dur, 0.1)
     z = 1.0 + (0.08 * k if i % 2 == 0 else 0.08 * (1 - k))
@@ -723,7 +761,7 @@ def mark_layer(text):
         tmp = Image.new("RGBA", (W * 2, 700), (0, 0, 0, 0))
         d = ImageDraw.Draw(tmp)
         d.text((W, 350), text, font=f, anchor="mm", fill=(255, 255, 255, 0), stroke_width=5,
-               stroke_fill=(255, 255, 255, 48))
+               stroke_fill=BLUE + (40,))
         bb = tmp.getbbox() or (0, 0, 1, 1)
         lay = tmp.crop(bb)
         if lay.width > W * 1.05:                   # filigrane trop large -> réduit
@@ -749,12 +787,12 @@ def word_img(word, style):
     w, h = bb[2] - bb[0], bb[3] - bb[1]
     ox, oy = 40 - bb[0], 60 - bb[1]
     if style == "key":
-        d.rounded_rectangle([ox + bb[0] - 22, oy + bb[1] - 14, ox + bb[2] + 22, oy + bb[3] + 14], radius=16, fill=RED + (255,))
-        d.text((ox, oy), word, font=f, fill=WHITE, stroke_width=0)          # punchline : blanc sur rouge
+        d.rounded_rectangle([ox + bb[0] - 22, oy + bb[1] - 14, ox + bb[2] + 22, oy + bb[3] + 14], radius=16, fill=BLUE + (255,))
+        d.text((ox, oy), word, font=f, fill=WHITE, stroke_width=0)          # punchline : blanc sur bleu
     else:
-        col = YELLOW if style == "hl" else WHITE                # mots-clés en jaune
-        d.text((ox + 6, oy + 8), word, font=f, fill=(0, 0, 0, 160))            # ombre
-        d.text((ox, oy), word, font=f, fill=col, stroke_width=8, stroke_fill=(0, 0, 0))
+        col = RED if style == "hl" else NAVY                    # mots-clés en rouge
+        d.text((ox + 5, oy + 6), word, font=f, fill=(0, 0, 0, 40))             # ombre légère
+        d.text((ox, oy), word, font=f, fill=col, stroke_width=8, stroke_fill=WHITE)
     img = tmp.crop(tmp.getbbox())
     _word_cache[key] = img
     return img
@@ -840,6 +878,9 @@ def card(img, box, fill=(250, 250, 245), outline=None, radius=24):
     return d
 
 
+_gag_images = {}
+
+
 def draw_gag(img, seg, local, t):
     g = seg.get("gag")
     if not g:
@@ -850,6 +891,18 @@ def draw_gag(img, seg, local, t):
     k = ease_back(lt / 0.35)                      # entrée « pop »
     cy = H * 0.66
     kind = g["kind"]
+    if kind == "image":                            # illustration fournie (capture, affiche), dans une carte
+        if g["file"] not in _gag_images:
+            im0 = Image.open(os.path.join(EXTRACT_DIR, g["file"])).convert("RGBA")
+            hh = g.get("h", 640)
+            _gag_images[g["file"]] = im0.resize((int(im0.width * hh / im0.height), hh), Image.LANCZOS)
+        im = _gag_images[g["file"]]
+        sc = max(k, 0.05)
+        w2, h2 = int(im.width * sc), int(im.height * sc)
+        cyi = H * g.get("cy", 0.64)
+        card(img, [W / 2 - w2 / 2 - 10, cyi - h2 / 2 - 10, W / 2 + w2 / 2 + 10, cyi + h2 / 2 + 10], fill=(255, 255, 255), outline=BLUE, radius=18)
+        paste_c(img, im, W / 2, cyi, scale=sc)
+        return
     if kind in ("emoji", "rain", "carousel"):
         es = split_emojis(g["e"])
         if kind == "rain":                         # pluie de billets
@@ -930,11 +983,12 @@ def draw_gag(img, seg, local, t):
         d.polygon([(px - 60, cy + 210), (px + 60, cy + 210), (px, py)], fill=(200, 200, 210))
         d.line([x1, y1, x2, y2], fill=WHITE, width=14)
         d.ellipse([px - 20, py - 20, px + 20, py + 20], fill=YELLOW)
-        for (x, y, lab, emo) in ((x1, y1, "LES RICHES", "💰"), (x2, y2, "LES AUTRES", "🪶")):
+        LL, LR = g.get("left", "LES RICHES"), g.get("right", "LES AUTRES")
+        for (x, y, lab, emo) in ((x1, y1, LL, g.get("le", "💰")), (x2, y2, LR, g.get("re", "🪶"))):
             d.line([x, y, x, y + 90], fill=WHITE, width=5)
             d.rounded_rectangle([x - 130, y + 90, x + 130, y + 120], radius=10, fill=(200, 200, 210))
             paste_c(img, emoji_img(emo, 120), x, y + 45, scale=max(k, 0.05))
-            d.text((x, y + 170), lab, font=font(FONT_BLACK, 46), fill=YELLOW if lab == "LES RICHES" else (120, 200, 255),
+            d.text((x, y + 170), lab, font=font(FONT_BLACK, 46), fill=YELLOW if lab == LL else (120, 200, 255),
                    anchor="mm", stroke_width=6, stroke_fill=(0, 0, 0))
     elif kind == "road":                           # « rempart » ou autoroute ?
         d = ImageDraw.Draw(img)
@@ -954,7 +1008,7 @@ def draw_gag(img, seg, local, t):
             if tt < 0:
                 continue
             x_off = (1 - ease_out(tt / 0.35)) * (W if n % 2 == 0 else -W)
-            y0 = cy - 220 + n * 230
+            y0 = cy - 420 + n * 215
             d = card(img, [70 + x_off, y0, W - 70 + x_off, y0 + 200], fill=(18, 18, 22), outline=RED)
             d.text((110 + x_off, y0 + 50), name, font=font(FONT_BLACK, 56), fill=WHITE, anchor="lm")
             d.text((110 + x_off, y0 + 112), l1, font=font(FONT_BOLD, 36), fill=YELLOW, anchor="lm")
@@ -964,7 +1018,10 @@ def draw_gag(img, seg, local, t):
         stamp = Image.new("RGBA", (860, 220), (0, 0, 0, 0))
         sd = ImageDraw.Draw(stamp)
         sd.rounded_rectangle([8, 8, 852, 212], radius=22, outline=RED + (240,), width=16)
-        sd.text((430, 110), g["text"], font=font(FONT_BLACK, 120), fill=RED + (240,), anchor="mm")
+        stf = font(FONT_BLACK, 120)
+        while sd.textlength(g["text"], font=stf) > 780 and stf.size > 40:
+            stf = font(FONT_BLACK, stf.size - 4)
+        sd.text((430, 110), g["text"], font=stf, fill=RED + (240,), anchor="mm")
         paste_c(img, stamp, W / 2, cy, rot=-10, scale=sc)
     elif kind == "onair":                          # voyant « ON AIR » qui clignote
         d = ImageDraw.Draw(img)
@@ -1008,13 +1065,19 @@ def draw_gag(img, seg, local, t):
         while d.textlength(txt, font=ff) > 780 and ff.size > 60:
             ff = font(FONT_BLACK, ff.size - 6)
         d.text((W / 2, cy - 20), txt, font=ff, fill=RED, anchor="mm")
-        d.text((W / 2, cy + 95), g.get("label", ""), font=font(FONT_XBOLD, 40), fill=WHITE, anchor="mm")
+        lf = font(FONT_XBOLD, 40)
+        while d.textlength(g.get("label", ""), font=lf) > 800 and lf.size > 22:
+            lf = font(FONT_XBOLD, lf.size - 2)
+        d.text((W / 2, cy + 95), g.get("label", ""), font=lf, fill=WHITE, anchor="mm")
         paste_c(img, emoji_img(g["e"], 150), W / 2 + 360, cy - 150, rot=10 * math.sin(t * 3))
     elif kind == "vote":                           # carte de scrutin + tampon CONTRE
         d = card(img, [W / 2 - 410, cy - 200, W / 2 + 410, cy + 200], fill=(245, 245, 250))
         d.rectangle([W / 2 - 410, cy - 200, W / 2 + 410, cy - 120], fill=NAVY)
         d.text((W / 2, cy - 160), g.get("house", "ASSEMBLÉE NATIONALE"), font=font(FONT_XBOLD, 40), fill=WHITE, anchor="mm")
-        d.text((W / 2, cy - 70), g["title"], font=font(FONT_BLACK, 50), fill=(20, 20, 20), anchor="mm")
+        tf2 = font(FONT_BLACK, 50)
+        while d.textlength(g["title"], font=tf2) > 780 and tf2.size > 28:
+            tf2 = font(FONT_BLACK, tf2.size - 2)
+        d.text((W / 2, cy - 70), g["title"], font=tf2, fill=(20, 20, 20), anchor="mm")
         d.text((W / 2, cy - 10), g["scrutin"], font=font(FONT_BOLD, 34), fill=(80, 80, 90), anchor="mm")
         rf = font(FONT_BLACK, 76)
         while d.textlength(g["rn"], font=rf) > 760:
@@ -1027,16 +1090,27 @@ def draw_gag(img, seg, local, t):
             sd = ImageDraw.Draw(stamp)
             sd.rounded_rectangle([6, 6, 514, 164], radius=18, outline=RED + (230,), width=12)
             st_txt = g.get("stamp", "CONTRE")
-            sd.text((260, 85), st_txt, font=font(FONT_BLACK, 110 if len(st_txt) <= 6 else 90), fill=RED + (230,), anchor="mm")
+            sf_ = font(FONT_BLACK, 110)
+            while sd.textlength(st_txt, font=sf_) > 470 and sf_.size > 30:
+                sf_ = font(FONT_BLACK, sf_.size - 4)
+            sd.text((260, 85), st_txt, font=sf_, fill=RED + (230,), anchor="mm")
             paste_c(img, stamp, W / 2 + 230, cy + 255, rot=-14, scale=sc)
-    elif kind == "quote":                          # citation façon carte
-        d = card(img, [W / 2 - 430, cy - 150, W / 2 + 430, cy + 150], fill=(250, 250, 245), outline=BLUE)
-        qf = font(FONT_BLACK, 66)
-        while d.textlength(g["text"], font=qf) > 800 and qf.size > 34:
-            qf = font(FONT_BLACK, qf.size - 2)
-        d.text((W / 2, cy - 25), g["text"], font=qf, fill=(20, 20, 20), anchor="mm")
-        d.text((W / 2, cy + 75), "— " + g["who"], font=font(FONT_BOLD, 36), fill=(90, 90, 90), anchor="mm")
-        paste_c(img, emoji_img("🐌", 140), W / 2 + 400, cy + 150, rot=-8)
+    elif kind == "quote":                          # citation façon carte (texte sur plusieurs lignes)
+        qf = font(FONT_BLACK, 56)
+        dd = ImageDraw.Draw(img)
+        lines, cur = [], ""
+        for wd in g["text"].split():
+            test = (cur + " " + wd).strip()
+            if dd.textlength(test, font=qf) > 780 and cur:
+                lines.append(cur); cur = wd
+            else:
+                cur = test
+        lines.append(cur)
+        hh = 70 * len(lines) + 110
+        d = card(img, [W / 2 - 440, cy - hh / 2, W / 2 + 440, cy + hh / 2], fill=(250, 250, 245), outline=BLUE)
+        for j, ln in enumerate(lines):
+            d.text((W / 2, cy - hh / 2 + 60 + 70 * j), ln, font=qf, fill=(20, 20, 20), anchor="mm")
+        d.text((W / 2, cy + hh / 2 - 40), "— " + g["who"], font=font(FONT_BOLD, 34), fill=(90, 90, 90), anchor="mm")
     elif kind == "rewind":                         # rembobinage VHS
         d = ImageDraw.Draw(img)
         d.text((W / 2, cy - 20), "◀◀ REWIND", font=font(FONT_MONO, 120), fill=WHITE, anchor="mm")
@@ -1055,9 +1129,9 @@ def draw_gag(img, seg, local, t):
         d = ImageDraw.Draw(img)
         pulse = 1 + 0.04 * math.sin(t * 6)
         bw, bh = 820 * pulse * k, 110 * pulse * k
-        d.rounded_rectangle([W / 2 - bw / 2, cy - bh / 2, W / 2 + bw / 2, cy + bh / 2], radius=24, fill=YELLOW, outline=WHITE, width=5)
+        d.rounded_rectangle([W / 2 - bw / 2, cy - bh / 2, W / 2 + bw / 2, cy + bh / 2], radius=24, fill=RED, outline=BLUE, width=6)
         if k > 0.6:
-            d.text((W / 2, cy), "PARTAGE · ABONNE-TOI", font=font(FONT_BLACK, 62), fill=(0, 0, 0), anchor="mm")
+            d.text((W / 2, cy), "PARTAGE · ABONNE-TOI", font=font(FONT_BLACK, 62), fill=WHITE, anchor="mm")
 
 
 def draw_source(img, text, local):
@@ -1074,26 +1148,30 @@ def draw_source(img, text, local):
     x1 = W - 40 + (1 - p) * (tw + 300)
     x0 = x1 - tw - 190
     y0, y1 = H * 0.805, H * 0.805 + 70
-    d.rounded_rectangle([x0, y0, x1, y1], radius=14, fill=(255, 255, 255, 235))
-    d.rounded_rectangle([x0, y0, x0 + 150, y1], radius=14, fill=RED + (255,))
+    d.rounded_rectangle([x0, y0, x1, y1], radius=14, fill=(255, 255, 255, 245), outline=BLUE, width=3)
+    d.rounded_rectangle([x0, y0, x0 + 150, y1], radius=14, fill=BLUE + (255,))
     d.text((x0 + 75, (y0 + y1) / 2), "SOURCE", font=font(FONT_BLACK, 30), fill=WHITE, anchor="mm")
     d.text((x0 + 170, (y0 + y1) / 2), text, font=f, fill=(20, 20, 20), anchor="lm")
 
 
 class ClipReader:
     """Lit les images d'un extrait dans l'ordre (ffmpeg -> pipe), au format de l'encart."""
-    BOX_W, BOX_H = 860, 1494                        # 576x1000 agrandi (ratio conservé)
+    BOX_W, BOX_H = 830, 1476                        # vidéo source 9:16 (576x1024)
 
     def __init__(self, ex):
         self.ex, self.n, self.proc, self.last = ex, -1, None, None
+        if ex.get("crop"):                             # extrait recadré en paysage (ex. bande TV dans un TikTok)
+            cw, ch = [int(v) for v in ex["crop"].split(":")[:2]]
+            self.BOX_W = 1000
+            self.BOX_H = int(1000 * ch / cw) // 2 * 2
 
     def frame(self, k):
         if self.proc is None or k < self.n:
             if self.proc:
                 self.proc.kill()
             self.proc = subprocess.Popen(
-                ["ffmpeg", "-loglevel", "error", "-ss", f"{self.ex['src'] + k / FPS:.3f}", "-i", EXTRACT_SRC,
-                 "-t", f"{self.ex['end'] - self.ex['src']:.3f}", "-vf", f"fps={FPS},scale={self.BOX_W}:{self.BOX_H}",
+                ["ffmpeg", "-loglevel", "error", "-ss", f"{self.ex['src'] + k / FPS:.3f}", "-i", os.path.join(EXTRACT_DIR, self.ex.get("file", "v1.mp4")),
+                 "-t", f"{self.ex['end'] - self.ex['src']:.3f}", "-vf", (f"crop={self.ex['crop']}," if self.ex.get("crop") else "") + f"fps={FPS},scale={self.BOX_W}:{self.BOX_H}",
                  "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
             self.n = k - 1
         size = self.BOX_W * self.BOX_H * 3
@@ -1120,32 +1198,60 @@ def extract_at(t):
 def render_extract(ex, t, total):
     """Encart « EXTRAIT » : la vidéo d'origine (avec son), cadre rouge, étiquette et crédit."""
     k = int((t - ex["t0"]) * FPS)
+    ex_label = ex["label"]
     rd = _readers.setdefault(id(ex), ClipReader(ex))
     fr = rd.frame(k)
-    img = Image.new("RGB", (W, H), (8, 0, 0))
+    img = Image.new("RGB", (W, H), (250, 251, 255))
     d = ImageDraw.Draw(img)
     lt = t - ex["t0"]
     z = 1.0 + 0.03 * (lt / max(ex["t1"] - ex["t0"], 0.1))           # zoom lent
+    BW, BH = rd.BOX_W, rd.BOX_H
     if fr is not None:
-        bw, bh = int(ClipReader.BOX_W * z), int(ClipReader.BOX_H * z)
-        f2 = fr.resize((bw, bh), Image.BILINEAR).crop(((bw - ClipReader.BOX_W) // 2, (bh - ClipReader.BOX_H) // 2,
-                                                       (bw - ClipReader.BOX_W) // 2 + ClipReader.BOX_W,
-                                                       (bh - ClipReader.BOX_H) // 2 + ClipReader.BOX_H))
-        x0, y0 = (W - ClipReader.BOX_W) // 2, 300
-        d.rectangle([x0 - 10, y0 - 10, x0 + ClipReader.BOX_W + 10, y0 + ClipReader.BOX_H + 10], fill=RED)
+        bw, bh = int(BW * z), int(BH * z)
+        f2 = fr.resize((bw, bh), Image.BILINEAR).crop(((bw - BW) // 2, (bh - BH) // 2,
+                                                       (bw - BW) // 2 + BW,
+                                                       (bh - BH) // 2 + BH))
+        x0, y0 = (W - BW) // 2, (310 if BH > 1000 else (H - BH) // 2 - 60)
+        third = (BW + 24) / 3                    # cadre tricolore bleu / blanc / rouge
+        for n_, c_ in enumerate((BLUE, (215, 220, 230), RED)):
+            d.rectangle([x0 - 12 + n_ * third, y0 - 12, x0 - 12 + (n_ + 1) * third, y0 + BH + 12], fill=c_)
         img.paste(f2, (x0, y0))
+        # citation en gros sous l'encart (format paysage seulement)
+        qf = font(FONT_BLACK, 64)
+        if BH > 1000:
+            ex = dict(ex, label="")
+        while d.textlength(ex["label"], font=qf) > W - 80 and qf.size > 46:   # une seule ligne si possible
+            qf = font(FONT_BLACK, qf.size - 2)
+        mots, lignes, cur = ex["label"].replace("« ", "«\u00a0").replace(" »", "\u00a0»").split(" "), [], ""
+        for m in mots:
+            if d.textlength((cur + " " + m).strip(), font=qf) > W - 80:
+                lignes.append(cur); cur = m
+            else:
+                cur = (cur + " " + m).strip()
+        lignes.append(cur)
+        for n, li in enumerate(lignes):
+            d.text((W / 2, y0 + BH + 110 + n * 80), li, font=qf, fill=NAVY, anchor="mm",
+                   stroke_width=6, stroke_fill=WHITE)
     blink = int(t * 2) % 2 == 0
     lab = "▶ EXTRAIT"
     d.rounded_rectangle([60, 150, 60 + d.textlength(lab, font=font(FONT_BLACK, 46)) + 50, 226], radius=14, fill=RED)
     d.text((85, 188), lab, font=font(FONT_BLACK, 46), fill=WHITE, anchor="lm")
-    d.ellipse([W - 110, 168, W - 70, 208], fill=RED if blink else (80, 0, 0))
-    d.text((W - 130, 188), "SON D'ORIGINE", font=font(FONT_BOLD, 30), fill=WHITE, anchor="rm")
-    d.text((60, 262), ex["label"], font=font(FONT_BOLD, 30), fill=YELLOW, anchor="lm")
+    d.ellipse([W - 110, 168, W - 70, 208], fill=RED if blink else (250, 200, 200))
+    d.text((W - 130, 188), "SON D'ORIGINE", font=font(FONT_BOLD, 30), fill=NAVY, anchor="rm")
+    lf_ = font(FONT_BOLD, 30)
+    while d.textlength(ex_label, font=lf_) > W - 120 and lf_.size > 20:
+        lf_ = font(FONT_BOLD, lf_.size - 1)
+    d.text((60, 262), ex_label, font=lf_, fill=BLUE, anchor="lm")
     cf = font(FONT_BOLD, 24)
-    d.text((W / 2, H - 92), EXTRACT_CREDIT, font=cf, fill=(230, 230, 230), anchor="mm")
+    while d.textlength(EXTRACT_CREDIT, font=cf) > W - 60 and cf.size > 14:
+        cf = font(FONT_BOLD, cf.size - 1)
+    d.text((W / 2, H - 92), EXTRACT_CREDIT, font=cf, fill=(60, 70, 100), anchor="mm")
     pw = W * min(t / total, 1)
-    d.rectangle([0, 0, W, 12], fill=(255, 255, 255, 40))
-    d.rectangle([0, 0, pw, 12], fill=RED)
+    d.rectangle([0, 0, W, 12], fill=(220, 225, 235))
+    for k_, col_ in enumerate((BLUE, (200, 205, 215), RED)):
+        d.rectangle([pw * k_ / 3, 0, pw * (k_ + 1) / 3, 12], fill=col_)
+    for k_, col_ in enumerate((BLUE, WHITE, RED)):                 # bande tricolore en bas
+        d.rectangle([W * k_ / 3, H - 14, W * (k_ + 1) / 3, H], fill=col_)
     arr = np.asarray(img).astype(np.float32)
     if lt < 0.18 or ex["t1"] - t < 0.12:                              # neige TV à l'entrée / la sortie
         noise = np.random.default_rng(int(t * 1000)).integers(0, 255, (H // 4, W // 4, 1)).repeat(4, 0).repeat(4, 1)
@@ -1155,9 +1261,8 @@ def render_extract(ex, t, total):
 
 def render_frame(t, total):
     ex = extract_at(t)
-    if ex:
-        return render_extract(ex, t, total)
-    return render_frame_narr(t, total)
+    arr = render_extract(ex, t, total) if ex else render_frame_narr(t, total)
+    return appliquer_logo(arr, clair=True)                                   # logo sur TOUTES les images
 
 
 def render_frame_narr(t, total):
@@ -1195,26 +1300,28 @@ def render_frame_narr(t, total):
     tw = d.textlength(seg["tag"], font=tf)
     slide = ease_out(local / 0.25)
     x0 = 60 - (1 - slide) * 400
-    d.rectangle([x0, 160, x0 + tw + 50, 228], fill=RED + (255,), outline=WHITE, width=3)
+    d.rectangle([x0, 160, x0 + tw + 50, 228], fill=(BLUE if i % 2 else RED) + (255,), outline=WHITE, width=3)
     d.text((x0 + 25, 194), seg["tag"], font=tf, fill=WHITE, anchor="lm")
-    d.text((W - 60, 194), "LE CASTING DE LA HAINE", font=font(FONT_BOLD, 30), fill=(255, 255, 255, 200), anchor="rm")
-    d.text((60, 262), "Sources : Libération · Wikipédia · RMC · CNews", font=font(FONT_BOLD, 28),
-           fill=(255, 255, 255, 140), anchor="lm")
+    d.text((W - 60, 194), "FUITES BEAUVAU → RN", font=font(FONT_BOLD, 30), fill=NAVY, anchor="rm")
+    d.text((60, 262), "Sources : Le Monde · BFMTV · AFP · Le Figaro", font=font(FONT_BOLD, 28),
+           fill=(70, 80, 110), anchor="lm")
     # --- appel à l'action permanent en bas à partir de « La réponse »
     # --- gag visuel + encart « Source »
     draw_gag(img, seg, local, t)
     if seg.get("source"):
         draw_source(img, seg["source"], local)
     # --- barre de progression
-    d.rectangle([0, 0, W, 12], fill=(255, 255, 255, 40))
+    d.rectangle([0, 0, W, 12], fill=(220, 225, 235))
     pw = W * min(t / total, 1)
-    for k_, col_ in enumerate((RED, WHITE, RED)):
+    for k_, col_ in enumerate((BLUE, (200, 205, 215), RED)):
         d.rectangle([pw * k_ / 3, 0, pw * (k_ + 1) / 3, 12], fill=col_)
+    for k_, col_ in enumerate((BLUE, WHITE, RED)):                 # bande tricolore en bas
+        d.rectangle([W * k_ / 3, H - 14, W * (k_ + 1) / 3, H], fill=col_)
 
     arr = np.asarray(img.convert("RGB")).astype(np.float32)
     # --- vignette, grain
-    arr *= (1 - 0.7 * VIGN)
-    arr += GRAIN[int(t * FPS) % len(GRAIN)].repeat(4, 0).repeat(4, 1)
+    arr *= (1 - 0.12 * VIGN)                                     # vignette très légère (fond clair)
+    arr += 0.4 * GRAIN[int(t * FPS) % len(GRAIN)].repeat(4, 0).repeat(4, 1)
     # --- transition : glitch RVB + flash blanc au début de chaque séquence
     if i > 0 and local < 0.14:
         k = 1 - local / 0.14
@@ -1227,7 +1334,7 @@ def render_frame_narr(t, total):
             hh = int(rng.integers(10, 100))
             arr[y:y + hh] = np.roll(arr[y:y + hh], int(rng.integers(-140, 140) * k), axis=1)
         if local < 0.05:
-            arr = arr * 0.5 + 255 * 0.5
+            arr = arr * 0.55 + np.array(BLUE, np.float32) * 0.45       # flash bleu
     # --- secousse d'écran
     if shake > 0.5:
         sx, sy = int(shake * math.sin(t * 93)), int(shake * math.cos(t * 71))

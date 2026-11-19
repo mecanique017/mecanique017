@@ -1,36 +1,24 @@
-# TikTok : « CNews, BFM, RMC : le casting de la haine »
+# Fuites de Beauvau vers le RN : à qui ça profite ?
 
-Vidéo verticale 1080×1920 d'environ 1 min 50, générée par `montage_medias.py`. Le commentaire animé (voix ElevenLabs) alterne avec 4 courts extraits de la vidéo fournie, diffusés avec leur son d'origine.
+Vidéo TikTok Canal Rouge (~1 min 45), voix clonée de l'utilisateur, synchronisée phrase par phrase.
+Une question (« À qui ça profite ? »), 4 extraits avec la vraie voix (BFMTV, Pauline Revenat, service police-justice), chiffre « fais le calcul » : 3 visites d'enquêteurs au siège du RN en 16 mois (juillet 2025, juin 2026, 9 novembre 2026).
+Limite honnête dite à l'écran : aucune mise en examen à ce stade ; selon le parquet, la présence du procureur adjoint est sans lien avec le dossier. Présomption d'innocence rappelée. Le préfet n'est pas nommé dans la voix.
+Source fournie : `build/src/v1.mp4` (BFMTV via TikTok), non versionnée.
 
-**La vidéo source n'est pas versionnée :** elle est placée dans `build/src/source.mp4`, qui est exclu du dépôt.
+## Légende
+Un procureur adjoint de Paris « venu prendre un café » au siège du RN… pendant une perquisition pour des fuites venues du ministère de l'Intérieur. Des secrets d'enquêtes sur le RN qui auraient atterri au RN. À qui ça profite ?
 
-```bash
-ffmpeg -i voix_off_source_elevenlabs.mp3 -af atempo=1.08 build/voix.wav
-python3 montage_medias.py --voice-file build/voix.wav
-```
+## Hashtags
+#rassemblementnational #perquisition #beauvau #justice #politique
 
-## Extraits utilisés (vidéo source : compilation TikTok @trucdeouf2027)
+## Commentaire épinglé
+Sources :
+• Information judiciaire ouverte le 27/07/2026 par le parquet de Paris pour violation du secret professionnel, violation du secret de l'enquête et recel ; perquisition au siège du RN le 9/11/2026 : Le Monde, 19/11/2026 ; HuffPost/AFP, 19/11/2026
+• Personne visée : un préfet, ex-secrétaire général du ministère de l'Intérieur (Le Figaro, 19/11/2026). Aucune mise en examen à ce stade (parquet de Paris via BFMTV) : présomption d'innocence.
+• Procureur adjoint présent au siège : « Je me suis rendu là-bas pour prendre un café avec une connaissance. C'est la première fois que je m'y rendais » (AFP) ; présence « sans lien avec le dossier » selon le parquet
+• Précédentes visites d'enquêteurs au siège du RN : juillet 2025 et juin 2026 (financement, fonds européens) : HuffPost/AFP
+Extraits : BFMTV, droit de citation. On critique des faits et un système, pas des personnes.
+Voix off générée par IA (voix de l'auteur, avec son accord).
 
-| Extrait | Passage de la source | Contenu |
-|---|---|---|
-| 1 | 11,0 – 23,4 s | Archive : « …on est à majorité blanche et on doit le rester » |
-| 2 | 53,0 – 63,8 s | Archive : « le Gabon blanc… le Japon maghrébin… pour que la France ressemble à la France » |
-| 3 | 87,5 – 95,0 s | Archive : « la croissance d'une population par une autre est en cours… on va tous devenir métisses, et je trouve ça triste » |
-| 4 | 76,5 – 87,0 s | Plateau RMC : « clochards avinés et autres punks à chiens sous crack… » |
-
-**Ce qui n'est pas repris :** le passage du chroniqueur aux cheveux gris (identité et contexte non vérifiés) et le mème final.
-
-**Droit de citation :** les extraits sont courts (7 à 12 s), cités pour la critique et le commentaire, et leur source est indiquée à l'écran.
-
-## Sources des affirmations
-
-| Affirmation | Source |
-|---|---|
-| Alice Cordier : militante identitaire, fondatrice et directrice du collectif Némésis | Wikipédia, « Alice Cordier » |
-| Alice Cordier : invitée régulière de CNews | cnews.fr (2025-2026) |
-| Juliette Briens : chroniqueuse RMC (« Estelle Midi ») | rmc.bfmtv.com, octobre 2026 |
-| Juliette Briens : passée par BFMTV, CNews et TPMP | Libération, 29/11/2023 |
-| « la nouvelle égérie d'extrême droite de BFM » | Libération (newsletter Frontal), 29/11/2023 |
-| L'Arcom saisit la justice pour des propos racistes de Zemmour sur LCI, BFM et CNews | Libération, 03/11/2026 |
-
-**Identification des personnes dans les archives :** elle vient de la compilation source. Le même dossier d'archives circule aussi ailleurs, par exemple chez Kevin Razy. Je n'ai pas trouvé de grand média ayant daté ces archives précisément. Le commentaire dit donc : « ces archives circulent sur les réseaux », et ne prête à aucune des deux une phrase précise : on entend les extraits avec leur son d'origine.
+## Créneau conseillé
+Aujourd'hui 18 h – 21 h 30 (info du jour). Activer le label « Contenu généré par l'IA ».
