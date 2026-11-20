@@ -1,6 +1,6 @@
 # Fuites de Beauvau vers le RN : à qui ça profite ?
 
-Vidéo TikTok Canal Rouge (~1 min 45), voix clonée de l'utilisateur, synchronisée phrase par phrase.
+Vidéo TikTok Canal Rouge (1 min 44), voix clonée de l'utilisateur, synchronisée phrase par phrase.
 Une question (« À qui ça profite ? »), 4 extraits avec la vraie voix (BFMTV, Pauline Revenat, service police-justice), chiffre « fais le calcul » : 3 visites d'enquêteurs au siège du RN en 16 mois (juillet 2025, juin 2026, 9 novembre 2026).
 Limite honnête dite à l'écran : aucune mise en examen à ce stade ; selon le parquet, la présence du procureur adjoint est sans lien avec le dossier. Présomption d'innocence rappelée. Le préfet n'est pas nommé dans la voix.
 Source fournie : `build/src/v1.mp4` (BFMTV via TikTok), non versionnée.
