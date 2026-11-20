@@ -95,7 +95,7 @@ SEGMENTS = [
     dict(voice="Maintenant, une seule question : à qui ça profite ? Des secrets d'enquêtes sur le Rassemblement national… qui auraient atterri au Rassemblement national.",
          sub="Une seule question : **À QUI ÇA PROFITE ?** Des secrets d'enquêtes **visant le RN**… qui auraient atterri **au RN**.",
          tag="LA QUESTION", bg="noir", mark="?", gag=dict(kind="stamp", text="À QUI ÇA PROFITE ?", sfx="boom")),
-    dict(voice="Fais le calcul. Juillet deux mille vingt-cinq. Juin deux mille vingt-six. Et maintenant, novembre. Trois visites d'enquêteurs au siège du parti en seize mois. Pour le parti de l'ordre.",
+    dict(voice="Fais le calcul. Une première fois en juillet deux mille vingt-cinq. Une deuxième fois au mois de juin dernier. Et maintenant, novembre. Trois visites d'enquêteurs au siège du parti en seize mois. Pour le parti de l'ordre.",
          sub="Fais le calcul : **juillet 2025**, **juin 2026**, **novembre 2026**. **3 VISITES** d'enquêteurs au siège du RN en **16 mois**. Pour le parti **de l'ordre**.",
          tag="LE CALCUL", bg="noir", mark="3",
          gag=dict(kind="counter", n=3, fmt="{}", label="visites d'enquêteurs au siège du RN en 16 mois", e="🚨", sfx="buzzer"),
