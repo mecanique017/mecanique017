@@ -1,6 +1,6 @@
 # Villepin candidat : l'original ou la copie ?
 
-Vidéo TikTok Canal Rouge (~2 min), angle LFI (appel au vote France insoumise), voix clonée de l'utilisateur, synchronisée phrase par phrase.
+Vidéo TikTok Canal Rouge (2 min 06), angle LFI (appel au vote France insoumise), voix clonée de l'utilisateur, synchronisée phrase par phrase.
 Une question (« À qui profite sa candidature ? »), 2 extraits avec la vraie voix de Dominique de Villepin (annonce devant la presse, discours Paris Match), chiffre « fais le calcul » : 730 jours de licenciement possible sans motif avec le CPE (2006).
 Limite honnête dite à l'écran : son discours de 2003 à l'ONU contre la guerre en Irak lui est reconnu.
 Sources fournies dans `build/src/` : v1 (Paris Match), v3 (@victordsfg), i1 (visuel Brut), non versionnées.
