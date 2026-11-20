@@ -6,7 +6,7 @@ Limite honnête dite à l'écran : la cour n'a pas jugé de racisme ; on ne prê
 Sources fournies : `build/src/v1.mp4` (témoignage du frère, @nintchmy, enregistré avant le procès de mars 2026), `build/src/i1-i15.jpg` (visuels @kween.neferamus, @taragumedia), non versionnés.
 
 ## Légende
-« On sait que les Clio peuvent transporter des stupéfiants. » Voilà pourquoi la BAC a suivi Olivio Gomes sur 20 km avant de le tuer de trois balles, à Poissy. Condamné à 10 ans, libéré après 53 jours. Hier, en appel : 8 ans, retour en prison. Pour une fois. Et s'il avait été blanc ?
+« On sait que les Clio peuvent transporter des stupéfiants. » Voilà pourquoi la BAC a suivi Olivio Gomes sur 20 km avant de le tuer de trois balles, à Poissy. Condamné à 10 ans, libéré après 53 jours. Mercredi, en appel : 8 ans, retour en prison. Pour une fois. Et s'il avait été blanc ?
 
 ## Hashtags
 #justicepourolivio #oliviogomes #violencespolicieres #racisme #controleaufacies
@@ -24,4 +24,4 @@ Extraits : témoignage du frère d'Olivio Gomes (@nintchmy), droit de citation. 
 Voix off générée par IA (voix de l'auteur, avec son accord).
 
 ## Créneau conseillé
-Aujourd'hui 18 h – 21 h 30 (le verdict date d'hier). Activer le label « Contenu généré par l'IA ».
+Aujourd'hui 18 h – 21 h 30 (verdict du 18/11, réagir vite). Activer le label « Contenu généré par l'IA ».

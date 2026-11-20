@@ -84,7 +84,7 @@ SEGMENTS = [
          tag="LES FAITS", bg="noir", mark="20 KM",
          gag=dict(kind="quote", text="« On sait que les Clio peuvent transporter des stupéfiants. »", who="le conducteur de la BAC, à l'audience"),
          source="TV5Monde (AFP), 18/11/2026 · Bondy Blog, 14/11/2026"),
-    dict(voice="Une petite voiture. C'est tout. Les policiers disent : il roulait vite. La vidéosurveillance dit non. Ils disent : il a foncé sur nous. Les expertises disent : les balles arrivent par le côté. Et le deuxième tir est mortel.",
+    dict(voice="Une petite voiture. C'est tout. Les policiers disent qu'il roulait trop vite. Les caméras de la ville montrent le contraire. Ils disent : il a foncé sur nous. Les expertises disent : les balles arrivent par le côté. Et le deuxième tir est mortel.",
          sub="Une Clio. **C'est tout.** « Il roulait vite » : **la vidéosurveillance dit non.** « Il a foncé sur nous » : les expertises disent **tirs depuis le côté**. Le **deuxième est mortel**.",
          tag="LA VERSION POLICIÈRE", bg="rouge", mark="✗", gag=dict(kind="image", file="i9.jpg", h=620, cy=0.65),
          source="Expertises et vidéosurveillance, citées par TV5Monde et Bondy Blog"),
@@ -92,7 +92,7 @@ SEGMENTS = [
          sub="Pendant que la famille pleure, **une autre histoire circule** :",
          tag="LE RÉCIT", bg="noir", mark="?", gag=None,
          extract=dict(file="v1.mp4", src=45.7, end=63.6, label="« C'est toujours de la faute du défunt »")),
-    dict(voice="Maintenant, une seule question. Un homme blanc au volant, on l'aurait suivi vingt kilomètres ? Honnêtement, la cour n'a pas jugé de racisme. Mais les chiffres, eux, sont officiels.",
+    dict(voice="Maintenant, une seule question. Un homme blanc au volant, est-ce qu'on l'aurait suivi pendant vingt kilomètres ? Honnêtement, la cour n'a pas jugé de racisme. Mais les chiffres, eux, sont officiels.",
          sub="Une seule question : **un homme blanc dans une Clio**, on l'aurait suivi **20 km** ? Honnêtement, la cour n'a **pas jugé de racisme**. Mais les chiffres sont **officiels**.",
          tag="LA QUESTION", bg="rouge", mark="?", gag=dict(kind="stamp", text="ET S'IL ÉTAIT BLANC ?", sfx="boom")),
     dict(voice="Fais le calcul : un jeune homme perçu comme noir ou arabe a vingt fois plus de risques d'être contrôlé, selon le Défenseur des droits. Et depuis deux mille dix-sept, la majorité des tués après un refus d'obtempérer étaient noirs ou arabes, selon une grande agence de presse internationale.",
@@ -112,11 +112,11 @@ SEGMENTS = [
          sub="Son frère l'avait dit **avant le procès** :",
          tag="DEUX POIDS", bg="rouge", mark="⚖", gag=None,
          extract=dict(file="v1.mp4", src=270.2, end=282.05, label="« Si ça avait été moi, j'aurais été en prison »")),
-    dict(voice="Hier, au procès en appel : coupable de meurtre. Huit ans, retour en prison, interdit à vie d'être policier. Il peut encore aller en cassation. Mais pour une fois, un policier qui a tué dort en prison.",
-         sub="**Hier, à Nanterre**, en appel : **coupable de meurtre**. **8 ANS**, retour en prison, **interdit à vie** d'être policier. La cassation reste possible. Mais **pour une fois**, il dort en prison.",
+    dict(voice="Mercredi dix-huit novembre, en appel : coupable de meurtre. Huit ans, retour en prison, interdit à vie d'être policier. Il peut encore aller en cassation. Mais pour une fois, un policier qui a tué dort en prison.",
+         sub="**Mercredi 18 novembre, à Nanterre**, en appel : **coupable de meurtre**. **8 ANS**, retour en prison, **interdit à vie** d'être policier. La cassation reste possible. Mais **pour une fois**, il dort en prison.",
          tag="LE VERDICT", bg="noir", mark="8 ANS", gag=dict(kind="image", file="i15.jpg", h=600, cy=0.65),
          source="Cour d'assises d'appel des Hauts-de-Seine, 18/11/2026 · TV5Monde (AFP)"),
-    dict(voice="Retiens trois choses. Un : la version policière était fausse. Deux : le contrôle au faciès, ce sont des chiffres officiels. Trois : sans la famille, et sans la rue, il n'y aurait peut-être pas eu de procès. Son frère, lui, pense déjà aux autres :",
+    dict(voice="Retiens trois choses. D'abord, la version policière était fausse. Ensuite, le contrôle au faciès, ce sont des chiffres officiels. Enfin, sans la famille, et sans la rue, il n'y aurait peut-être pas eu de procès. Son frère, lui, pense déjà aux autres :",
          sub="**1.** La version policière était **fausse**. **2.** Le contrôle au faciès : des **chiffres officiels**. **3.** Sans la famille et la rue, peut-être **pas de procès**.",
          tag="À RETENIR", bg="rouge", mark="3", serious=True, gag=dict(kind="image", file="i10.jpg", h=560, cy=0.66),
          extract=dict(file="v1.mp4", src=312.68, end=323.94, label="« Pour que d'autres frères ne meurent pas »")),
@@ -130,7 +130,7 @@ EXTRACT_CREDIT = "Extraits : témoignage du frère d'Olivio Gomes, via @nintchmy
 EXT_PAD = 0.25
 
 SPOKEN = {"10": "dix", "53": "cinquante-trois", "2020.": "deux mille vingt.", "20": "vingt", "2017,": "deux mille dix-sept,",
-          "2026": "deux mille vingt-six", "2020.": "deux mille vingt.", "3 652": "trois mille six cents", "8": "huit", "1.": "un", "2.": "deux", "3.": "trois", "km": "kilomètres"}
+          "2026": "deux mille vingt-six", "2020.": "deux mille vingt.", "3 652": "trois mille six cents", "8": "huit", "18": "dix-huit", "1.": "un", "2.": "deux", "3.": "trois", "km": "kilomètres"}
 
 
 # ---------------------------------------------------------------------------

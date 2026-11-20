@@ -21,4 +21,4 @@ Extraits : BFMTV, droit de citation. On critique des faits et un système, pas d
 Voix off générée par IA (voix de l'auteur, avec son accord).
 
 ## Créneau conseillé
-Aujourd'hui 18 h – 21 h 30 (info du jour). Activer le label « Contenu généré par l'IA ».
+Aujourd'hui 18 h – 21 h 30 (révélé le 19/11, réagir vite). Activer le label « Contenu généré par l'IA ».
