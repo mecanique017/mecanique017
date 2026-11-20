@@ -116,7 +116,7 @@ SEGMENTS = [
          sub="**Mercredi 18 novembre, à Nanterre**, en appel : **coupable de meurtre**. **8 ANS**, retour en prison, **interdit à vie** d'être policier. La cassation reste possible. Mais **pour une fois**, il dort en prison.",
          tag="LE VERDICT", bg="noir", mark="8 ANS", gag=dict(kind="image", file="i15.jpg", h=600, cy=0.65),
          source="Cour d'assises d'appel des Hauts-de-Seine, 18/11/2026 · TV5Monde (AFP)"),
-    dict(voice="Retiens trois choses. D'abord, la version policière était fausse. Ensuite, le contrôle au faciès, ce sont des chiffres officiels. Enfin, sans la famille, et sans la rue, il n'y aurait peut-être pas eu de procès. Son frère, lui, pense déjà aux autres :",
+    dict(voice="Retiens trois choses. D'abord, la version policière était fausse. Ensuite, les contrôles au faciès sont prouvés par des chiffres officiels. Enfin, sans la famille, et sans la rue, il n'y aurait peut-être pas eu de procès. Son frère, lui, pense déjà aux autres :",
          sub="**1.** La version policière était **fausse**. **2.** Le contrôle au faciès : des **chiffres officiels**. **3.** Sans la famille et la rue, peut-être **pas de procès**.",
          tag="À RETENIR", bg="rouge", mark="3", serious=True, gag=dict(kind="image", file="i10.jpg", h=560, cy=0.66),
          extract=dict(file="v1.mp4", src=312.68, end=323.94, label="« Pour que d'autres frères ne meurent pas »")),
