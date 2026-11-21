@@ -1,6 +1,6 @@
 # Loi « permis de tuer » : qui devra prouver ?
 
-Vidéo TikTok Canal Rouge (~3 min), voix clonée de l'utilisateur, synchronisée phrase par phrase. Les 12 visuels fournis sont tous montrés (un par séquence).
+Vidéo TikTok Canal Rouge (2 min 50), voix clonée de l'utilisateur, synchronisée phrase par phrase. Les 12 visuels fournis sont tous montrés (un par séquence).
 Une question (« Qui doit prouver ? »), chiffre « fais le calcul » : morts lors de refus d'obtempérer multipliés par 5 après la loi de 2017 (chercheurs cités par franceinfo).
 Limite honnête dite à l'écran : les enquêtes restent possibles et la présomption tombe face à une preuve contraire (contrairement à « sans être inquiétés de quelconque enquête » du visuel 5).
 Aucun extrait vidéo fourni : pas d'extrait avec une vraie voix (la recette en demande 3).
