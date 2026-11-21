@@ -77,7 +77,7 @@ IMG = dict(h=640, cy=0.64)
 SEGMENTS = [
     dict(voice="Le treize novembre, à Biarritz, des militants d'extrême droite se sont présentés devant le domicile du youtubeur Tibo. Avec des fumigènes, une grande banderole, et toute une mise en scène.",
          sub="**13 novembre, Biarritz** : des militants d'**extrême droite** devant le **domicile** de Tibo InShape. Fumigènes, banderole, **mise en scène**.",
-         tag="ALERTE", bg="rouge", mark="!", gag=dict(kind="image", file="tibo.jpg", h=620, cy=0.64),
+         tag="ALERTE", bg="rouge", mark="!", gag=dict(kind="image", file="tibo.jpg", h=520, cy=0.70),
          source="La Dépêche, 20/11/2026 · groupe « Furie Tolosa »"),
     dict(voice="Tout ça pour une vidéo appelant à l'unité sous le drapeau français, avec une coach sportive qui porte le voile. Une procédure est en cours au commissariat de Biarritz.",
          sub="Tout ça pour une vidéo appelant à **l'unité sous le drapeau**, avec une coach sportive **voilée**. Une **procédure** est en cours au commissariat.",
@@ -95,6 +95,10 @@ SEGMENTS = [
          tag="LA VIOLENCE", bg="rouge", mark="3",
          gag=dict(kind="counter", n=3, fmt="{} jours", label="Pennsylvania Hall, incendiée en mai 1838", e="🔥", sfx="buzzer"),
          source="Pennsylvania Hall, Philadelphie, inaugurée le 14/05/1838, incendiée le 17/05/1838"),
+    dict(voice="Frédéric Douglass l'a dit à Boston, en mille huit cent soixante, après qu'une foule a dispersé sa réunion : la liberté n'a pas de sens là où le droit d'exprimer ses pensées a cessé d'exister.",
+         sub="Douglass, **Boston, 1860**, après une réunion dispersée par la foule : « La liberté n'a **pas de sens** là où le droit d'exprimer ses pensées a **cessé d'exister**. »",
+         tag="SA RÉPONSE", bg="noir", mark="1860", gag=dict(kind="image", file="douglass.jpg", h=560, cy=0.66),
+         source="F. Douglass, « A Plea for Free Speech in Boston », décembre 1860"),
     dict(voice="Pourquoi autant de haine, contre ceux qui demandaient simplement la fin de l'esclavage ? Parce que l'ordre esclavagiste reposait sur une frontière rigide, entre ceux qui comptent, et les autres. Montrer une humanité commune, c'était une provocation intolérable.",
          sub="Pourquoi **tant de haine** ? Parce que l'ordre esclavagiste reposait sur une frontière : **ceux qui comptent**, et **les autres**. Montrer une **humanité commune** : une provocation.",
          tag="LA FRONTIÈRE", bg="noir", mark="≠", gag=dict(kind="image", file="tubman.jpg", h=500, cy=0.64),
@@ -102,6 +106,10 @@ SEGMENTS = [
     dict(voice="Avant la suite : abonne-toi, et partage. Parce que l'intimidation marche surtout quand personne n'en parle.",
          sub="**Abonne-toi** et **PARTAGE** : l'intimidation marche surtout **quand personne n'en parle**.",
          tag="PARTAGE", bg="rouge", mark="↗", gag=dict(kind="cta")),
+    dict(voice="Harriet Tubman, elle, s'est évadée. Puis elle est revenue, treize fois selon les historiens, pour guider environ soixante-dix personnes vers la liberté. Et selon ses propres mots, sans jamais perdre un seul passager.",
+         sub="**Harriet Tubman** s'est évadée, puis est revenue **13 fois** pour guider environ **70 personnes** vers la liberté. « Sans jamais perdre **un seul passager**. »",
+         tag="HARRIET TUBMAN", bg="rouge", mark="70", gag=dict(kind="image", file="tubman.jpg", h=500, cy=0.66),
+         source="National Park Service · Harriet Tubman Underground Railroad"),
     dict(voice="C'est exactement ce qui m'amène à combattre l'extrême droite aujourd'hui. Je la combats parce qu'elle ne se contente pas de proposer des idées dures : elle cherche à imposer la peur, jusque devant la porte des gens. L'intimidation n'est pas un débat. C'est une tentative de faire taire les gens.",
          sub="Je combats l'extrême droite parce qu'elle veut **imposer la peur**, jusque **devant la porte des gens**. L'intimidation **n'est pas un débat** : c'est une tentative de **faire taire**.",
          tag="POURQUOI JE COMBATS", bg="noir", mark="1", gag=dict(kind="image", file="tibo.jpg", h=560, cy=0.66)),
@@ -123,7 +131,7 @@ EXTRACT_SRC = os.path.join(EXTRACT_DIR, "douglass.jpg")
 EXTRACT_CREDIT = "Visuels : Sud Ouest (TikTok), daguerréotype de F. Douglass, peinture du chemin de fer clandestin · droit de citation"
 EXT_PAD = 0.25
 
-SPOKEN = {"13": "treize", "1838": "mille huit cent trente-huit", "3": "trois", "XIXe": "dix-neuvième"}
+SPOKEN = {"13": "treize", "1838": "mille huit cent trente-huit", "3": "trois", "XIXe": "dix-neuvième", "1860,": "mille huit cent soixante,", "13": "treize", "70": "soixante-dix"}
 
 
 # ---------------------------------------------------------------------------
