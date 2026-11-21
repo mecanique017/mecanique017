@@ -1,0 +1,29 @@
+SCRIPT VOIX OFF : « ILS VEULENT INTERDIRE LA FRANCE INSOUMISE »
+(** = encadré rouge + impact sonore · * = surligné jaune)
+
+01. [ALERTE] Ils veulent interdire La France Insoumise.
+    écran : Ils veulent **INTERDIRE** La France Insoumise.
+02. [ALERTE] Bruno Retailleau, Gérard Larcher, une partie de la droite : ils appellent à dissoudre LFI.
+    écran : Bruno Retailleau, Gérard Larcher, une partie de la droite : ils appellent à **DISSOUDRE** LFI.
+03. [LEURS MOTS] Ils parlent de discours de haine. Ils l'accusent pour les mobilisations contre la vie chère.
+    écran : Ils parlent de « *discours* *de* *haine* ». Ils l'accusent pour les mobilisations contre la *vie* *chère*.
+04. [POURQUOI ?] Pourquoi cette offensive ?
+    écran : Pourquoi cette *offensive* ?
+05. [POURQUOI ?] Parce que quand les gens descendent dans la rue contre la vie chère, c'est LFI qui est là.
+    écran : Parce que quand les gens descendent dans la *rue* contre la *vie* *chère*, c'est *LFI* qui est là.
+06. [POURQUOI ?] C'est LFI qui porte la colère populaire.
+    écran : C'est LFI qui porte la *colère* *populaire*.
+07. [LA VÉRITÉ] Ils ont peur d'un parti qui pèse dans les sondages, qui mobilise dans la rue, et qui propose une autre voie.
+    écran : Ils ont **PEUR** d'un parti qui pèse dans les *sondages*, qui *mobilise* dans la rue, et qui propose une *autre* *voie*.
+08. [LA VÉRITÉ] Interdire un parti qui représente des millions de Français, c'est avouer que la démocratie les dérange.
+    écran : Interdire un parti qui représente des *millions* *de* *Français*, c'est avouer que la *démocratie* les dérange.
+09. [LA RÉPONSE] La réponse est simple.
+    écran : La réponse est *simple*.
+10. [LA RÉPONSE] En deux mille vingt-sept, on ne laisse pas le champ libre à ceux qui veulent nous faire taire.
+    écran : En **2027**, on ne laisse pas le champ libre à ceux qui veulent nous faire *taire*.
+11. [LA RÉPONSE] On s'inscrit sur les listes électorales. On se mobilise. On va voter.
+    écran : On s'inscrit sur les *listes* *électorales*. On se *mobilise*. On va **VOTER**.
+12. [LA RÉPONSE] Pour une France qui ne se résigne plus.
+    écran : Pour une France qui ne se *résigne* *plus*.
+13. [2027] LFI dérange ? Tant mieux. C'est pour ça qu'il faut la défendre dans les urnes.
+    écran : LFI dérange ? *Tant* *mieux*. C'est pour ça qu'il faut la défendre dans les **URNES**.

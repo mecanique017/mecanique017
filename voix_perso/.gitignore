@@ -1,0 +1,6 @@
+# Ta voix ne doit jamais être publiée : le dépôt est public.
+ref/
+build/
+*.wav
+*.mp3
+df/

@@ -1,0 +1,35 @@
+SCRIPT : « SONDAGES 2027 : RIEN N'EST JOUÉ » (≈ 1 min 30)
+(** = pavé rouge + impact · * = surligné jaune · [EXTRAIT] = son d'origine LCI)
+
+01. [LE SONDAGE] Le Pen à trente-cinq pour cent, Mélenchon à dix-huit. Circulez, c'est plié ?
+    [EXTRAIT 8 s] LCI · sondage Ifop-Fiducial du 27-29 octobre 2026
+
+02. [LA MÉTHODE] Vous n'avez jamais été sondé ? Normal. Un sondage Ifop, c'est environ mille personnes. Sur quarante-neuf millions d'électeurs.
+    source : Ifop, note méthodologique (juillet 2026) : 984 inscrits interrogés
+
+03. [LA MÉTHODE] Une chance sur cinquante mille. Des volontaires, en ligne, et des chiffres redressés. Marge d'erreur : trois points.
+    source : Ifop : questionnaire auto-administré en ligne, méthode des quotas
+
+04. [LES RATÉS] Et à six mois du vote, les sondages se plantent. Octobre deux mille vingt et un : Zemmour à dix-sept pour cent. Résultat : sept.
+    source : BFMTV, 06/10/2021 · Conseil constitutionnel (résultats 2022)
+
+05. [LES RATÉS] Deux mille dix-sept : Fillon, grand favori. Éliminé au premier tour.
+    source : Conseil constitutionnel — résultats du 1er tour 2017
+
+06. [LES RATÉS] Et Mélenchon ? En deux mille vingt-deux, les derniers sondages le donnaient autour de dix-sept. Il a fait vingt-deux.
+    source : Conseil constitutionnel — 1er tour, 10/04/2022
+
+07. [2022] Il lui a manqué quatre cent vingt et un mille voix. Six voix par bureau de vote.
+    source : Libération, 11/04/2022 — 421 420 voix d'écart avec M. Le Pen
+
+08. [AUJOURD'HUI] Aujourd'hui, il est premier à gauche, dans toutes les hypothèses.
+    source : Ifop, baromètre présidentiel vague 7 (20/10/2026)
+    [EXTRAIT 7 s] LCI · « Le Pen et Mélenchon creusent l'écart »
+
+09. [LA CLÉ] En deux mille vingt-deux, près de treize millions d'inscrits n'ont pas voté. C'est là que se joue deux mille vingt-sept.
+    source : Ministère de l'Intérieur — abstention de 26,31 % au 1er tour 2022
+
+10. [2027] Rien n'est joué. Inscris-toi, et va voter.
+
+11. [2027] Les sondages ne votent pas. Toi, si.
+
