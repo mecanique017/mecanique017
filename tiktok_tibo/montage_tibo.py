@@ -75,7 +75,7 @@ BG = {  # (centre, bord) des fonds dégradés
 # ---------------------------------------------------------------------------
 IMG = dict(h=640, cy=0.64)
 SEGMENTS = [
-    dict(voice="Le treize novembre, à Biarritz, des militants d'extrême droite se sont présentés devant le domicile de l'influenceur Tibo Inchêpe. Avec des fumigènes, une banderole, et toute une mise en scène.",
+    dict(voice="Le treize novembre, à Biarritz, des militants d'extrême droite se sont présentés devant le domicile du youtubeur Tibo. Avec des fumigènes, une grande banderole, et toute une mise en scène.",
          sub="**13 novembre, Biarritz** : des militants d'**extrême droite** devant le **domicile** de Tibo InShape. Fumigènes, banderole, **mise en scène**.",
          tag="ALERTE", bg="rouge", mark="!", gag=dict(kind="image", file="tibo.jpg", h=620, cy=0.64),
          source="La Dépêche, 20/11/2026 · groupe « Furie Tolosa »"),
@@ -86,7 +86,7 @@ SEGMENTS = [
     dict(voice="Au-delà d'un créateur de contenu populaire, cet épisode révèle une mécanique ancienne : s'approprier les symboles d'appartenance, pour décider qui a le droit d'en faire partie, et qui doit se taire.",
          sub="Une **mécanique ancienne** : s'approprier les **symboles**, pour décider **qui a le droit** d'en faire partie, et **qui doit se taire**.",
          tag="LA MÉCANIQUE", bg="rouge", mark="?", gag=dict(kind="stamp", text="QUI A LE DROIT ?", sfx="boom")),
-    dict(voice="Pour comprendre, il faut regarder vers l'Amérique du dix-neuvième siècle, au temps des abolitionnistes. Des figures comme Frédéric Douglass, ou Harriet Tubman, ont affronté une violence politique extrême.",
+    dict(voice="Pour comprendre, il faut regarder vers l'Amérique du dix-neuvième siècle, au temps des abolitionnistes. Frédéric Douglass, ou encore Harriet Tubman, ont affronté une violence politique extrême.",
          sub="Retour au **XIXe siècle**, aux États-Unis : les **abolitionnistes**. **Frederick Douglass**, **Harriet Tubman** : face à une **violence politique extrême**.",
          tag="L'HISTOIRE", bg="noir", mark="1850", gag=dict(kind="image", file="douglass.jpg", h=640, cy=0.64),
          source="Portrait de Frederick Douglass, daguerréotype, vers 1850"),
@@ -111,8 +111,8 @@ SEGMENTS = [
     dict(voice="Et je la combats parce que l'histoire montre que l'indifférence laisse toujours du terrain à ceux qui cherchent des boucs émissaires. Les abolitionnistes l'ont rappelé : une société se juge à sa capacité de protéger la dignité de chacun, surtout quand c'est risqué.",
          sub="L'**indifférence** laisse toujours du terrain aux **boucs émissaires**. Une société se juge à sa capacité de **protéger la dignité de chacun**, surtout quand c'est **risqué**.",
          tag="L'INDIFFÉRENCE", bg="noir", mark="3", gag=dict(kind="image", file="tubman.jpg", h=500, cy=0.64)),
-    dict(voice="Refuser l'intimidation. Défendre une citoyenneté ouverte. Ne pas laisser la haine dicter nos vies. Voilà pourquoi ce combat reste nécessaire, aujourd'hui comme hier.",
-         sub="**Refuser l'intimidation.** Défendre une **citoyenneté ouverte**. Ne pas laisser **la haine** dicter nos vies. Aujourd'hui **comme hier**.",
+    dict(voice="Refuser l'intimidation. Défendre une citoyenneté ouverte. Ne pas laisser la haine diriger nos vies. Voilà pourquoi ce combat reste nécessaire, aujourd'hui comme hier.",
+         sub="**Refuser l'intimidation.** Défendre une **citoyenneté ouverte**. Ne pas laisser **la haine** diriger nos vies. Aujourd'hui **comme hier**.",
          tag="AUJOURD'HUI COMME HIER", bg="rouge", mark="✊", serious=True, gag=dict(kind="image", file="douglass.jpg", h=640, cy=0.64)),
     dict(voice="Et toi : le drapeau, il appartient à qui ? Dis-le en commentaire. Abonne-toi, et partage.",
          sub="Et toi : **le drapeau, il appartient à qui ?** Dis-le en commentaire. Abonne-toi, **PARTAGE**.",
