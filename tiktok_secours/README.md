@@ -1,6 +1,6 @@
 # Il s'effondre en pleine prière : pourquoi personne ne bouge ?
 
-Vidéo TikTok Canal Rouge (~1 min 45), voix clonée nettoyée.
+Vidéo TikTok Canal Rouge (2 min 01), voix clonée nettoyée.
 Les deux questions de l'utilisateur sont traitées honnêtement :
 - « Parce qu'il est noir ? » : aucune source ne l'indique et la victime est floutée ; on n'invente pas un racisme qu'on ne peut pas prouver.
 - « Parce que la religion l'interdit ? » : non, l'inverse. Le Département de l'Iftaa de Jordanie a rappelé qu'il est obligatoire d'interrompre la prière pour sauver une vie.
