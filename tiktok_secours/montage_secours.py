@@ -106,7 +106,7 @@ SEGMENTS = [
          source="Fédération française de cardiologie"),
     dict(voice="Et ce n'est pas une affaire de pays, ni de culture. L'effet spectateur existe partout : dans une mosquée en Jordanie, dans un métro à Paris, dans une église ou dans une rue pleine de monde.",
          sub="Ce n'est **pas une affaire de pays** ni de culture. L'effet spectateur existe **partout** : une mosquée en **Jordanie**, un métro à **Paris**, une **église**, une **rue bondée**.",
-         tag="PARTOUT", bg="noir", mark="🌍", gag=None,
+         tag="PARTOUT", bg="noir", mark="!", gag=None,
          source="Darley & Latané, 1968 ; effet reproduit dans de nombreux pays"),
     dict(voice="Alors, où que tu sois, retiens trois gestes. Tu appelles les secours : le quinze ou le cent douze en France, le neuf cent onze en Jordanie. Tu fais un massage cardiaque, fort, au milieu de la poitrine. Et tu cherches un défibrillateur.",
          sub="Où que tu sois, **3 gestes** : tu appelles les secours (**15 ou 112** en France, **911** en Jordanie). Tu fais un **massage cardiaque** au milieu de la poitrine. Tu cherches un **défibrillateur**.",
@@ -1330,7 +1330,7 @@ def render_frame_narr(t, total):
     x0 = 60 - (1 - slide) * 400
     d.rectangle([x0, 160, x0 + tw + 50, 228], fill=(BLUE if i % 2 else RED) + (255,), outline=WHITE, width=3)
     d.text((x0 + 25, 194), seg["tag"], font=tf, fill=WHITE, anchor="lm")
-    d.text((W - 60, 194), "POURQUOI PERSONNE NE BOUGE ?", font=font(FONT_BOLD, 30), fill=NAVY, anchor="rm")
+    d.text((W - 60, 194), "PERSONNE NE BOUGE ?", font=font(FONT_BOLD, 30), fill=NAVY, anchor="rm")
     d.text((60, 262), "Sources : Al Jazeera · Iftaa de Jordanie · Darley & Latané", font=font(FONT_BOLD, 28),
            fill=(70, 80, 110), anchor="lm")
     # --- appel à l'action permanent en bas à partir de « La réponse »
