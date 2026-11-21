@@ -1,8 +1,8 @@
 # Tibo InShape intimidé : le drapeau appartient à qui ?
 
-Vidéo TikTok Canal Rouge (~2 min 45 à 3 min), texte de l'utilisateur (Biarritz → abolitionnistes → engagement), voix clonée nettoyée (nouvelle chaîne audio du 21/11/2026).
+Vidéo TikTok Canal Rouge (2 min 54), texte de l'utilisateur (Biarritz → abolitionnistes → engagement), voix clonée nettoyée (nouvelle chaîne audio du 21/11/2026).
 Repères : 0:00–0:35 les faits à Biarritz ; 0:35–1:25 le parallèle avec les abolitionnistes ; 1:25–2:45 l'engagement à la première personne et la conclusion.
-Ajouts : chiffre « fais le calcul » (Pennsylvania Hall, salle abolitionniste incendiée 3 jours après son inauguration, 1838), appel au partage au milieu, question finale.
+Ajouts : Douglass à Boston (1860), Harriet Tubman (13 missions, ~70 personnes, NPS), chiffre « fais le calcul » (Pennsylvania Hall, salle abolitionniste incendiée 3 jours après son inauguration, 1838), appel au partage au milieu, question finale.
 Aucun extrait vidéo fourni : pas d'extrait avec une vraie voix.
 Sources fournies : `build/src/` (capture Sud Ouest recadrée sans l'interface TikTok, daguerréotype de Frederick Douglass, peinture du chemin de fer clandestin, drapeau), non versionnées.
 
