@@ -104,14 +104,14 @@ SEGMENTS = [
          tag="LE CALCUL", bg="rouge", mark="−10%",
          gag=dict(kind="counter", n=10, fmt="− {} %", label="de chances de survie par minute sans massage cardiaque", e="❤️", sfx="buzzer"),
          source="Fédération française de cardiologie"),
-    dict(voice="Et en France, ne pas porter secours à une personne en danger, c'est un délit : jusqu'à cinq ans de prison.",
-         sub="En France, la **non-assistance à personne en danger** est un délit : jusqu'à **5 ans de prison**.",
-         tag="LA LOI", bg="noir", mark="§", gag=None,
-         source="Code pénal, article 223-6 (5 ans et 75 000 € d'amende)"),
-    dict(voice="Alors retiens trois gestes. Tu appelles le quinze, ou le cent douze. Tu masses, fort, au milieu de la poitrine. Et tu cherches un défibrillateur.",
-         sub="**3 gestes** : tu appelles le **15 ou le 112**. Tu **masses** fort au milieu de la poitrine. Tu cherches un **défibrillateur**.",
-         tag="LES 3 GESTES", bg="rouge", mark="15", serious=True,
-         gag=dict(kind="stamp", text="15 · 112 · MASSER", sfx="boom")),
+    dict(voice="Et ce n'est pas une affaire de pays, ni de culture. L'effet spectateur existe partout : dans une mosquée en Jordanie, dans un métro à Paris, dans une église ou dans une rue pleine de monde.",
+         sub="Ce n'est **pas une affaire de pays** ni de culture. L'effet spectateur existe **partout** : une mosquée en **Jordanie**, un métro à **Paris**, une **église**, une **rue bondée**.",
+         tag="PARTOUT", bg="noir", mark="🌍", gag=None,
+         source="Darley & Latané, 1968 ; effet reproduit dans de nombreux pays"),
+    dict(voice="Alors, où que tu sois, retiens trois gestes. Tu appelles les secours : le quinze ou le cent douze en France, le neuf cent onze en Jordanie. Tu masses, fort, au milieu de la poitrine. Et tu cherches un défibrillateur.",
+         sub="Où que tu sois, **3 gestes** : tu appelles les secours (**15 ou 112** en France, **911** en Jordanie). Tu **masses** fort au milieu de la poitrine. Tu cherches un **défibrillateur**.",
+         tag="LES 3 GESTES", bg="rouge", mark="SOS", serious=True,
+         gag=dict(kind="stamp", text="APPELER · MASSER · DÉFIBRILLER", sfx="boom")),
     dict(voice="Et toi, tu aurais fait quoi ? Dis-le en commentaire. Et partage, pour que sa mort serve à sauver quelqu'un. Paix à son âme.",
          sub="Et toi, **tu aurais fait quoi ?** Dis-le en commentaire. **PARTAGE**, pour que sa mort serve à **sauver quelqu'un**. Paix à son âme.",
          tag="À TOI", bg="noir", mark="?", serious=True, gag=dict(kind="cta")),
@@ -122,7 +122,7 @@ EXTRACT_CREDIT = "Images : caméra de surveillance, via Al Araby TV (TikTok), vi
 EXT_PAD = 0.25
 
 SPOKEN = {"13": "treize", "1968": "mille neuf cent soixante-huit", "85": "quatre-vingt-cinq", "%": "pour cent", "4": "quatre", "31": "trente et un",
-          "10": "dix", "5": "cinq", "3": "trois", "15": "quinze", "112": "cent douze", "112.": "cent douze.", "−10": "dix"}
+          "10": "dix", "5": "cinq", "3": "trois", "15": "quinze", "112": "cent douze", "112.": "cent douze.", "911": "neuf cent onze", "−10": "dix"}
 
 
 # ---------------------------------------------------------------------------
