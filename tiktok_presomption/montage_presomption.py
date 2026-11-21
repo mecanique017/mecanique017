@@ -79,7 +79,7 @@ SEGMENTS = [
          sub="Depuis hier soir, quand un policier **tire**, la loi présume qu'il **avait le droit**.",
          tag="ALERTE", bg="rouge", mark="!", gag=dict(kind="image", file="i3.jpg", **IMG),
          source="Union étudiante, 20/11/2026"),
-    dict(voice="Ce vendredi, le Parlement a adopté définitivement la présomption d'usage légal des armes par les forces de l'ordre. Le vote final, au Sénat : deux cent cinq voix pour. Cent dix voix contre.",
+    dict(voice="Ce vendredi, le Parlement a adopté définitivement la présomption d'usage légal des armes par les forces de l'ordre. Au Sénat, le texte a obtenu deux cent cinq voix pour, et seulement cent dix voix contre.",
          sub="**Vendredi 20 novembre** : adoption **définitive** de la présomption d'usage légal des armes par les forces de l'ordre. Au Sénat : **205 pour, 110 contre**.",
          tag="LES FAITS", bg="noir", mark="205", gag=dict(kind="image", file="i1.jpg", **IMG),
          source="RFI/AFP, 20/11/2026 · 20 Minutes, 20/11/2026"),
