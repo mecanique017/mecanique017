@@ -17,7 +17,11 @@ from chatterbox.mtl_tts import ChatterboxMultilingualTTS
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 montage = os.path.abspath(sys.argv[1])
-ref = sys.argv[2] if len(sys.argv) > 2 else os.path.join(HERE, "ref", "ref_ma_voix.wav")
+# Référence : la version nettoyée (expert 1, 21/11/2026 : -14,5 dB de souffle recopié par le clone) si elle existe.
+# Création : ffmpeg -i ref/ref_ma_voix.wav -af "highpass=f=80,afftdn=nr=20:nf=-55:tn=1,equalizer=f=6950:t=q:w=8:g=-12,lowpass=f=11000" ref/ref_ma_voix_clean.wav
+ref = sys.argv[2] if len(sys.argv) > 2 else next(
+    (q for q in (os.path.join(HERE, "ref", "ref_ma_voix_clean.wav"), os.path.join(HERE, "ref", "ref_ma_voix.wav")) if os.path.exists(q)),
+    os.path.join(HERE, "ref", "ref_ma_voix.wav"))
 if not os.path.exists(ref):
     sys.exit(f"Référence introuvable : {ref}. Renvoie ton enregistrement (voir voix_perso/README.md).")
 
@@ -30,6 +34,27 @@ SR = 24000
 CHARS_PAR_S = 14.0            # débit moyen mesuré sur ta voix clonée
 PAUSE_PHRASE = 0.22           # respiration entre deux phrases d'une même séquence (s)
 tts = ChatterboxMultilingualTTS.from_pretrained(device="cpu")
+
+# Débruiteur DeepFilterNet3 (expert 5, licence MIT/Apache), facultatif : installé dans voix_perso/df/ (hors dépôt).
+DF_DIR = os.path.join(HERE, "df")
+try:
+    sys.path[:0] = [os.path.join(DF_DIR, "dflib"), os.path.join(DF_DIR, "dfdeps")]
+    import warnings; warnings.filterwarnings("ignore")
+    from df.enhance import init_df, enhance
+    df_model, df_state, _ = init_df(model_base_dir=os.path.join(DF_DIR, "DeepFilterNet3"), log_level="ERROR")
+    print("DeepFilterNet3 actif", flush=True)
+except Exception as e:                                   # repli : pas de débruitage IA
+    df_model = None
+    print(f"DeepFilterNet3 indisponible ({e.__class__.__name__}) : génération sans débruitage IA", flush=True)
+
+
+def debruiter(x):
+    """Retire le souffle résiduel (atténuation limitée à 18 dB pour garder un timbre naturel)."""
+    if df_model is None:
+        return x
+    w = ta.functional.resample(torch.from_numpy(x)[None], SR, df_state.sr())
+    y = enhance(df_model, df_state, w, atten_lim_db=18)
+    return ta.functional.resample(y, df_state.sr(), SR)[0].numpy().astype(np.float32)
 
 
 def phrases(texte):
@@ -70,7 +95,7 @@ def generer_phrase(txt, graine):
     for essai in range(3):
         torch.manual_seed(graine + 101 * essai)
         wav = tts.generate(txt, language_id="fr", audio_prompt_path=ref, exaggeration=0.55, cfg_weight=0.45)
-        x = couper_traine(wav[0].numpy().astype(np.float32))
+        x = couper_traine(debruiter(wav[0].numpy().astype(np.float32)))
         ratio = (len(x) / SR) / attendu
         ecart = abs(np.log(ratio))
         if ecart < ecart_min:
@@ -91,7 +116,9 @@ for i, seg in enumerate(m.SEGMENTS):
             fen.append(dict(texte=ph, t0=round(t, 3), t1=round(t + len(x) / SR, 3)))
             t += len(x) / SR + PAUSE_PHRASE
             morceaux += [x, np.zeros(int(PAUSE_PHRASE * SR), np.float32)]
-        ta.save(out, torch.from_numpy(np.concatenate(morceaux[:-1]))[None], SR)
+        y = np.concatenate(morceaux[:-1])
+        y *= min(1.0, 0.89 / max(1e-9, float(np.abs(y).max())))    # expert 4 : crête à -1 dBFS, plus de craquements d'écrêtage
+        ta.save(out, torch.from_numpy(y)[None], SR)
         json.dump(fen, open(out[:-4] + ".json", "w"), ensure_ascii=False, indent=1)   # fenêtres réelles
     w, sr = ta.load(out)
     if sr != SR:

@@ -177,11 +177,33 @@ def read_wav_mono(path):
         return np.frombuffer(w.readframes(w.getnframes()), np.int16).astype(np.float32) / 32768
 
 
+# Chaîne voix (expert 2, 21/11/2026) : coupe des aigus parasites du clone (> 10,5 kHz), débruitage léger,
+# porte douce entre les mots, de-esser, compression modérée. Remplace l'ancienne chaîne qui remontait le bruit de 10 dB.
+VOICE_CHAIN = ("highpass=f=80,lowpass=f=10500,afftdn=nr=10:nf=-50:tn=1,"
+               "agate=threshold=0.008:ratio=4:attack=3:release=120:range=0.06:knee=4,"
+               "deesser=i=0.3:m=0.5:f=0.5,acompressor=threshold=-18dB:ratio=2:attack=10:release=150,"
+               "equalizer=f=3000:t=q:w=1.2:g=1.5")
+
+
+def loudnorm_2pass(src, pre, I, TP, LRA):
+    """Mesure (passe 1) puis renvoie le filtre loudnorm linéaire (passe 2) : pas de remontée dynamique du bruit."""
+    import json as _json
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-nostats", "-i", src, "-af",
+                        (pre + "," if pre else "") + f"loudnorm=I={I}:TP={TP}:LRA={LRA}:print_format=json", "-f", "null", "-"],
+                       capture_output=True, text=True)
+    m = _json.loads(r.stderr[r.stderr.rindex("{"):r.stderr.rindex("}") + 1])
+    return (f"loudnorm=I={I}:TP={TP}:LRA={LRA}:measured_I={m['input_i']}:measured_TP={m['input_tp']}:"
+            f"measured_LRA={m['input_lra']}:measured_thresh={m['input_thresh']}:offset={m['target_offset']}:linear=true")
+
+
 def write_wav(path, x):
     with wave.open(path, "wb") as w:
         w.setnchannels(1)
         w.setsampwidth(2)
         w.setframerate(SR)
+        pk = float(np.abs(x).max()) if len(x) else 0.0
+        if pk > 0.89:                      # expert 4 : on baisse le niveau au lieu d'écrêter (craquements)
+            x = x * (0.89 / pk)
         w.writeframes((np.clip(x, -1, 1) * 32767).astype(np.int16).tobytes())
 
 
@@ -376,9 +398,8 @@ def build_voiceover(voice_file):
     voice = np.concatenate(pieces)
     raw, out = os.path.join(BUILD, "voice_raw.wav"), os.path.join(BUILD, "voice.wav")
     write_wav(raw, voice)
-    run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af",
-         "highpass=f=70,acompressor=threshold=-20dB:ratio=3:attack=5:release=80,"
-         "equalizer=f=3000:t=q:w=1.2:g=2,loudnorm=I=-15:TP=-1.5:LRA=7", "-ar", str(SR), out])
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", VOICE_CHAIN + "," + loudnorm_2pass(raw, VOICE_CHAIN, -15, -1.5, 7),
+         "-ar", str(SR), out])
     run(["ffmpeg", "-y", "-loglevel", "error", "-i", out, "-codec:a", "libmp3lame", "-b:a", "192k", OUT_AUDIO])
     return out, len(voice) / SR
 
@@ -497,7 +518,7 @@ def build_music(total, path):
         f_ = 2400 if j_ % 2 == 0 else 1800
         s_ = int(b_ * SR)
         clock[s_:s_ + ckl] += (np.sin(2 * np.pi * f_ * ck_t) * np.exp(-ck_t * 300))[:max(0, min(ckl, n - s_))]
-    mix = (1 - ser) * (0.50 * pizz + 0.22 * clap) + ser * 0.6 * pad + 0.55 * kick + 0.35 * clock
+    mix = (1 - ser) * (0.50 * pizz + 0.22 * clap) + ser * 0.6 * pad + 0.55 * kick + 0.10 * clock
     mix *= np.minimum(1, np.minimum(t / 0.8, (total - t) / 2.0))
     write_wav(path, mix / (np.max(np.abs(mix)) + 1e-9) * 0.9)
 
@@ -507,7 +528,7 @@ def sfx_boom(gain=1.0):
     t = np.arange(n) / SR
     sub = np.sin(2 * np.pi * (28 + 85 * np.exp(-t * 14)) * t) * np.exp(-t * 3.2)
     crack = np.convolve(RNG.standard_normal(n) * np.exp(-t * 40), np.ones(8) / 8, "same")
-    return gain * np.tanh(1.6 * (sub + 0.6 * crack))
+    return gain * np.tanh(1.6 * (sub + 0.15 * crack))
 
 
 def sfx_whoosh(dur=0.36, gain=1.0):
@@ -701,11 +722,9 @@ def build_sfx(total, path):
         ex = seg.get("extract")
         if ex:
             place(tr, sfx_whoosh(gain=0.5), ex["t0"] - 0.36)
-            place(tr, sfx_static(0.18), ex["t0"])
-            place(tr, sfx_static(0.12), ex["t1"] - 0.12)
     for i, seg in enumerate(SEGMENTS):
         if i > 0:
-            place(tr, sfx_whoosh(gain=0.45), seg["t0"] - 0.34)     # changement de plan
+            place(tr, sfx_whoosh(gain=0.25), seg["t0"] - 0.34)     # changement de plan
         for c in seg["chunks"][1:]:
             place(tr, sfx_pop() * 0.7, c[0]["t"] - 0.01)          # pop sur chaque bloc de texte
         for w in seg["words"]:
@@ -1388,17 +1407,27 @@ def render_video(voice_wav, total):
     front = os.path.join(BUILD, "front.wav")                       # voix off + son des extraits
     run(["ffmpeg", "-y", "-loglevel", "error", "-i", voice_wav, "-i", ext, "-filter_complex",
          "[0:a][1:a]amix=inputs=2:normalize=0", "-ar", str(SR), front])
-    voice_wav = front
+    mix = os.path.join(BUILD, "mix.wav")                           # expert 3 : musique et effets baissent sous la voix
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", front, "-i", music, "-i", sfx, "-filter_complex",
+         "[0:a]asplit=3[v][sc1][sc2];"
+         "[1:a]volume=0.09,highpass=f=40,equalizer=f=1500:t=q:w=1.0:g=-8,lowpass=f=6000[m0];"
+         "[m0][sc1]sidechaincompress=threshold=0.015:ratio=8:attack=10:release=350[m];"
+         "[2:a]volume=0.20,lowpass=f=7000[s0];"
+         "[s0][sc2]sidechaincompress=threshold=0.015:ratio=10:attack=2:release=200[s];"
+         "[m][s]amix=inputs=2:normalize=0[bed];"
+         "[v][bed]amix=inputs=2:duration=first:normalize=0[a]", "-map", "[a]", "-ar", str(SR), mix])
+    master = os.path.join(BUILD, "master.wav")                     # expert 4 : -14 LUFS, crête -2 dBTP (marge TikTok)
+    run(["ffmpeg", "-y", "-loglevel", "error", "-i", mix, "-af",
+         loudnorm_2pass(mix, "", -14, -2, 9) + ",alimiter=limit=0.79:level=false,aresample=48000:resampler=soxr:precision=28",
+         "-ar", "48000", master])
+    voice_wav = master
     cmd = ["ffmpeg", "-y", "-loglevel", "error",
            "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
-           "-i", voice_wav, "-i", music, "-i", sfx,
-           "-filter_complex",
-           "[2:a]volume=0.12[m];[3:a]volume=0.38[s];[m][s]amix=inputs=2:normalize=0[bed];"
-           "[bed][1:a]sidechaincompress=threshold=0.03:ratio=4:attack=15:release=250[bd];"
-           "[1:a][bd]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95,pan=stereo|c0=c0|c1=c0[a]",
+           "-i", voice_wav,
+           "-filter_complex", "[1:a]pan=stereo|c0=c0|c1=c0[a]",
            "-map", "0:v", "-map", "[a]",
            "-c:v", "libx264", "-preset", "medium", "-crf", "23", "-maxrate", "4500k", "-bufsize", "9M",
-           "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-c:a", "aac", "-b:a", "192k", "-ac", "2",
+           "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-ac", "2",
            "-shortest", OUT_VIDEO]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     nframes = int(math.ceil(total * FPS))
