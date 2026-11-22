@@ -1,6 +1,6 @@
 # 20 novembre : deux verdicts, une loi
 
-Vidéo TikTok Canal Rouge (~2 min 25), voix clonée nettoyée.
+Vidéo TikTok Canal Rouge (2 min 22), voix clonée nettoyée.
 Le même vendredi 20 novembre 2026 : le policier qui a tué Jean-Paul Benjamin condamné à 18 mois ferme et ressorti libre ; les trois policiers de l'affaire Michel Zecler condamnés, racisme retenu ; le Sénat adopte la présomption d'usage légal des armes.
 Une question (« À qui ça profite ? »), 4 extraits avec vraies voix (Chrono Actu, Me Serge Money, Le Parisien, Elsa Marcel), chiffre « fais le calcul » : une vie contre 548 jours de prison ferme.
 Limite honnête : appel encore possible dans l'affaire Benjamin ; recours annoncé devant le Conseil constitutionnel.
