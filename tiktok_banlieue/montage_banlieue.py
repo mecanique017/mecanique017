@@ -147,7 +147,7 @@ SEGMENTS = [
          sub="« ACAB » au Bataclan ? Le **public d'un concert**, pas LFI. Le faciès ? **20 fois plus** de risques d'être contrôlé, jeune homme perçu noir ou arabe. **Le sujet qu'il reprochait à LFI**, une minute avant. Les « provocateurs » ? **Aucun nom.**",
          tag="POINT 8 · LA RÉPONSE", bg="rouge", mark="×20",
          gag=dict(kind="counter", n=20, fmt="×{}", label="risque d'être contrôlé : jeune homme perçu noir ou arabe", e="🚔", sfx="buzzer"),
-         source="Défenseur des droits, enquête de référence (2017) · concert d'Artemas, Bataclan, 12/11/2026"),
+         source="Défenseur des droits (2017) · Bataclan, 12/11/2026"),
     dict(voice="Point neuf. Et là, il a raison : ce sont les pauvres qui subissent la délinquance en premier. Et les insoumis disent exactement la même chose.",
          sub="**9.** Là, **il a raison** : l'insécurité frappe **d'abord les pauvres**. Sauf que **LFI dit la même chose** :",
          tag="POINT 9 · LA LIMITE HONNÊTE", bg="noir", mark="=", serious=True,
