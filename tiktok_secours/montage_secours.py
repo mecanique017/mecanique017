@@ -1393,7 +1393,7 @@ def render_video(voice_wav, total):
          "[v][bed]amix=inputs=2:duration=first:normalize=0[a]", "-map", "[a]", "-ar", str(SR), mix])
     master = os.path.join(BUILD, "master.wav")                     # expert 4 : -14 LUFS, crête -2 dBTP (marge TikTok)
     run(["ffmpeg", "-y", "-loglevel", "error", "-i", mix, "-af",
-         loudnorm_2pass(mix, "", -14, -2, 9) + ",alimiter=limit=0.79:level=false,aresample=48000:resampler=soxr:precision=28",
+         loudnorm_2pass(mix, "", -14, -2, 9) + ",aresample=48000:resampler=soxr,alimiter=limit=0.79:level=false",
          "-ar", "48000", master])
     voice_wav = master
     cmd = ["ffmpeg", "-y", "-loglevel", "error",
