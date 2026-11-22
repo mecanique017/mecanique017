@@ -1,6 +1,6 @@
 # Bouamrane sur RFI : 10 points, 10 réponses
 
-Vidéo TikTok Canal Rouge (durée à confirmer au rendu), voix clonée nettoyée.
+Vidéo TikTok Canal Rouge (5 min 03), voix clonée nettoyée.
 Réponse point par point à Karim Bouamrane (maire PS de Saint-Ouen, candidat à la présidentielle), L'Atelier politique, RFI, 21/11/2026. Les 10 affirmations de l'extrait sont reprises dans l'ordre, aucune n'est sautée.
 Angle demandé : être d'origine maghrébine ne donne pas plus de légitimité pour parler des quartiers ; ce qui compte, ce sont les propositions et le vote des quartiers.
 8 extraits avec sa vraie voix. Deux chiffres « fais le calcul » : +198 € par mois au SMIC (programme LFI 2027) ; PS 1,75 % contre Mélenchon 21,95 % en 2022.
