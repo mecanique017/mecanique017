@@ -1,11 +1,11 @@
 # Règle d'or : celui qui part verrouille celui qui arrive
 
-Vidéo TikTok Canal Rouge (durée à confirmer au rendu), voix clonée nettoyée.
+Vidéo TikTok Canal Rouge (2 min 16), voix clonée nettoyée.
 Angle demandé : Macron a creusé la dette, et à cinq mois de son départ il veut changer la Constitution. Le but serait d'empêcher le prochain président de gouverner librement.
 Une question (« À qui ça profite ? »). Chiffre « fais le calcul » : +1 314 Md€ de dette depuis 2017 (Insee), et 62 Md€ par an de baisses d'impôts et de cotisations (Cour des comptes).
 Preuve de l'intention : l'entourage de Macron évoque lui-même « des craintes sur l'élection de 2027 et la capacité ou la volonté des futurs élus » (franceinfo).
 Limite honnête : la dette est un vrai problème ; le Covid et la crise de l'énergie l'ont aussi creusée ; 76 % des Français sont favorables à une règle d'or (Ifop pour le gouvernement) ; l'Italie en a une et reste plus endettée ; il faut les 3/5 du Congrès.
-2 extraits de la vidéo d'actualité fournie (voix de la narratrice). Aucune prise de parole de Macron n'a été fournie.
+2 extraits de la vidéo HugoDécrypte fournie (voix du narrateur). Aucune prise de parole de Macron n'a été fournie.
 Source fournie : `build/src/v1.mp4`, non versionnée.
 
 ## Légende
@@ -24,7 +24,7 @@ Sources :
 • Éric Coquerel (LFI), président de la commission des finances : « un verrou fatal »
 • Sondage Ifop pour le Service d'information du gouvernement, mi-novembre 2026 : 76 % favorables (franceinfo)
 • Révision constitutionnelle (art. 89) : texte de 2011 déjà voté par les deux chambres, adoption au Congrès aux 3/5 des suffrages exprimés (franceinfo)
-Extraits : vidéo d'actualité via TikTok, droit de citation. On critique un projet et un bilan, pas une personne.
+Extraits : HugoDécrypte via TikTok, droit de citation. On critique un projet et un bilan, pas une personne.
 Voix off générée par IA (voix de l'auteur, avec son accord).
 
 ## Créneau conseillé
