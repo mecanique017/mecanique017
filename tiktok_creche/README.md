@@ -1,6 +1,6 @@
 # Crèche géante de Perpignan : oui, mais à quel prix ?
 
-Vidéo TikTok Canal Rouge (durée à confirmer au rendu), voix clonée nettoyée.
+Vidéo TikTok Canal Rouge (2 min 03), voix clonée nettoyée.
 Angle demandé : la crèche est une belle tradition française, c'est bien de l'avoir faite ; mais 120 000 € HT, c'est trop cher dans une commune où les habitants et les associations ont besoin d'aides et de subventions.
 Une question (« À qui ça profite ? »), chiffre « fais le calcul » : 120 000 € dans une ville à 36 % de pauvreté (Insee 2023) ; amorti sur 5 Noëls, 24 000 € par an.
 Limite honnête : le maire parle d'un investissement sur plusieurs années, et la crèche a attiré près d'un million de visiteurs à Alicante.
