@@ -1,0 +1,15 @@
+{
+  "name": "apprentissage-6e",
+  "version": "1.0.0",
+  "description": "Application d'apprentissage ludique du français en 6e, avec génération illimitée d'exercices.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/content.test.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.14.0"
+  }
+}
