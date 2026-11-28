@@ -1,6 +1,6 @@
 // Schéma commun des exercices + validation + correction.
 // Partagé entre le navigateur, le serveur (validation des sorties IA) et les tests.
-import { normalizeAnswer, stripAccents } from './utils.js';
+import { normalizeAnswer, stripAccents, parseNumber } from './utils.js';
 
 export const TYPES = ['qcm', 'trous', 'ordre', 'identification', 'vraifaux', 'dictee'];
 
@@ -31,6 +31,8 @@ export function validateExercise(raw) {
   if (isStr(raw.passage, 5000)) ex.passage = raw.passage.trim();
   if (isStr(raw.passageTitle, 200)) ex.passageTitle = raw.passageTitle.trim();
   if (isStr(raw.notion, 120)) ex.notion = raw.notion.trim();
+  const fig = validateFigure(raw.figure);
+  if (fig) ex.figure = fig;
 
   switch (raw.type) {
     case 'qcm': {
@@ -54,8 +56,7 @@ export function validateExercise(raw) {
       if (isStrArr(raw.choices, 2, 8)) {
         ex.choices = raw.choices.map((c) => c.trim());
         // Les réponses doivent figurer dans la banque de mots.
-        const bank = ex.choices.map(normalizeAnswer);
-        if (!answers.every((a) => a.some((x) => bank.includes(normalizeAnswer(x))))) return null;
+        if (!answers.every((a) => a.some((x) => ex.choices.some((c) => sameAnswer(c, x))))) return null;
       }
       break;
     }
@@ -97,6 +98,28 @@ export function validateExercise(raw) {
     }
   }
   return ex;
+}
+
+// --- Figures (géométrie, fractions) : description structurée, jamais de SVG brut ---------
+const num = (v, min, max) => typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max;
+const FIGURES = {
+  angle: (f) => num(f.degrees, 1, 360) && (f.rotation === undefined || num(f.rotation, -360, 360)),
+  fraction: (f) => ['bar', 'disc'].includes(f.shape) && Number.isInteger(f.parts) && num(f.parts, 1, 24) && Number.isInteger(f.shaded) && num(f.shaded, 0, f.parts),
+  rect: (f) => num(f.w, 1, 1000) && num(f.h, 1, 1000) && (f.labels === undefined || typeof f.labels === 'boolean') && (f.unit === undefined || (typeof f.unit === 'string' && f.unit.length < 6)),
+  righttriangle: (f) => num(f.a, 1, 1000) && num(f.b, 1, 1000) && (f.unit === undefined || (typeof f.unit === 'string' && f.unit.length < 6)),
+  lines: (f) => ['parallel', 'perpendicular', 'secant'].includes(f.kind2),
+  circle: (f) => ['radius', 'diameter'].includes(f.show) && num(f.value, 0.1, 1000) && (f.unit === undefined || (typeof f.unit === 'string' && f.unit.length < 6)),
+};
+export function validateFigure(f) {
+  if (!f || typeof f !== 'object' || !FIGURES[f.kind]) return null;
+  try { return FIGURES[f.kind](f) ? JSON.parse(JSON.stringify(f)) : null; } catch { return null; }
+}
+
+/** Compare deux réponses : texte normalisé, ou valeur numérique (3,5 = 3.5 = 3,50). */
+export function sameAnswer(expected, given) {
+  if (normalizeAnswer(expected) === normalizeAnswer(given)) return true;
+  const a = parseNumber(expected), b = parseNumber(given);
+  return !Number.isNaN(a) && !Number.isNaN(b) && Math.abs(a - b) < 1e-9;
 }
 
 /** Découpe une phrase de dictée en mots comparables. */
@@ -151,7 +174,7 @@ export function checkAnswer(ex, response) {
       const given = (response || []).map(normalizeAnswer);
       let ok = 0, accentOnly = true;
       const detail = ex.answers.map((accepted, i) => {
-        const good = accepted.some((a) => normalizeAnswer(a) === given[i]);
+        const good = accepted.some((a) => sameAnswer(a, given[i]));
         if (good) ok++;
         else if (!accepted.some((a) => stripAccents(normalizeAnswer(a)) === stripAccents(given[i] || ''))) accentOnly = false;
         return good;

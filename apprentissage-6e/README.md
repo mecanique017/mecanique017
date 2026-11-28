@@ -1,6 +1,6 @@
-# 📚 Mission 6e : apprendre le français en s'amusant
+# 📚 Mission 6e : français, maths et sciences en s'amusant
 
-Application web d'apprentissage pour un élève de **6e** (programme officiel de français, cycle 3). Elle propose des leçons courtes et visuelles, des exercices variés **générés à l'infini**, de la progression façon jeu (XP, niveaux, badges, série de jours) et un retour toujours bienveillant.
+Application web d'apprentissage pour un élève de **6e** (programmes officiels du cycle 3) : **français**, **mathématiques**, **sciences et technologie**. Elle propose des leçons courtes et visuelles, des exercices variés **générés à l'infini**, de la progression façon jeu (XP, niveaux, badges, série de jours) et un retour toujours bienveillant.
 
 ## 🚀 Lancer l'application en local
 
@@ -28,7 +28,7 @@ L'application est une **PWA** (application web installable) : elle s'installe de
 3. **Activer l'IA (facultatif)** : dans l'appli, onglet **👪 Parents** → « Clé API sur cet appareil » → collez la clé `sk-ant-…` → **Activer l'IA**. La clé est testée puis enregistrée **uniquement sur ce téléphone** (jamais dans l'export de progression). Conseil : créez une clé dédiée avec une **limite de dépenses** sur platform.claude.com.
 
 > La progression est stockée dans l'iPhone. Pensez à l'**exporter** de temps en temps (espace Parents) pour la sauvegarder.
-> Après une mise à jour du code, incrémentez `VERSION` dans `public/sw.js` pour que les appareils installés se mettent à jour.
+> Après une mise à jour du code, lancez `npm run sw` : la version du cache est incrémentée et les appareils installés se mettent à jour.
 
 ## 🔑 Configurer la clé API sur ordinateur (serveur Node)
 
@@ -49,7 +49,9 @@ L'espace **Parents** de l'application indique si l'IA est active.
 
 ## 🧠 Fonctionnalités
 
-**Programme couvert (12 chapitres)**
+**Programme couvert (23 chapitres, 3 matières)**
+
+*Français (12 chapitres)*
 
 | Domaine | Chapitres |
 |---|---|
@@ -59,7 +61,17 @@ L'espace **Parents** de l'application indique si l'IA est active.
 | Vocabulaire | Champs lexicaux, familles de mots, préfixes, contraires, synonymes, nuances d'intensité |
 | Lecture | Figures de style (comparaison, métaphore, personnification, énumération) · Compréhension de 3 textes originaux |
 
-**Six types d'exercices** : QCM, texte à trous (saisie libre avec clavier d'accents, ou liste de mots), remise en ordre, identification (clic sur les mots), vrai/faux avec justification, dictée lue par la synthèse vocale du navigateur.
+*Mathématiques (6 chapitres, entièrement générés par calcul, avec figures dessinées)*
+
+| Domaine | Chapitres |
+|---|---|
+| Nombres et calculs | Nombres décimaux (rangs, comparer, ranger, encadrer, arrondir) · Calcul (mental, ×/÷ 10-100-1 000, division euclidienne, divisibilité, ordre de grandeur, parenthèses) · Fractions (lire sur une figure, égalités, simplifier, fraction d'une quantité, écriture décimale) · Proportionnalité (passage à l'unité, recettes, tableaux, pourcentages) |
+| Grandeurs et mesures | Conversions (longueurs, masses, contenances), périmètres et aires (rectangle, carré, triangle rectangle), durées, cercle |
+| Espace et géométrie | Angles (nature, estimation), droites parallèles/perpendiculaires, triangles et quadrilatères particuliers, symétrie axiale |
+
+*Sciences et technologie (5 chapitres)* : la matière et ses états · les sources d'énergie · le vivant et sa diversité · la Terre dans l'Univers · objets techniques et électricité.
+
+**Six types d'exercices**, avec des **figures** (angles, fractions, rectangles, triangles, cercles) et le **pavé numérique** pour les réponses en nombres (virgule ou point acceptés) : QCM, texte à trous (saisie libre avec clavier d'accents, ou liste de mots), remise en ordre, identification (clic sur les mots), vrai/faux avec justification, dictée lue par la synthèse vocale du navigateur.
 
 **Pédagogie bienveillante**
 - Après une première erreur, l'élève reçoit un **indice** et peut réessayer (une mini-relance). Un message signale quand seuls les accents sont faux.
@@ -99,6 +111,7 @@ apprentissage-6e/
 │       ├── app.js             # routeur (#/…) et vues : accueil, leçon, atelier IA, parents…
 │       ├── ui/
 │       │   ├── dom.js         # mini-outils DOM sûrs (aucune injection HTML)
+│       │   ├── figure.js      # dessin SVG des figures (angles, fractions, rectangles…)
 │       │   └── player.js      # lecteur de séries : 6 types, 2 essais, indices, fin de série
 │       ├── core/
 │       │   ├── exercise.js    # schéma, validation et correction des exercices (partagé avec le serveur)
@@ -109,7 +122,10 @@ apprentissage-6e/
 │       │   └── utils.js
 │       └── content/
 │           ├── index.js       # registre des matières et chapitres
-│           └── francais/      # 1 fichier par chapitre : leçon + générateurs paramétrables
+│           ├── bank.js        # transforme des banques de questions en exercices variés
+│           ├── francais/      # 1 fichier par chapitre : leçon + générateurs paramétrables
+│           ├── maths/         # générateurs numériques (infinis) + figures
+│           └── sciences/      # banques de questions vérifiées
 └── tests/
     ├── content.test.js        # 10 800 exercices générés et vérifiés (npm test)
     └── mock-claude.js         # faux serveur API pour tester la chaîne IA sans clé
@@ -126,14 +142,14 @@ apprentissage-6e/
 Un chapitre est un objet avec `lesson` et une liste de `generators(rng, niveau) → exercice`. Pour ajouter une notion :
 1. créez `public/js/content/francais/ma-notion.js` en vous inspirant d'un chapitre existant ;
 2. déclarez-le dans `public/js/content/index.js` ;
-3. lancez `npm test` : chaque générateur est vérifié automatiquement.
+3. lancez `npm run sw` (met à jour la liste des fichiers hors ligne) puis `npm test` : chaque générateur est vérifié automatiquement.
 
-Pour une **autre matière** (maths…), créez un dossier `content/maths/` et ajoutez une entrée dans `SUBJECTS`. On peut aussi passer simplement par l'Atelier IA.
+Pour une **autre matière** (histoire-géo, anglais…), créez un dossier `content/<matière>/` et ajoutez une entrée dans `SUBJECTS` (voir `maths/` et `sciences/`). On peut aussi passer simplement par l'Atelier IA.
 
 ## ✅ Tests
 
 ```bash
-npm test                         # génère et corrige 10 800 exercices (tous les chapitres, 3 niveaux)
+npm test                         # génère et corrige 20 700 exercices (23 chapitres, 3 niveaux)
 node tests/mock-claude.js &      # faux serveur API sur le port 3999
 ANTHROPIC_API_KEY=test ANTHROPIC_BASE_URL=http://127.0.0.1:3999 npm start   # chaîne IA complète, sans coût
 ```
@@ -142,4 +158,4 @@ ANTHROPIC_API_KEY=test ANTHROPIC_BASE_URL=http://127.0.0.1:3999 npm start   # ch
 - Mode « défi chronométré » et duel entre frères et sœurs.
 - Comptes multiples (plusieurs enfants) et synchronisation dans le cloud (Supabase ou Firebase).
 - Rapport hebdomadaire envoyé aux parents par e-mail.
-- Nouvelles matières en local : calcul mental, tables, fractions…
+- Histoire-géographie et anglais en local (pour l'instant via l'Atelier IA).

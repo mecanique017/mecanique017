@@ -10,7 +10,7 @@ import {
   allChapters, getChapter, buildSeries, buildReviewSeries, suggestChapter, aiStatus, aiSeries, aiModule, weaknesses,
   getDeviceAi, setDeviceAi, testDeviceKey, DEVICE_MODELS, DEFAULT_DEVICE_MODEL,
 } from './core/generator.js';
-import { DOMAIN_ORDER, AI_SUBJECTS } from './content/index.js';
+import { DOMAIN_ORDER, AI_SUBJECTS, SUBJECTS } from './content/index.js';
 import { todayKey } from './core/utils.js';
 
 const app = document.getElementById('app');
@@ -99,24 +99,43 @@ function viewOnboarding() {
   input.focus();
 }
 
+/** Onglets de matières de l'accueil (+ « Mes modules » s'il y en a). */
+function homeTabs() {
+  const custom = getState().customChapters;
+  const tabs = SUBJECTS.map((x) => ({ id: x.id, name: x.name, emoji: x.emoji, color: x.color, domains: x.domains }));
+  if (custom.length) tabs.push({ id: 'perso', name: 'Mes modules', emoji: '✨', color: '#f39c12', domains: ['Mes modules'] });
+  return tabs;
+}
+
+function subjectStats(subjectId) {
+  const list = allChapters().filter((c) => c.subject === subjectId);
+  const ms = list.map((c) => notion(c.id));
+  const mastery = list.length ? Math.round(ms.reduce((a, n) => a + n.mastery, 0) / list.length) : 0;
+  return { count: list.length, started: ms.filter((n) => n.attempts > 0).length, mastery };
+}
+
 function viewHome() {
   const s = getState();
   const lv = levelInfo(s.xp);
-  const sug = suggestChapter();
-  const chapters = allChapters();
-  const domains = DOMAIN_ORDER.map((d) => [d, chapters.filter((c) => c.domain === d)]).filter(([, l]) => l.length);
+  const tabs = homeTabs();
+  const current = tabs.find((t) => t.id === s.settings.subject) || tabs[0];
+  const sug = suggestChapter(current.id === 'perso' ? null : current.id);
+  const chapters = allChapters().filter((c) => c.subject === current.id);
+  const domains = [...current.domains, ...DOMAIN_ORDER.filter((d) => !current.domains.includes(d))]
+    .map((d) => [d, chapters.filter((c) => c.domain === d)]).filter(([, l]) => l.length);
   const hour = new Date().getHours();
   const hello = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir';
   const streak = currentStreak();
+  const st = subjectStats(current.id);
 
-  mount(app, 
+  mount(app,
     h('section.hero',
       h('div',
         h('h1', `${hello} ${s.profile.name} ${s.profile.avatar}`),
         h('p', `${lv.title} · niveau ${lv.level} · ${s.xp} XP`),
         h('p.muted', streak ? `🔥 ${streak} jour${streak > 1 ? 's' : ''} d’affilée, continue ta série !` : 'Commence une série aujourd’hui pour allumer ta flamme 🔥')),
       sug.chapter ? h('a.card.suggest', { href: `#/chapitre/${sug.chapter.id}`, style: { '--c': sug.chapter.color } },
-        h('small', `✨ Suggestion du jour · ${sug.reason}`),
+        h('small', `✨ Suggestion ${current.name === 'Mes modules' ? '' : 'en ' + current.name} · ${sug.reason}`),
         h('strong', `${sug.chapter.emoji} ${sug.chapter.title}`),
         h('span.btn.primary', 'C’est parti →')) : null),
     installCard(),
@@ -124,12 +143,21 @@ function viewHome() {
       h('span.emoji', '🔁'),
       h('div', h('strong', `${s.review.length} exercice${s.review.length > 1 ? 's' : ''} à revoir`), h('p.muted', 'Corrige tes erreurs pour gagner le badge « Rattrapage réussi ».')),
       h('span.btn.secondary', 'Revoir')) : null,
+    h('nav.subject-tabs', { role: 'tablist', 'aria-label': 'Matières' }, tabs.map((t) => h('button.subject-tab', {
+      type: 'button', role: 'tab', 'aria-selected': String(t.id === current.id), class: t.id === current.id ? 'active' : '',
+      style: { '--c': t.color },
+      onclick: () => { setSetting('subject', t.id); viewHome(); },
+    }, h('span.emoji', t.emoji), h('span', t.name)))),
+    current.id !== 'perso' ? h('div.subject-summary', { style: { '--c': current.color } },
+      h('span', `${st.started} / ${st.count} chapitres commencés`),
+      h('div.mbar', h('i', { style: { width: st.mastery + '%' } })),
+      h('span', `Maîtrise moyenne : ${st.mastery} %`)) : null,
     ...domains.map(([d, list]) => h('section.domain',
       h('h2', d),
       h('div.grid', list.map(chapterCard)))),
     h('a.card.atelier-cta', { href: '#/atelier' },
       h('span.emoji', '✨'),
-      h('div', h('strong', 'Crée ton propre module avec l’IA'), h('p.muted', 'Une notion qui te pose problème ? Une autre matière ? Demande une leçon et des exercices sur mesure.'))),
+      h('div', h('strong', 'Crée ton propre module avec l’IA'), h('p.muted', 'Une notion qui te pose problème ? Histoire, anglais… ? Demande une leçon et des exercices sur mesure.'))),
   );
 }
 
@@ -351,11 +379,13 @@ function viewParent() {
       h('h2', 'Maîtrise par notion'),
       h('table.table',
         h('thead', h('tr', h('th', 'Chapitre'), h('th', 'Exercices'), h('th', 'Maîtrise'), h('th', 'Points faibles'))),
-        h('tbody', chapters.map((c) => {
+        h('tbody', [...homeTabs()].flatMap((t) => [
+          h('tr.group', h('td', { colspan: 4 }, `${t.emoji} ${t.name}`)),
+          ...chapters.filter((c) => c.subject === t.id).map((c) => {
           const n = notion(c.id);
           const w = weaknesses(c.id).top.join(', ');
           return h('tr', h('td', `${c.emoji} ${c.title}`), h('td', `${n.correct}/${n.attempts}`), h('td', masteryBar(c.id)), h('td.small', w || '—'));
-        })))),
+        })])))),
     recent.length ? h('section.card', h('h2', 'Dernières séries'), h('ul.list', recent.map((r) => {
       const c = getChapter(r.chapterId);
       return h('li', h('span', `${r.date} · ${c ? c.emoji + ' ' + c.title : 'À revoir'}`), h('span.pill', `${r.score}/${r.total} du 1er coup`));
