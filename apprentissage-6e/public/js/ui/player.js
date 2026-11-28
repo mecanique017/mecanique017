@@ -3,7 +3,8 @@ import { h, md, clear, add, mount, confetti, speak, canSpeak } from './dom.js';
 import { checkAnswer, describeAnswer, TYPE_LABELS } from '../core/exercise.js';
 import { recordAnswer, finishSeries, getState } from '../core/state.js';
 import { phrase, endMessage } from '../core/gamification.js';
-import { shuffle, makeRng } from '../core/utils.js';
+import { shuffle, makeRng, isNumericAnswer } from '../core/utils.js';
+import { renderFigure } from './figure.js';
 
 const rng = makeRng(Date.now() ^ 0x5eed);
 
@@ -45,6 +46,8 @@ function trousWidget(ex, onChange) {
         const len = Math.max(...ex.answers[i].map((a) => a.length));
         f = h('input.blank', {
           type: 'text', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
+          // Réponse numérique → pavé numérique (avec virgule) sur iPhone / tablette.
+          inputmode: ex.answers[i].every(isNumericAnswer) ? 'decimal' : 'text',
           'aria-label': `Trou ${i + 1}`, style: { width: `${Math.max(5, len + 3)}ch` }, oninput: onChange,
         });
       }
@@ -53,7 +56,8 @@ function trousWidget(ex, onChange) {
     }
   });
   // Clavier d'accents pour tablette.
-  const accents = ex.choices ? null : h('div.accents', ['é', 'è', 'ê', 'à', 'â', 'ç', 'î', 'ô', 'û', 'ù', '’'].map((c) => h('button.key', {
+  const numeric = ex.answers.every((a) => a.every(isNumericAnswer));
+  const accents = ex.choices || numeric ? null : h('div.accents', ['é', 'è', 'ê', 'à', 'â', 'ç', 'î', 'ô', 'û', 'ù', '’'].map((c) => h('button.key', {
     type: 'button',
     onmousedown: (e) => e.preventDefault(),
     onclick: () => {
@@ -265,6 +269,7 @@ export function runSeries(root, opts) {
         h('span.count', `${index + 1} / ${exercises.length}`)),
       passage,
       h('h2.question', md(ex.question || '')),
+      ex.figure ? renderFigure(ex.figure) : null,
       widget.el,
       hintBox,
       actions,

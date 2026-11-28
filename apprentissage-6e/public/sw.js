@@ -1,6 +1,6 @@
 // Service worker de Mission 6e : l'application fonctionne entièrement hors ligne une fois installée.
 // À chaque modification des fichiers, incrémenter VERSION pour que les appareils se mettent à jour.
-const VERSION = 'mission6e-v1';
+const VERSION = 'mission6e-v3';
 const ASSETS = [
   './',
   './css/styles.css',
@@ -10,6 +10,7 @@ const ASSETS = [
   './icons/icon.svg',
   './index.html',
   './js/app.js',
+  './js/content/bank.js',
   './js/content/francais/accord-sujet-verbe.js',
   './js/content/francais/accords-gn.js',
   './js/content/francais/classes-grammaticales.js',
@@ -22,6 +23,17 @@ const ASSETS = [
   './js/content/francais/lecture.js',
   './js/content/francais/vocabulaire.js',
   './js/content/index.js',
+  './js/content/maths/calcul.js',
+  './js/content/maths/fractions.js',
+  './js/content/maths/geometrie.js',
+  './js/content/maths/grandeurs.js',
+  './js/content/maths/nombres.js',
+  './js/content/maths/proportionnalite.js',
+  './js/content/sciences/energie.js',
+  './js/content/sciences/matiere.js',
+  './js/content/sciences/technologie.js',
+  './js/content/sciences/terre.js',
+  './js/content/sciences/vivant.js',
   './js/core/ai-prompts.js',
   './js/core/exercise.js',
   './js/core/gamification.js',
@@ -29,6 +41,7 @@ const ASSETS = [
   './js/core/state.js',
   './js/core/utils.js',
   './js/ui/dom.js',
+  './js/ui/figure.js',
   './js/ui/player.js',
   './manifest.webmanifest',
 ];

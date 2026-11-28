@@ -66,13 +66,15 @@ export function buildReviewSeries(chapterId, count = 8) {
 }
 
 /** Suggestion du jour : la notion la plus fragile déjà travaillée, sinon une nouvelle. */
-export function suggestChapter() {
-  const chapters = allChapters();
+export function suggestChapter(subjectId) {
+  const all = allChapters();
+  const chapters = subjectId ? all.filter((c) => c.subject === subjectId) : all;
   const worked = chapters.filter((c) => notion(c.id).attempts > 0);
-  const fresh = chapters.filter((c) => notion(c.id).attempts === 0 && !c.custom);
+  const fresh = chapters.filter((c) => notion(c.id).attempts === 0);
   const weak = worked.filter((c) => notion(c.id).mastery < 70).sort((a, b) => notion(a.id).mastery - notion(b.id).mastery);
   if (weak.length && (rng() < 0.6 || !fresh.length)) return { chapter: weak[0], reason: 'À consolider' };
   if (fresh.length) return { chapter: fresh[0], reason: 'Nouvelle notion' };
+  if (!worked.length) return { chapter: null };
   return { chapter: worked.sort((a, b) => notion(a.id).mastery - notion(b.id).mastery)[0], reason: 'Pour progresser encore' };
 }
 

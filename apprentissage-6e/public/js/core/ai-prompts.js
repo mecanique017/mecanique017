@@ -64,7 +64,11 @@ Format de chaque type :
 - identification : "tokens" = la phrase découpée en mots ou groupes de mots cliquables ; "targets" = index (0-based) de TOUS les tokens à sélectionner.
 - vraifaux : "statement" = affirmation ; "answer" = true/false ; "justifications" = 3 justifications dont une seule correcte ; "justificationAnswer" = son index.
 - dictee : "text" = une phrase de dictée (8 à 20 mots) adaptée au niveau, qui réinvestit des règles d'orthographe.
-Pour "question", écris la consigne destinée à l'élève.`;
+Pour "question", écris la consigne destinée à l'élève.
+
+Selon la matière :
+- Mathématiques : nombres décimaux avec une virgule (3,5), espace pour les milliers (12 500), unités après les nombres. Vérifie chaque calcul. Dans un texte à trous numérique, la réponse attendue est un nombre seul (l'unité est écrite hors du trou). Pas de figure : décris-la avec précision dans l'énoncé si besoin.
+- Sciences et technologie : vocabulaire scientifique exact du programme de 6e, aucune expérience dangereuse (jamais le courant du secteur), pas d'idée reçue fausse dans les distracteurs présentés comme vrais.`;
 
 const LEVELS = { 1: 'facile (découverte)', 2: 'moyen (consolidation)', 3: 'difficile (approfondissement, avec pièges classiques)' };
 

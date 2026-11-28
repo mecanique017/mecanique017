@@ -65,3 +65,27 @@ export function daysBetween(a, b) {
   const db = new Date(b + 'T12:00:00');
   return Math.round((db - da) / 86400000);
 }
+
+// --- Nombres (écriture française) ------------------------------------------------
+
+/** Formate un nombre à la française : virgule décimale, espace pour les milliers (2 000). */
+export function fmt(n, maxDecimals = 3) {
+  const r = Number(Number(n).toFixed(maxDecimals));
+  let [int, dec] = String(Math.abs(r)).split('.');
+  if (int.length > 3) int = int.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return (r < 0 ? '-' : '') + int + (dec ? ',' + dec : '');
+}
+
+/** Lit un nombre écrit par l'élève (« 3,5 », « 3.5 », « 1 000 »). Renvoie NaN si ce n'est pas un nombre. */
+export function parseNumber(s) {
+  const t = String(s ?? '').trim().replace(/[\s  ]/g, '').replace(',', '.');
+  if (!/^-?\d+(\.\d+)?$|^-?\.\d+$/.test(t)) return NaN;
+  return Number(t);
+}
+
+export const isNumericAnswer = (s) => !Number.isNaN(parseNumber(s));
+
+/** Arrondi sûr (évite 0.1 + 0.2 = 0.30000000000000004). */
+export const round = (n, d = 6) => Number(Number(n).toFixed(d));
+
+export const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));

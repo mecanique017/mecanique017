@@ -6,9 +6,12 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/content.test.js"
+    "test": "node tests/content.test.js",
+    "sw": "node tests/update-sw.js"
   },
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.14.0"
   }

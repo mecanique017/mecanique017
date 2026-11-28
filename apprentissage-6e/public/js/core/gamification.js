@@ -29,6 +29,11 @@ export function masteryLabel(m, attempts) {
 /** Difficulté adaptative à partir de la maîtrise. */
 export const levelFromMastery = (m = 0) => (m < 40 ? 1 : m < 75 ? 2 : 3);
 
+// Exercices faits dans une matière (d'après le préfixe des chapitres : math-, sci-, sinon français).
+const attemptsIn = (s, prefix) => Object.entries(s.notions)
+  .filter(([id]) => (prefix ? id.startsWith(prefix) : !/^(math-|sci-|perso-)/.test(id)))
+  .reduce((a, [, n]) => a + n.attempts, 0);
+
 export const BADGES = [
   { id: 'premier-pas', emoji: '👣', name: 'Premier pas', desc: 'Réussir ton premier exercice.', test: (s) => s.stats.correct >= 1 },
   { id: 'serie-parfaite', emoji: '🌟', name: 'Sans faute', desc: 'Terminer une série sans aucune erreur.', test: (s) => s.stats.perfectSeries >= 1 },
@@ -45,6 +50,9 @@ export const BADGES = [
   { id: 'dictee', emoji: '🎧', name: 'Oreille fine', desc: 'Réussir une dictée sans faute.', test: (s) => s.stats.perfectDictees >= 1 },
   { id: 'createur', emoji: '✨', name: 'Créateur', desc: 'Créer ton propre module avec l’IA.', test: (s) => s.customChapters.length >= 1 },
   { id: 'objectif', emoji: '🎯', name: 'Objectif atteint', desc: 'Atteindre l’objectif du jour.', test: (s) => s.stats.dailyGoals >= 1 },
+  { id: 'matheux', emoji: '📐', name: 'Tête de maths', desc: 'Répondre à 30 exercices de maths.', test: (s) => attemptsIn(s, 'math-') >= 30 },
+  { id: 'scientifique', emoji: '🔬', name: 'Petit scientifique', desc: 'Répondre à 30 exercices de sciences.', test: (s) => attemptsIn(s, 'sci-') >= 30 },
+  { id: 'polyvalent', emoji: '🌈', name: 'Touche-à-tout', desc: 'S’entraîner en français, en maths ET en sciences.', test: (s) => attemptsIn(s, null) > 0 && attemptsIn(s, 'math-') > 0 && attemptsIn(s, 'sci-') > 0 },
   { id: 'centurion', emoji: '🏛️', name: 'Centurion', desc: 'Répondre à 100 exercices.', test: (s) => s.stats.answered >= 100 },
 ];
 
