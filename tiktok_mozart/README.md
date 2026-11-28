@@ -1,6 +1,6 @@
 # Le Mozart de la finance a-t-il ruiné la France ?
 
-Vidéo TikTok Canal Rouge (durée à confirmer au rendu), voix clonée nettoyée.
+Vidéo TikTok Canal Rouge (2 min 19), voix clonée nettoyée.
 Angle demandé : « le Mozart de la finance », Emmanuel Macron, a ruiné la France.
 Une question (« À qui ça a profité ? »). Chiffres « fais le calcul » : +1 314 Md€ de dette depuis 2017 ; 79 Md€ d'intérêts en 2026 ; 71 139 défaillances d'entreprises sur 12 mois ; 62 Md€ par an de baisses d'impôts et de cotisations.
 Le résultat : récession confirmée par l'Insee le 27/11/2026.
