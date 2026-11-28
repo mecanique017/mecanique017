@@ -1,0 +1,78 @@
+SCRIPT VOIX OFF : « LES RÉPUBLICAINS, DÉBOISÉS » (≈ 1 min 30)
+(** = encadré rouge + impact · * = surligné bleu)
+
+01. [LES RÉPUBLICAINS] Les Républicains. Ce qu'il reste de la grande droite de gouvernement.
+    écran : Les Républicains. Ce qu'il *reste* de la grande droite de gouvernement.
+    gag : emoji / son : chuckle
+
+02. [LES RÉPUBLICAINS] Enfin… surtout un parti perdu, qui court derrière l'extrême droite. Sans boussole !
+    écran : Enfin… surtout un parti *perdu*, qui court derrière l'*extrême* *droite*. Sans **BOUSSOLE** !
+    gag : spin / son : scratch
+
+03. [LES RÉPUBLICAINS] Parlons de leur bilan, et de leurs obsessions lunaires.
+    écran : Parlons de leur *bilan*, et de leurs obsessions *lunaires*.
+    gag : emoji / son : chuckle
+
+04. [CONSTAT N°1] Premier constat : le grand syndrome de la photocopieuse.
+    écran : Premier constat : le grand syndrome de la **PHOTOCOPIEUSE**.
+    gag : copies / son : copier
+
+05. [CONSTAT N°1] Retailleau lie l'immigration aux violences des manifs. Même refrain que le RN, au mot près.
+    écran : Retailleau lie l'*immigration* aux violences des manifs. Même *refrain* que le RN, au mot près.
+    gag : emoji / son : ghost
+    source : L'Opinion (19/10/2026) · franceinfo, édito du 18/06/2026
+
+06. [CONSTAT N°1] En juin deux mille vingt-quatre, Éric Ciotti part carrément s'allier avec le RN.
+    écran : En juin 2024, Éric Ciotti part carrément s'*allier* avec le **RN**.
+    gag : vote / son : buzzer
+    source : Législatives anticipées 2024 — accord Ciotti / RN (presse)
+
+07. [CONSTAT N°1] Résultat ? Copier l'original, ça ne marche pas. Présidentielle deux mille vingt-deux : quatre virgule soixante-dix-huit pour cent.
+    écran : Résultat ? Copier l'original, ça ne marche pas. Présidentielle 2022 : **4,78** **%**.
+    gag : counter / son : trombone
+    source : Conseil constitutionnel — résultats du 1er tour, 10 avril 2022
+
+08. [ABERRATION N°2] Deuxième aberration : leur amour fou pour l'austérité.
+    écran : Deuxième aberration : leur *amour* *fou* pour l'**AUSTÉRITÉ**.
+    gag : title / son : rimshot
+
+09. [LE BILAN] Deux mille sept : bouclier fiscal pour les plus riches. Deux mille dix : retraite repoussée à soixante-deux ans.
+    écran : 2007 : *bouclier* *fiscal* pour les plus riches. 2010 : retraite repoussée à *62* *ans*.
+    gag : timeline / son : scratch
+    source : Loi TEPA du 21/08/2007 · Loi n°2010-1330 du 9/11/2010 (Légifrance)
+
+10. [LE BILAN] Un fonctionnaire sur deux non remplacé. Et Fillon promettait d'en supprimer cinq cent mille !
+    écran : Un fonctionnaire sur deux *non* *remplacé*. Et Fillon promettait d'en supprimer **500 000** !
+    gag : counter / son : chainsaw
+    source : RGPP (2007-2012) · programme présidentiel F. Fillon 2017
+
+11. [LE BILAN] Deux mille vingt-trois : la retraite à soixante-quatre ans, adoptée par le Sénat de Gérard Larcher.
+    écran : 2023 : la retraite à **64** **ANS**, adoptée par le Sénat de Gérard *Larcher*.
+    gag : vote / son : buzzer
+    source : Sénat — texte adopté le 16 mars 2023 (193 pour, 114 contre)
+
+12. [LE BILAN] La taxe Zucman sur les milliardaires ? Les députés de droite votent contre.
+    écran : La taxe *Zucman* sur les milliardaires ? Les députés de droite votent **CONTRE**.
+    gag : vote / son : buzzer
+    source : Assemblée nationale — scrutin public n°8859 (PLF 2027)
+
+13. [LE BILAN] Quand il faut piquer dans la poche des travailleurs, y a jamais de trou budgétaire !
+    écran : Quand il faut piquer dans la poche des *travailleurs*, y a jamais de **TROU** budgétaire !
+    gag : rain / son : scratch
+
+14. [LE BILAN] Le parti de l'ordre ? Surtout l'ordre des actionnaires.
+    écran : Le parti de l'*ordre* ? Surtout l'ordre des **ACTIONNAIRES**.
+    gag : emoji / son : kaching
+
+15. [CONCLUSION] Les Républicains n'ont plus de projet. Juste de la nostalgie, et du mépris social.
+    écran : Les Républicains n'ont plus de **PROJET**. Juste de la *nostalgie*, et du *mépris* *social*.
+    gag : error404 / son : glitch
+
+16. [CONCLUSION] Face à la droite du passé, la seule vraie alternative…
+    écran : Face à la droite du *passé*, la seule vraie *alternative*…
+    gag : — / son : —
+
+17. [CONCLUSION] C'est la gauche de rupture. Abonne-toi, et partage !
+    écran : C'est la gauche de **RUPTURE**. Abonne-toi, et partage !
+    gag : cta / son : —
+
