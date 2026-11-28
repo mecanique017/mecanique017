@@ -18,7 +18,19 @@ Sans clé API, tout fonctionne déjà avec le **moteur hors ligne**, qui génèr
 
 Dans `.env`, mettez `HOST=0.0.0.0`, relancez, puis ouvrez `http://<IP-de-l-ordinateur>:3000` sur la tablette.
 
-## 🔑 Configurer la clé API (génération illimitée par IA)
+## 📱 Installer sur iPhone / iPad
+
+L'application est une **PWA** (application web installable) : elle s'installe depuis Safari, s'ouvre en plein écran et fonctionne **hors ligne**.
+
+1. **Publier** : une fois cette branche fusionnée dans `main`, GitHub Pages la sert à l'adresse
+   **https://garage-mecanique17.fr/apprentissage-6e/** (la page n'est pas indexée par Google : `noindex`).
+2. **Installer** : sur l'iPhone, ouvrez cette adresse dans **Safari** → bouton **Partager** (carré avec flèche ⬆︎) → **« Sur l'écran d'accueil »** → **Ajouter**. L'icône « Mission 6e » apparaît comme une vraie appli.
+3. **Activer l'IA (facultatif)** : dans l'appli, onglet **👪 Parents** → « Clé API sur cet appareil » → collez la clé `sk-ant-…` → **Activer l'IA**. La clé est testée puis enregistrée **uniquement sur ce téléphone** (jamais dans l'export de progression). Conseil : créez une clé dédiée avec une **limite de dépenses** sur platform.claude.com.
+
+> La progression est stockée dans l'iPhone. Pensez à l'**exporter** de temps en temps (espace Parents) pour la sauvegarder.
+> Après une mise à jour du code, incrémentez `VERSION` dans `public/sw.js` pour que les appareils installés se mettent à jour.
+
+## 🔑 Configurer la clé API sur ordinateur (serveur Node)
 
 1. Créez une clé sur <https://platform.claude.com/>, rubrique **API Keys**.
 2. Copiez le modèle de configuration : `cp .env.example .env`
@@ -74,11 +86,15 @@ L'espace **Parents** de l'application indique si l'IA est active.
 
 ```
 apprentissage-6e/
+├── index.html                 # redirection vers public/ (adresse courte sur GitHub Pages)
 ├── server.js                  # Node.js : fichiers statiques + /api/health + /api/generate (proxy Claude)
 ├── .env.example               # configuration (clé API, modèle…)
 ├── public/
 │   ├── index.html
-│   ├── css/styles.css         # interface responsive, thème clair/sombre
+│   ├── manifest.webmanifest   # PWA : nom, icônes, plein écran
+│   ├── sw.js                  # service worker : fonctionnement hors ligne
+│   ├── icons/                 # icônes (dont apple-touch-icon pour iPhone)
+│   ├── css/styles.css         # interface responsive, thème clair/sombre, zones sûres iPhone
 │   └── js/
 │       ├── app.js             # routeur (#/…) et vues : accueil, leçon, atelier IA, parents…
 │       ├── ui/
@@ -88,7 +104,8 @@ apprentissage-6e/
 │       │   ├── exercise.js    # schéma, validation et correction des exercices (partagé avec le serveur)
 │       │   ├── state.js       # progression, XP, série, maîtrise, « À revoir », export/import
 │       │   ├── gamification.js# niveaux, badges, messages d'encouragement
-│       │   ├── generator.js   # moteur local + appel IA + réserve + difficulté adaptative
+│       │   ├── generator.js   # moteur local + appel IA (serveur ou clé sur l'appareil) + réserve
+│       │   ├── ai-prompts.js  # consignes + schémas JSON de l'IA (partagé serveur / navigateur)
 │       │   └── utils.js
 │       └── content/
 │           ├── index.js       # registre des matières et chapitres
@@ -102,7 +119,7 @@ apprentissage-6e/
 - **Zéro build** : HTML, CSS et JavaScript en modules ES natifs. Rien à compiler, facile à maintenir et à héberger.
 - **Clé API côté serveur uniquement**. Le serveur ajoute aussi un plafond horaire, une limite de taille des requêtes et un nettoyage des entrées.
 - **Un seul format d'exercice** pour le moteur local, l'IA et les modules. Le validateur (`core/exercise.js`) est commun au navigateur et au serveur.
-- **Mode statique possible** : on peut servir le dossier `public/` seul (GitHub Pages, par exemple). L'IA est alors désactivée proprement, et le moteur hors ligne reste illimité.
+- **Deux modes IA** : via le serveur Node (la clé reste sur l'ordinateur) ou, en site statique (GitHub Pages / iPhone), avec une clé enregistrée sur l'appareil qui appelle l'API Claude directement. Sans clé, le moteur hors ligne reste illimité.
 
 ## ➕ Ajouter du contenu
 
@@ -124,6 +141,5 @@ ANTHROPIC_API_KEY=test ANTHROPIC_BASE_URL=http://127.0.0.1:3999 npm start   # ch
 ## 💡 Évolutions possibles
 - Mode « défi chronométré » et duel entre frères et sœurs.
 - Comptes multiples (plusieurs enfants) et synchronisation dans le cloud (Supabase ou Firebase).
-- Application installable hors ligne (PWA avec service worker).
 - Rapport hebdomadaire envoyé aux parents par e-mail.
 - Nouvelles matières en local : calcul mental, tables, fractions…

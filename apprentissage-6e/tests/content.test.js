@@ -4,6 +4,9 @@ import { BUILTIN_CHAPTERS } from '../public/js/content/index.js';
 import { validateExercise, checkAnswer, describeAnswer } from '../public/js/core/exercise.js';
 import { makeRng, signature } from '../public/js/core/utils.js';
 import { conjugate } from '../public/js/content/francais/conjugaison-engine.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import { buildPrompt, SCHEMAS, sanitizeBody, postProcess } from '../public/js/core/ai-prompts.js';
 
 let failures = 0;
 const fail = (msg, ex) => { failures++; if (failures < 25) console.error('✗', msg, ex ? JSON.stringify(ex).slice(0, 400) : ''); };
@@ -72,6 +75,25 @@ const d = checkAnswer(dic, 'les fleur sont belles');
 if (d.correct || d.score !== 0.75) fail(`score dictée inattendu ${d.score}`);
 if (validateExercise({ type: 'qcm', question: 'x', choices: ['a', 'a'], answer: 0 })) fail('QCM avec doublons accepté');
 if (validateExercise({ type: 'trous', text: 'a ___ b ___', answers: [['x']] })) fail('trous incohérent accepté');
+
+// 4) Mode hors ligne : chaque fichier de l'app doit être mis en cache par le service worker.
+const pub = new URL('../public/', import.meta.url).pathname;
+const swSrc = fs.readFileSync(pub + 'sw.js', 'utf8');
+const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]));
+for (const f of walk(pub)) {
+  const rel = './' + path.relative(pub, f);
+  if (rel === './sw.js') continue;
+  if (!swSrc.includes(`'${rel}'`)) fail(`sw.js : fichier absent du cache hors ligne : ${rel}`);
+}
+for (const m of swSrc.matchAll(/'\.\/([^']+)'/g)) if (!fs.existsSync(pub + m[1])) fail(`sw.js : fichier inexistant ${m[1]}`);
+
+// 5) Consignes IA : chaque mode produit une consigne et possède un schéma ; le post-traitement filtre.
+for (const mode of ['exercises', 'reading', 'dictee', 'module']) {
+  const b = sanitizeBody({ mode, request: 'les fractions', chapter: { title: 'T', summary: 'S', lesson: 'L' } });
+  if (!buildPrompt({ ...b, mode }) || !SCHEMAS[mode]) fail(`IA : mode ${mode} incomplet`);
+}
+const pp = postProcess('reading', { passage: 'Texte', passageTitle: 'Titre', exercises: [{ type: 'qcm', question: 'Q', choices: ['a', 'b'], answer: 1 }, { type: 'qcm', question: 'Q', choices: ['a'], answer: 3 }] });
+if (pp.exercises.length !== 1 || pp.exercises[0].passage !== 'Texte') fail('IA : post-traitement incorrect');
 
 console.log(`\n${total} exercices testés — ${failures ? failures + ' ÉCHEC(S)' : 'tout est OK ✅'}`);
 process.exit(failures ? 1 : 0);

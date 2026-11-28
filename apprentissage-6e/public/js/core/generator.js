@@ -4,6 +4,7 @@ import { validateExercise } from './exercise.js';
 import { makeRng, shuffle, signature } from './utils.js';
 import { getState, poolGet, poolAdd, notion, reviewItems } from './state.js';
 import { levelFromMastery } from './gamification.js';
+import { SCHEMAS, SYSTEM, buildPrompt, parseJson, postProcess, sanitizeBody, AI_MODES, FALLBACK_MODELS } from './ai-prompts.js';
 
 const rng = makeRng(Date.now());
 const recent = []; // signatures récemment vues (évite les répétitions)
@@ -76,37 +77,126 @@ export function suggestChapter() {
 }
 
 // --- Moteur IA -----------------------------------------------------------------
+// Deux transports possibles :
+//  1. « server » : le serveur Node (server.js) détient la clé → mode recommandé sur ordinateur.
+//  2. « device » : la clé est enregistrée sur l'appareil (ex. iPhone, site statique sans serveur)
+//     et l'API Claude est appelée directement depuis le navigateur.
+const DEVICE_KEY = 'app6e.ai-device.v1';
+export const DEFAULT_DEVICE_MODEL = 'claude-opus-5-5';
+export const DEVICE_MODELS = [
+  ['claude-opus-5-5', 'Claude Opus 5.5 (meilleure qualité)'],
+  ['claude-sonnet-5-5', 'Claude Sonnet 5.5 (équilibré)'],
+  ['claude-haiku-5-5', 'Claude Haiku 5.5 (le plus économique)'],
+];
+
+export function getDeviceAi() {
+  try { return JSON.parse(localStorage.getItem(DEVICE_KEY)) || {}; } catch { return {}; }
+}
+export function setDeviceAi(cfg) {
+  try {
+    if (!cfg) localStorage.removeItem(DEVICE_KEY);
+    else localStorage.setItem(DEVICE_KEY, JSON.stringify(cfg));
+  } catch { /* stockage indisponible */ }
+  statusCache = null;
+}
+
 let statusCache = null;
 export async function aiStatus(force = false) {
   if (statusCache && !force) return statusCache;
+  let server = { ai: false };
   try {
     const r = await fetch('api/health', { cache: 'no-store' });
-    statusCache = r.ok ? await r.json() : { ai: false };
-  } catch {
-    statusCache = { ai: false, offline: true };
-  }
+    if (r.ok && (r.headers.get('content-type') || '').includes('json')) server = await r.json();
+  } catch { /* pas de serveur : site statique ou hors ligne */ }
+  const device = getDeviceAi();
+  if (server.ai) statusCache = { ai: true, mode: 'server', model: server.model };
+  else if (device.key) statusCache = { ai: true, mode: 'device', model: device.model || DEFAULT_DEVICE_MODEL };
+  else statusCache = { ai: false, offline: !server.ok };
   return statusCache;
 }
 
-async function callApi(body, timeoutMs = 180000) {
+function withTimeout(ms) {
   const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-  try {
-    const r = await fetch('api/generate', {
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  return { signal: ctrl.signal, done: () => clearTimeout(timer) };
+}
+
+async function callServer(body, signal) {
+  const r = await fetch('api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+    signal,
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || `Erreur ${r.status}`);
+  return data;
+}
+
+/** Appel direct de l'API Claude depuis le navigateur (clé enregistrée sur l'appareil). */
+async function callDevice(rawBody, signal) {
+  const { key, model = DEFAULT_DEVICE_MODEL } = getDeviceAi();
+  const b = sanitizeBody(rawBody);
+  const mode = AI_MODES.includes(b.mode) ? b.mode : 'exercises';
+  if (mode === 'module' && b.request.trim().length < 3) throw new Error('Décris le sujet du module.');
+  const prompt = buildPrompt({ ...b, mode });
+  const fallback = FALLBACK_MODELS.includes(model);
+
+  async function ask(useSchema) {
+    const headers = {
+      'content-type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2026-10-21',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    };
+    // Reprise automatique sur un autre modèle si la requête est refusée par les filtres de sécurité.
+    if (fallback) headers['anthropic-beta'] = 'server-side-fallback-2026-07-01';
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: ctrl.signal,
+      headers,
+      signal,
+      body: JSON.stringify({
+        model,
+        max_tokens: 16000,
+        system: SYSTEM,
+        messages: [{ role: 'user', content: prompt + (useSchema ? '' : '\nRéponds uniquement avec un objet JSON valide, sans texte autour.') }],
+        output_config: { effort: mode === 'module' ? 'medium' : 'low', ...(useSchema ? { format: { type: 'json_schema', schema: SCHEMAS[mode] } } : {}) },
+        ...(fallback ? { fallbacks: 'default' } : {}),
+      }),
     });
     const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || `Erreur ${r.status}`);
-    return data;
+    if (r.status === 400 && useSchema) return ask(false); // schéma refusé : on retente en JSON libre
+    if (r.status === 401) throw new Error('Clé API invalide : vérifie-la dans l’espace parents.');
+    if (r.status === 403) throw new Error('Cette clé API n’a pas accès au modèle choisi.');
+    if (r.status === 429) throw new Error('L’IA est très sollicitée (ou le crédit API est épuisé). Réessaie plus tard.');
+    if (!r.ok) throw new Error(`Erreur de l’API Claude (${r.status}).`);
+    if (data.stop_reason === 'refusal') throw new Error('La demande a été refusée par l’IA. Reformule-la autrement.');
+    if (data.stop_reason === 'max_tokens') throw new Error('La réponse de l’IA était trop longue. Réessaie.');
+    return parseJson((data.content || []).filter((c) => c.type === 'text').map((c) => c.text).join(''));
+  }
+  return postProcess(mode, await ask(true));
+}
+
+async function callApi(body, timeoutMs = 180000) {
+  const st = await aiStatus();
+  if (!st.ai) throw new Error('La génération IA n’est pas configurée (voir l’espace parents).');
+  const t = withTimeout(timeoutMs);
+  try {
+    return st.mode === 'device' ? await callDevice(body, t.signal) : await callServer(body, t.signal);
   } catch (e) {
     if (e.name === 'AbortError') throw new Error('La génération a pris trop de temps. Réessaie dans un instant.');
+    if (e instanceof TypeError) throw new Error('Pas de connexion internet : les exercices hors ligne restent disponibles !');
     throw e;
   } finally {
-    clearTimeout(timer);
+    t.done();
   }
+}
+
+/** Petit test de la clé enregistrée sur l'appareil (requête minimale). */
+export async function testDeviceKey() {
+  const data = await callApi({ mode: 'exercises', subject: 'Français', level: 1, count: 3,
+    chapter: { title: 'Les homophones a / à', summary: 'a / à', lesson: 'a = avait ; à = préposition' } }, 120000);
+  return (data.exercises || []).length;
 }
 
 function lessonText(chapter) {

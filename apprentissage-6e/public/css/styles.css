@@ -42,12 +42,20 @@ h3 { font-size: 1.08rem; font-weight: 800; }
 p { margin: 0 0 .7em; }
 .muted { color: var(--muted); }
 .small { font-size: .88rem; }
-.container { max-width: 1040px; margin: 0 auto; padding: 18px 16px 80px; outline: none; }
+.container { max-width: 1040px; margin: 0 auto; padding: 18px max(16px, env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); outline: none; }
+/* Supprime le délai et le zoom au double-tap sur iPhone/iPad */
+button, a, input, select, textarea { touch-action: manipulation; }
+.install-card { display: flex; gap: 14px; align-items: center; border: 2px dashed var(--primary); }
+.install-card > div { flex: 1; }
+.install-card p { margin: 0; }
+.install-card .share { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--surface-2); font-weight: 900; }
+.device-ai { margin-top: 12px; padding: 14px; border-radius: 14px; background: var(--surface-2); }
 
 /* ---- En-tête ---- */
 .topbar {
   position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px;
-  padding: 10px 16px; background: color-mix(in srgb, var(--surface) 92%, transparent);
+  padding: calc(10px + env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 10px max(16px, env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
   backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
 }
 .brand { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 1.15rem; color: var(--text); white-space: nowrap; }
@@ -302,7 +310,7 @@ label.check { display: flex; gap: 8px; align-items: center; font-weight: 600; }
 }
 @media (max-width: 600px) {
   body { font-size: 16px; }
-  .topbar { flex-wrap: wrap; gap: 6px; padding: 8px 12px; }
+  .topbar { flex-wrap: wrap; gap: 6px; padding-top: calc(8px + env(safe-area-inset-top)); padding-bottom: 8px; }
   .brand span:last-child { display: none; }
   .nav { order: 3; width: 100%; justify-content: space-around; }
   .stats { margin-left: auto; }

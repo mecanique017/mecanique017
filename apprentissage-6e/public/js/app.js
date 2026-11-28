@@ -8,6 +8,7 @@ import {
 import { levelInfo, masteryLabel, BADGES, DAILY_GOAL, levelFromMastery } from './core/gamification.js';
 import {
   allChapters, getChapter, buildSeries, buildReviewSeries, suggestChapter, aiStatus, aiSeries, aiModule, weaknesses,
+  getDeviceAi, setDeviceAi, testDeviceKey, DEVICE_MODELS, DEFAULT_DEVICE_MODEL,
 } from './core/generator.js';
 import { DOMAIN_ORDER, AI_SUBJECTS } from './content/index.js';
 import { todayKey } from './core/utils.js';
@@ -118,6 +119,7 @@ function viewHome() {
         h('small', `✨ Suggestion du jour · ${sug.reason}`),
         h('strong', `${sug.chapter.emoji} ${sug.chapter.title}`),
         h('span.btn.primary', 'C’est parti →')) : null),
+    installCard(),
     s.review.length ? h('a.card.review-cta', { href: '#/revoir' },
       h('span.emoji', '🔁'),
       h('div', h('strong', `${s.review.length} exercice${s.review.length > 1 ? 's' : ''} à revoir`), h('p.muted', 'Corrige tes erreurs pour gagner le badge « Rattrapage réussi ».')),
@@ -129,6 +131,26 @@ function viewHome() {
       h('span.emoji', '✨'),
       h('div', h('strong', 'Crée ton propre module avec l’IA'), h('p.muted', 'Une notion qui te pose problème ? Une autre matière ? Demande une leçon et des exercices sur mesure.'))),
   );
+}
+
+/** Guide « Ajouter à l'écran d'accueil » (iPhone/iPad, dans Safari, si l'app n'est pas encore installée). */
+function installCard() {
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.navigator.standalone || window.matchMedia?.('(display-mode: standalone)').matches;
+  let dismissed = false;
+  try { dismissed = localStorage.getItem('app6e.install-dismissed') === '1'; } catch { /* ignore */ }
+  if (!ios || standalone || dismissed) return null;
+  const card = h('section.card.install-card',
+    h('span.emoji', '📲'),
+    h('div',
+      h('strong', 'Installe Mission 6e sur ton écran d’accueil'),
+      h('p.small', 'Dans Safari, touche ', h('span.share', '⬆︎ Partager'), ' puis « Sur l’écran d’accueil ». L’appli s’ouvrira en plein écran et marchera même sans internet.')),
+    h('button.btn.ghost.icon', { type: 'button', 'aria-label': 'Masquer', onclick: () => {
+      try { localStorage.setItem('app6e.install-dismissed', '1'); } catch { /* ignore */ }
+      card.remove();
+    } }, '✕'));
+  return card;
 }
 
 function viewChapter(id) {
@@ -143,7 +165,7 @@ function viewChapter(id) {
 
   aiStatus().then((st) => {
     if (!st.ai) {
-      add(aiZone, h('p.muted.small', st.offline ? '' : '✨ Les exercices IA s’activent quand le serveur a une clé API (voir l’espace parents). Le mode hors ligne reste illimité !'));
+      add(aiZone, h('p.muted.small', '✨ Les exercices IA s’activent quand un parent ajoute une clé API (espace parents). Le mode hors ligne reste illimité !'));
       return;
     }
     add(aiZone, 
@@ -300,9 +322,7 @@ function viewAtelier() {
     if (!zone) return;
     if (!st.ai) {
       btn.disabled = true;
-      add(zone, h('p.warn', st.offline
-        ? '⚠️ Le serveur n’est pas joignable : lance l’application avec « npm start » pour utiliser l’IA.'
-        : '⚠️ La génération IA n’est pas encore configurée. Demande à un parent d’ajouter la clé API (voir l’espace parents).'));
+      add(zone, h('p.warn', '⚠️ La génération IA n’est pas encore configurée. Demande à un parent d’ajouter la clé API dans l’espace parents.'));
     }
   });
 }
@@ -316,18 +336,8 @@ function viewParent() {
     if (!f) return;
     try { importData(await f.text()); toast('Progression importée ✅', 'ok'); route(); } catch (err) { toast('Import impossible : ' + err.message, 'warn'); }
   } });
-  const aiBox = h('div.ai-info', h('p.muted', 'Vérification du serveur…'));
-  aiStatus(true).then((st) => {
-    mount(aiBox, st.ai
-      ? h('p.ok-text', `✅ Génération IA active (modèle ${st.model}). ${poolCount()} exercices IA en réserve locale.`)
-      : h('div',
-        h('p.warn', st.offline ? '⚠️ Serveur injoignable : l’application tourne en mode statique (exercices hors ligne uniquement).' : '⚠️ Génération IA désactivée : aucune clé API sur le serveur.'),
-        h('ol.small',
-          h('li', 'Créez une clé API sur platform.claude.com (rubrique API Keys).'),
-          h('li', 'Copiez le fichier « .env.example » en « .env » à la racine du projet.'),
-          h('li', 'Collez la clé : ANTHROPIC_API_KEY=sk-ant-…'),
-          h('li', 'Relancez le serveur : npm start'))));
-  });
+  const aiBox = h('div.ai-info', h('p.muted', 'Vérification…'));
+  renderAiBox(aiBox);
 
   const recent = s.history.slice(0, 8);
   mount(app, 
@@ -362,6 +372,49 @@ function viewParent() {
         h('button.btn.ghost.danger', { type: 'button', onclick: () => { if (confirm('Effacer toute la progression ? Cette action est définitive.')) { resetAll(); go('#/', true); } } }, '🗑️ Tout réinitialiser'))),
   );
 }
+/** Bloc « Génération IA » de l'espace parents : état + clé enregistrée sur l'appareil. */
+async function renderAiBox(box) {
+  const st = await aiStatus(true);
+  const dev = getDeviceAi();
+  const keyInput = h('input.text', { type: 'password', placeholder: 'sk-ant-…', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Clé API' });
+  const model = h('select.text', DEVICE_MODELS.map(([id, label]) => h('option', { value: id, selected: (dev.model || DEFAULT_DEVICE_MODEL) === id }, label)));
+  const result = h('div');
+  const save = async () => {
+    const key = keyInput.value.trim() || dev.key;
+    if (!key || !/^sk-ant-/.test(key)) { toast('Colle une clé qui commence par « sk-ant- ».', 'warn'); return; }
+    setDeviceAi({ key, model: model.value });
+    mount(result, h('p.muted', '⏳ Test de la clé en cours (quelques secondes)…'));
+    try {
+      const n = await testDeviceKey();
+      mount(result, h('p.ok-text', `✅ Clé valide : ${n} exercices de test générés. L’IA est active sur cet appareil.`));
+      toast('IA activée ✨', 'ok');
+    } catch (e) {
+      mount(result, h('p.error', '😕 ', e.message));
+    }
+  };
+  const deviceForm = h('div.device-ai',
+    h('h3', '📱 Clé API sur cet appareil'),
+    h('p.small.muted', 'Pour utiliser l’IA sur iPhone ou iPad sans serveur. La clé reste uniquement dans ce téléphone (jamais incluse dans l’export de progression). Conseil : créez une clé dédiée avec une limite de dépenses mensuelle sur platform.claude.com.'),
+    dev.key ? h('p.small', `Clé enregistrée : ${dev.key.slice(0, 10)}…${dev.key.slice(-4)}`) : null,
+    h('label', dev.key ? 'Remplacer la clé (facultatif)' : 'Clé API Claude'), keyInput,
+    h('label', 'Modèle'), model,
+    h('div.actions',
+      h('button.btn.primary', { type: 'button', onclick: save }, dev.key ? 'Enregistrer et tester' : 'Activer l’IA'),
+      dev.key ? h('button.btn.ghost.danger', { type: 'button', onclick: () => { setDeviceAi(null); toast('Clé supprimée de cet appareil.'); renderAiBox(box); } }, 'Supprimer la clé') : null),
+    result);
+  mount(box,
+    st.ai
+      ? h('p.ok-text', `✅ Génération IA active (${st.mode === 'server' ? 'via le serveur' : 'clé sur cet appareil'}, modèle ${st.model}). ${poolCount()} exercices IA en réserve locale.`)
+      : h('p.warn', '⚠️ Génération IA désactivée : aucune clé API configurée. Les exercices hors ligne restent illimités.'),
+    st.mode === 'server' ? null : deviceForm,
+    st.mode === 'server' ? null : h('details.small',
+      h('summary', 'Sur ordinateur : utiliser plutôt le serveur Node'),
+      h('ol',
+        h('li', 'Copiez le fichier « .env.example » en « .env » à la racine du projet.'),
+        h('li', 'Collez la clé : ANTHROPIC_API_KEY=sk-ant-…'),
+        h('li', 'Lancez : npm start'))));
+}
+
 function kpi(label, value) { return h('div.kpi', h('b', String(value)), h('span', label)); }
 function download() {
   const blob = new Blob([exportData()], { type: 'application/json' });
@@ -401,5 +454,9 @@ function route() {
 }
 
 window.addEventListener('hashchange', route);
+// Mode hors ligne / installation : enregistrement du service worker (ignoré si non supporté).
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* l'app fonctionne aussi sans */ });
+}
 onChange((_, ev) => { if (ev.type !== 'profile') renderHeader(); });
 route();
